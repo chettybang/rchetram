@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e3a5f">
+<title>rchetram.com</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: rgba(255, 255, 255, 0.92);
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #1e40af;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f1f5f9;
+    background-image: linear-gradient(rgba(248,250,252,0.88), rgba(248,250,252,0.94)), url('https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 40px 16px;
+  }
+  .container { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 40px; }
+  header h1 { font-size: 2rem; font-weight: 600; color: #0f172a; margin-bottom: 6px; }
+  header .subtitle { color: var(--muted); font-size: 1rem; }
+  .caduceus { font-size: 2.2rem; margin-bottom: 8px; }
+  .app-card {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    text-decoration: none;
+    color: inherit;
+    backdrop-filter: blur(4px);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .app-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .app-card h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .app-card p { color: var(--muted); font-size: 0.95rem; margin-left: 32px; }
+  .icon { font-size: 1.3rem; }
+  footer { text-align: center; margin-top: 40px; font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="caduceus">⚕</div>
+      <h1>Ryan Chetram, MD</h1>
+      <p class="subtitle">Family Medicine</p>
+    </header>
+
+    <a class="app-card" href="/prices/">
+      <h2><span class="icon">⚕</span> Prescription Prices</h2>
+      <p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, and more.</p>
+    </a>
+
+    <a class="app-card" href="/stimulants/">
+      <h2><span class="icon">⚕</span> ADHD Stimulant Converter</h2>
+      <p>Approximate dose equivalencies for common ADHD stimulants.</p>
+    </a>
+
+    <a class="app-card" href="/antidepressants/">
+      <h2><span class="icon">⚕</span> Antidepressant Converter</h2>
+      <p>Approximate dose equivalencies for common antidepressants.</p>
+    </a>
+
+    <a class="app-card" href="/medicaid/">
+      <h2><span class="icon">⚕</span> Medicaid Preferred List</h2>
+      <p>Check Louisiana & Texas Medicaid preferred status and suggested alternatives.</p>
+    </a>
+
+    <a class="app-card" href="/mme/">
+      <h2><span class="icon">⚕</span> MME Converter</h2>
+      <p>Calculate morphine milligram equivalents for common opioids and routes.</p>
+    </a>
+
+    <footer>
+      Clinical tools for reference. Always individualize care.
+    </footer>
+  </div>
+</body>
+</html>
