@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1419">
+<title>rchetram.com</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --card: #1a1f26;
+    --text: #e8eef5;
+    --muted: #8b9cb3;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --border: #2d3748;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 24px 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 8px; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; }
+  .app-card {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .app-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .app-card h2 { font-size: 1.25rem; margin-bottom: 4px; }
+  .app-card p { color: var(--muted); font-size: 0.95rem; }
+  .icon { font-size: 1.5rem; margin-right: 8px; }
+</style>
+</head>
+<body>
+  <h1>rchetram.com</h1>
+  <p class="subtitle">Tools and apps</p>
+
+  <a class="app-card" href="/prices/">
+    <h2><span class="icon">💊</span> Prescription Prices</h2>
+    <p>Compare Cost Plus, GoodRx, Amazon Pharmacy, Walmart, and SingleCare prices.</p>
+  </a>
+
+  <!-- Add more app cards here later -->
+</body>
+</html>

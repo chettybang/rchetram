@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1419">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Med Prices">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233b82f6'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white' font-family='system-ui'>💊</text></svg>">
+<title>Prescription Prices</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --card: #1a1f26;
+    --text: #e8eef5;
+    --muted: #8b9cb3;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --border: #2d3748;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  input, button {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #11151a;
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button {
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+  button:hover { background: var(--accent-hover); }
+  .results { display: none; }
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-label { font-weight: 500; }
+  .price-value { font-size: 1.1rem; font-weight: 600; color: var(--success); }
+  .link-btn {
+    display: inline-block;
+    background: #374151;
+    color: var(--text);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+  .link-btn:hover { background: #4b5563; }
+  .note { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .error { color: #ef4444; }
+  .loading { color: #f59e0b; }
+  @media (max-width: 600px) {
+    .row { flex-direction: column; gap: 0; }
+    .price-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+  <h1>Prescription Prices</h1>
+  <p class="subtitle">Cost Plus prices load automatically. Other sources open as pre-filled links.</p>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="drugName">Medication Name</label>
+        <input type="text" id="drugName" placeholder="e.g. amlodipine or dapagliflozin" autocomplete="off">
+      </div>
+      <div>
+        <label for="strength">Strength (optional)</label>
+        <input type="text" id="strength" placeholder="e.g. 5mg or 10mg">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="quantity">Quantity</label>
+        <input type="number" id="quantity" value="30" min="1">
+      </div>
+      <div>
+        <label for="brand">Brand (optional)</label>
+        <input type="text" id="brand" placeholder="e.g. Farxiga">
+      </div>
+    </div>
+    <button id="searchBtn">Search Prices</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="card results" id="results">
+    <h2 style="font-size:1.15rem; margin-bottom:8px;" id="resultTitle">Results</h2>
+    <div id="cpdResults"></div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">GoodRx</div>
+        <div class="note">Local pharmacy coupons & cash prices</div>
+      </div>
+      <a id="goodrxLink" class="link-btn" target="_blank" href="#">Open GoodRx</a>
+    </div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">Amazon Pharmacy</div>
+        <div class="note">Cash prices, often competitive with Prime</div>
+      </div>
+      <a id="amazonLink" class="link-btn" target="_blank" href="#">Open Amazon Pharmacy</a>
+    </div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">Walmart $4 / $10 List</div>
+        <div class="note">Limited formulary — very low prices when available</div>
+      </div>
+      <a id="walmartLink" class="link-btn" target="_blank" href="#">Open Walmart List</a>
+    </div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">SingleCare</div>
+        <div class="note">Free discount coupons at local pharmacies</div>
+      </div>
+      <a id="singlecareLink" class="link-btn" target="_blank" href="#">Open SingleCare</a>
+    </div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">Medicare Plan Compare</div>
+        <div class="note">Part D plan-specific pricing</div>
+      </div>
+      <a class="link-btn" target="_blank" href="https://www.medicare.gov/plan-compare/">Open Medicare</a>
+    </div>
+
+    <div class="price-row">
+      <div>
+        <div class="price-label">Average Commercial Insurance</div>
+        <div class="note">Varies by plan. Typical generic copay: $5–20</div>
+      </div>
+      <span class="note">Check with patient’s plan</span>
+    </div>
+  </div>
+
+  <p class="note" style="text-align:center; margin-top:16px;">
+    Prices change. Always verify on the pharmacy site or with the patient’s insurance.
+  </p>
+
+<script>
+const API_BASE = "https://costplug-proxy.racchetty.workers.dev/";
+
+document.getElementById("searchBtn").addEventListener("click", search);
+document.getElementById("drugName").addEventListener("keydown", e => {
+  if (e.key === "Enter") search();
+});
+
+function calcTotal(unitPrice, qty, fee = 5) {
+  if (unitPrice == null || isNaN(unitPrice)) return null;
+  const total = (unitPrice * qty) + fee;
+  return "$" + total.toFixed(2);
+}
+
+async function search() {
+  const name = document.getElementById("drugName").value.trim();
+  const strength = document.getElementById("strength").value.trim();
+  const quantity = parseInt(document.getElementById("quantity").value, 10) || 30;
+  const brand = document.getElementById("brand").value.trim();
+  const status = document.getElementById("status");
+  const results = document.getElementById("results");
+
+  if (!name) {
+    status.innerHTML = '<div class="error">Enter a medication name.</div>';
+    return;
+  }
+
+  status.innerHTML = '<div class="loading">Loading Cost Plus prices…</div>';
+  results.style.display = "none";
+
+  const params = new URLSearchParams({ term: name });
+  if (strength) params.set("strength", strength);
+
+  let resultsHtml = "";
+  const fallbackUrl = `https://www.costplusdrugs.com/medications/?query=${encodeURIComponent(name)}`;
+
+  try {
+    const res = await fetch(`${API_BASE}?${params.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let data = await res.json();
+
+    if (!Array.isArray(data)) data = [];
+
+    // Filter by brand if provided
+    if (brand) {
+      const b = brand.toLowerCase();
+      data = data.filter(item => (item.brand_name || "").toLowerCase().includes(b) || (item.medication_name || "").toLowerCase().includes(b));
+    }
+
+    if (data.length > 0) {
+      // If no strength given, show all matching strengths
+      const toShow = strength ? data : data;
+      resultsHtml = toShow.map(item => {
+        const unit = item.cpd_channel?.price_per_unit;
+        const fee = item.cpd_channel?.cash_dispensing_fee ?? 5;
+        const total = calcTotal(unit, quantity, fee);
+        const label = [item.medication_name, item.strength].filter(Boolean).join(" ");
+        return `
+          <div class="price-row">
+            <div>
+              <div class="price-label">${label}</div>
+              <div class="note">${item.form || ""} · Unit: $${unit != null ? unit.toFixed(4) : "—"} + $${fee} fee</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="price-value">${total || "—"}</div>
+              <a class="link-btn" target="_blank" href="${item.url || fallbackUrl}">View</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    } else {
+      resultsHtml = `
+        <div class="price-row">
+          <div>
+            <div class="price-label">Cost Plus Drugs</div>
+            <div class="note">Not found on Cost Plus</div>
+          </div>
+          <a class="link-btn" target="_blank" href="${fallbackUrl}">Search on Cost Plus</a>
+        </div>
+      `;
+    }
+  } catch (e) {
+    console.error(e);
+    resultsHtml = `
+      <div class="price-row">
+        <div>
+          <div class="price-label">Cost Plus Drugs</div>
+          <div class="note">Could not load automatically. Use the link.</div>
+        </div>
+        <a class="link-btn" target="_blank" href="${fallbackUrl}">Open Cost Plus</a>
+      </div>
+    `;
+  }
+
+  document.getElementById("cpdResults").innerHTML = resultsHtml;
+
+  const searchTerm = encodeURIComponent([name, strength].filter(Boolean).join(" "));
+  document.getElementById("goodrxLink").href = `https://www.goodrx.com/search?q=${searchTerm}`;
+  document.getElementById("amazonLink").href = `https://pharmacy.amazon.com/search?query=${searchTerm}`;
+  document.getElementById("walmartLink").href = `https://www.walmart.com/search?q=${encodeURIComponent(name + " $4 prescription")}`;
+  document.getElementById("singlecareLink").href = `https://www.singlecare.com/search?q=${searchTerm}`;
+
+  document.getElementById("resultTitle").textContent = `${name}${strength ? " " + strength : ""} (${quantity} units)`;
+  results.style.display = "block";
+  status.innerHTML = "";
+}
+</script>
+</body>
+</html>
