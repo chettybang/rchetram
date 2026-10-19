@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1419">
+<title>Antidepressant Converter</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --card: #1a1f26;
+    --text: #e8eef5;
+    --muted: #8b9cb3;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --border: #2d3748;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  select, input, button {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #11151a;
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button {
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .result {
+    background: #11151a;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 8px;
+    font-size: 1.1rem;
+  }
+  .result strong { color: var(--success); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 500; }
+  .note { font-size: 0.8rem; color: var(--muted); margin-top: 12px; }
+  @media (max-width: 600px) {
+    .row { flex-direction: column; gap: 0; }
+  }
+</style>
+</head>
+<body>
+  <h1>Antidepressant Converter</h1>
+  <p class="subtitle">Approximate dose equivalencies based on clinical references. Individual response varies.</p>
+
+  <div class="card">
+    <h2 style="font-size:1.1rem; margin-bottom:12px;">Convert a Dose</h2>
+    <div class="row">
+      <div>
+        <label for="fromMed">From Medication</label>
+        <select id="fromMed"></select>
+      </div>
+      <div>
+        <label for="fromDose">Dose (mg)</label>
+        <input type="number" id="fromDose" min="0" step="1" value="20">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="toMed">To Medication</label>
+        <select id="toMed"></select>
+      </div>
+      <div style="display:flex; align-items:flex-end;">
+        <button id="convertBtn">Convert</button>
+      </div>
+    </div>
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:1.1rem; margin-bottom:12px;">Typical Therapeutic Ranges & Approximate Equivalents</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Medication</th>
+          <th>Typical Starting</th>
+          <th>Usual Range</th>
+          <th>Approx. Fluoxetine Equivalent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Fluoxetine</td><td>20 mg</td><td>20–60 mg</td><td>20 mg = 20 mg</td></tr>
+        <tr><td>Sertraline</td><td>50 mg</td><td>50–200 mg</td><td>50 mg ≈ 20 mg</td></tr>
+        <tr><td>Escitalopram</td><td>10 mg</td><td>10–20 mg</td><td>10 mg ≈ 20 mg</td></tr>
+        <tr><td>Citalopram</td><td>20 mg</td><td>20–40 mg</td><td>20 mg ≈ 20 mg</td></tr>
+        <tr><td>Paroxetine</td><td>20 mg</td><td>20–50 mg</td><td>20 mg ≈ 20 mg</td></tr>
+        <tr><td>Venlafaxine XR</td><td>75 mg</td><td>75–225 mg</td><td>75 mg ≈ 20 mg</td></tr>
+        <tr><td>Duloxetine</td><td>30–60 mg</td><td>60 mg</td><td>60 mg ≈ 20–30 mg</td></tr>
+        <tr><td>Bupropion XL</td><td>150 mg</td><td>150–300 mg</td><td>150–300 mg ≈ 20–40 mg</td></tr>
+        <tr><td>Mirtazapine</td><td>15 mg</td><td>15–45 mg</td><td>30 mg ≈ 20–30 mg</td></tr>
+      </tbody>
+    </table>
+    <p class="note">
+      Equivalencies are approximate and based on clinical practice and published dose-equivalence studies (e.g., Hayasaka et al.). 
+      Not a substitute for clinical judgment. Consider half-life, CYP interactions, and patient-specific factors when switching.
+    </p>
+  </div>
+
+<script>
+const meds = [
+  { name: "Fluoxetine", eq: 20 },
+  { name: "Sertraline", eq: 50 },
+  { name: "Escitalopram", eq: 10 },
+  { name: "Citalopram", eq: 20 },
+  { name: "Paroxetine", eq: 20 },
+  { name: "Venlafaxine XR", eq: 75 },
+  { name: "Duloxetine", eq: 60 },
+  { name: "Bupropion XL", eq: 150 },
+  { name: "Mirtazapine", eq: 30 }
+];
+
+function populateSelects() {
+  const from = document.getElementById("fromMed");
+  const to = document.getElementById("toMed");
+  meds.forEach((m, i) => {
+    from.add(new Option(m.name, i));
+    to.add(new Option(m.name, i));
+  });
+  to.selectedIndex = 1;
+}
+
+document.getElementById("convertBtn").addEventListener("click", convert);
+document.getElementById("fromDose").addEventListener("keydown", e => {
+  if (e.key === "Enter") convert();
+});
+
+function convert() {
+  const fromIdx = document.getElementById("fromMed").value;
+  const toIdx = document.getElementById("toMed").value;
+  const dose = parseFloat(document.getElementById("fromDose").value);
+  if (!dose || dose <= 0) return;
+
+  const from = meds[fromIdx];
+  const to = meds[toIdx];
+
+  // Convert via fluoxetine-equivalent units
+  const fluoxEq = (dose / from.eq) * 20;
+  const resultDose = (fluoxEq / 20) * to.eq;
+
+  const result = document.getElementById("result");
+  result.style.display = "block";
+  result.innerHTML = `
+    <strong>${dose} mg</strong> ${from.name}<br>
+    ≈ <strong>${resultDose.toFixed(0)} mg</strong> ${to.name}<br>
+    <span class="note">Approximate. Round to available strength and titrate carefully.</span>
+  `;
+}
+
+populateSelects();
+</script>
+</body>
+</html>
