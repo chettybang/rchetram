@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e3a5f">
+<title>Medicaid Preferred List Checker</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #1e40af;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  select, input, button {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .result { margin-top: 8px; }
+  .status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .preferred { background: #d1fae5; color: #065f46; }
+  .nonpreferred { background: #fef3c7; color: #92400e; }
+  .unknown { background: #e2e8f0; color: #475569; }
+  .alt { margin-top: 10px; }
+  .note { font-size: 0.8rem; color: var(--muted); margin-top: 12px; }
+  a { color: var(--accent); }
+  @media (max-width: 600px) { .row { flex-direction: column; gap: 0; } }
+</style>
+</head>
+<body>
+  <h1>Medicaid Preferred List Checker</h1>
+  <p class="subtitle">Louisiana & Texas — common primary care medications. Always verify with the official PDL.</p>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="state">State</label>
+        <select id="state">
+          <option value="la">Louisiana</option>
+          <option value="tx">Texas</option>
+        </select>
+      </div>
+      <div>
+        <label for="drug">Medication</label>
+        <input type="text" id="drug" list="drugList" placeholder="e.g. atorvastatin, Ozempic, Adderall" autocomplete="off">
+        <datalist id="drugList"></datalist>
+      </div>
+    </div>
+    <button id="checkBtn">Check Status</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:1.05rem; margin-bottom:8px;">Official Sources</h2>
+    <p><a href="https://ldh.la.gov/resources?q=Preferred+Drug+List" target="_blank">Louisiana Medicaid PDL (LDH)</a></p>
+    <p style="margin-top:6px;"><a href="https://www.txvendordrug.com/formulary/preferred-drugs" target="_blank">Texas Medicaid PDL (HHSC)</a></p>
+    <p class="note">PDLs update periodically. This tool covers common family medicine agents and is for quick reference only. Confirm current status and any clinical criteria on the official lists before prescribing.</p>
+  </div>
+
+<script>
+const drugs = [
+  { name: "atorvastatin", la: "preferred", tx: "preferred", alts: ["rosuvastatin", "simvastatin"] },
+  { name: "rosuvastatin", la: "preferred", tx: "preferred", alts: ["atorvastatin"] },
+  { name: "simvastatin", la: "preferred", tx: "preferred", alts: ["atorvastatin"] },
+  { name: "metformin", la: "preferred", tx: "preferred", alts: [] },
+  { name: "dapagliflozin", la: "preferred", tx: "check", alts: ["empagliflozin"] },
+  { name: "empagliflozin", la: "check", tx: "check", alts: ["dapagliflozin"] },
+  { name: "semaglutide", la: "nonpreferred", tx: "nonpreferred", alts: ["dulaglutide", "liraglutide"] },
+  { name: "ozempic", la: "nonpreferred", tx: "nonpreferred", alts: ["dulaglutide", "liraglutide"] },
+  { name: "dulaglutide", la: "check", tx: "preferred", alts: ["semaglutide"] },
+  { name: "trulicity", la: "check", tx: "preferred", alts: [] },
+  { name: "liraglutide", la: "check", tx: "preferred", alts: [] },
+  { name: "lisinopril", la: "preferred", tx: "preferred", alts: [] },
+  { name: "losartan", la: "preferred", tx: "preferred", alts: [] },
+  { name: "amlodipine", la: "preferred", tx: "preferred", alts: [] },
+  { name: "hydrochlorothiazide", la: "preferred", tx: "preferred", alts: [] },
+  { name: "sertraline", la: "preferred", tx: "preferred", alts: ["escitalopram", "fluoxetine"] },
+  { name: "escitalopram", la: "preferred", tx: "preferred", alts: ["sertraline"] },
+  { name: "fluoxetine", la: "preferred", tx: "preferred", alts: ["sertraline"] },
+  { name: "bupropion", la: "preferred", tx: "preferred", alts: [] },
+  { name: "duloxetine", la: "preferred", tx: "preferred", alts: ["venlafaxine"] },
+  { name: "venlafaxine", la: "preferred", tx: "preferred", alts: ["duloxetine"] },
+  { name: "methylphenidate", la: "preferred", tx: "preferred", alts: ["amphetamine salts"] },
+  { name: "adderall", la: "preferred", tx: "preferred", alts: ["methylphenidate"] },
+  { name: "lisdexamfetamine", la: "check", tx: "check", alts: ["methylphenidate", "amphetamine salts"] },
+  { name: "vyvanse", la: "check", tx: "check", alts: ["methylphenidate", "amphetamine salts"] },
+  { name: "albuterol", la: "preferred", tx: "preferred", alts: [] },
+  { name: "fluticasone", la: "preferred", tx: "preferred", alts: ["budesonide"] },
+  { name: "omeprazole", la: "preferred", tx: "preferred", alts: ["pantoprazole"] },
+  { name: "pantoprazole", la: "preferred", tx: "preferred", alts: ["omeprazole"] },
+  { name: "gabapentin", la: "preferred", tx: "preferred", alts: [] },
+  { name: "levothyroxine", la: "preferred", tx: "preferred", alts: [] }
+];
+
+const list = document.getElementById("drugList");
+drugs.forEach(d => list.add(new Option(d.name)));
+
+document.getElementById("checkBtn").addEventListener("click", check);
+document.getElementById("drug").addEventListener("keydown", e => {
+  if (e.key === "Enter") check();
+});
+
+function check() {
+  const state = document.getElementById("state").value;
+  const query = document.getElementById("drug").value.trim().toLowerCase();
+  const result = document.getElementById("result");
+
+  if (!query) {
+    result.innerHTML = '<span class="status unknown">Enter a medication</span>';
+    return;
+  }
+
+  const match = drugs.find(d => d.name.includes(query) || query.includes(d.name));
+
+  if (!match) {
+    result.innerHTML = `
+      <span class="status unknown">Not in quick-reference list</span>
+      <p class="note" style="margin-top:8px;">Check the official PDL for ${state === "la" ? "Louisiana" : "Texas"}.</p>
+    `;
+    return;
+  }
+
+  const status = match[state];
+  let statusClass = "unknown";
+  let statusText = "Check official list";
+  if (status === "preferred") { statusClass = "preferred"; statusText = "Preferred"; }
+  else if (status === "nonpreferred") { statusClass = "nonpreferred"; statusText = "Non-preferred (PA likely)"; }
+
+  let html = `<span class="status ${statusClass}">${statusText}</span> — ${match.name}`;
+
+  if (status !== "preferred" && match.alts.length) {
+    html += `<div class="alt"><strong>Preferred alternatives:</strong> ${match.alts.join(", ")}</div>`;
+  }
+
+  html += `<p class="note">Status based on common patterns. Verify on the official ${state === "la" ? "Louisiana" : "Texas"} PDL.</p>`;
+  result.innerHTML = html;
+}
+</script>
+</body>
+</html>
