@@ -17,7 +17,6 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-      <a href="/" style="display:inline-block; margin-bottom:12px; color:#1e40af; text-decoration:none; font-size:0.9rem;">← Back</a>
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
@@ -71,6 +70,7 @@
 </style>
 </head>
 <body>
+  <a href="/" style="display:inline-block; margin-bottom:12px; color:#1e40af; text-decoration:none; font-size:0.9rem;">← Back</a>
   <h1>MME Converter</h1>
   <p class="subtitle">Morphine milligram equivalent calculator. Approximate factors for clinical reference.</p>
 
@@ -78,11 +78,11 @@
     <div class="row">
       <div>
         <label for="opioid">Opioid</label>
-        <select id="opioid"></select>
+        <select id="opioid" onchange="calculate()"></select>
       </div>
       <div>
         <label for="route">Route</label>
-        <select id="route">
+        <select id="route" onchange="calculate()">
           <option value="oral">Oral</option>
           <option value="iv">IV / IM / SubQ</option>
           <option value="transdermal">Transdermal (mcg/hr)</option>
@@ -92,14 +92,13 @@
     <div class="row">
       <div>
         <label for="dose">Dose</label>
-        <input type="number" id="dose" min="0" step="0.5" value="10">
+        <input type="number" id="dose" min="0" step="0.5" value="10" oninput="calculate()">
       </div>
       <div>
         <label for="frequency">Times per day</label>
-        <input type="number" id="frequency" min="1" step="1" value="4">
+        <input type="number" id="frequency" min="1" step="1" value="1" oninput="calculate()">
       </div>
     </div>
-    <button onclick="calculate()">Calculate MME</button>
     <div id="result" class="result" style="display:none;"></div>
   </div>
 
@@ -108,11 +107,11 @@
     <div class="row">
       <div>
         <label for="toOpioid">Target Opioid</label>
-        <select id="toOpioid"></select>
+        <select id="toOpioid" onchange="convert()"></select>
       </div>
       <div>
         <label for="toRoute">Target Route</label>
-        <select id="toRoute">
+        <select id="toRoute" onchange="convert()">
           <option value="oral">Oral</option>
           <option value="iv">IV / IM / SubQ</option>
           <option value="transdermal">Transdermal (mcg/hr)</option>
@@ -122,10 +121,7 @@
     <div class="row">
       <div>
         <label for="toFrequency">Target times per day</label>
-        <input type="number" id="toFrequency" min="1" step="1" value="4">
-      </div>
-      <div style="display:flex; align-items:flex-end;">
-        <button onclick="convert()">Show Equivalent Dose</button>
+        <input type="number" id="toFrequency" min="1" step="1" value="1" oninput="convert()">
       </div>
     </div>
     <div id="convertResult" class="result" style="display:none;"></div>
@@ -177,6 +173,8 @@ opioids.forEach((o, i) => {
 });
 toSelect.selectedIndex = 2;
 
+calculate();
+
 function getFactor(opioid, route) {
   if (route === "oral") return opioid.oral;
   if (route === "iv") return opioid.parenteral;
@@ -222,6 +220,7 @@ function calculate() {
     Factor: ${factor}<br>
     <span class="note">Approximate. Individualize dosing and monitor closely.</span>
   `;
+  convert();
 }
 
 function convert() {
@@ -237,8 +236,7 @@ function convert() {
   const result = document.getElementById("convertResult");
 
   if (!dose || dose <= 0) {
-    result.style.display = "block";
-    result.innerHTML = "Enter a valid dose in the section above.";
+    result.style.display = "none";
     return;
   }
 
