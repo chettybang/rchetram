@@ -70,6 +70,7 @@
 </style>
 </head>
 <body>
+  <a href="/" style="display:inline-block; margin-bottom:12px; color:#1e40af; text-decoration:none; font-size:0.9rem;">← Back</a>
   <h1>Phosphate Deficit Calculator</h1>
   <p class="subtitle">Estimate phosphate replacement needs. Approximate — individualize and monitor electrolytes.</p>
 
@@ -109,34 +110,34 @@
         <tr>
           <th>Formulation</th>
           <th>Phosphorus</th>
-          <th>Potassium</th>
-          <th>Sodium</th>
+          <th>Potassium (K⁺)</th>
+          <th>Sodium (Na⁺)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>K-Phos Neutral (tab)</td>
           <td>8 mmol (250 mg)</td>
-          <td>1.1 mEq (45 mg)</td>
-          <td>13 mEq (298 mg)</td>
+          <td>1.1 mEq K⁺ (45 mg)</td>
+          <td>13 mEq Na⁺ (298 mg)</td>
         </tr>
         <tr>
           <td>Phos-NaK / Neutra-Phos (pkt)</td>
           <td>8 mmol (250 mg)</td>
-          <td>~7 mEq (280 mg)</td>
-          <td>~7 mEq (160 mg)</td>
+          <td>~7 mEq K⁺ (280 mg)</td>
+          <td>~7 mEq Na⁺ (160 mg)</td>
         </tr>
         <tr>
           <td>Potassium phosphate IV</td>
           <td>3 mmol/mL (93 mg/mL)</td>
-          <td>4.4 mEq/mL (170 mg/mL)</td>
+          <td>4.4 mEq/mL K⁺ (170 mg/mL)</td>
           <td>—</td>
         </tr>
         <tr>
           <td>Sodium phosphate IV</td>
           <td>3 mmol/mL (93 mg/mL)</td>
           <td>—</td>
-          <td>4 mEq/mL (92 mg/mL)</td>
+          <td>4 mEq/mL Na⁺ (92 mg/mL)</td>
         </tr>
       </tbody>
     </table>
@@ -193,8 +194,8 @@ function calculate() {
     const pkts = Math.ceil(deficit_mmol / 8);
     html += `
       <p style="margin-top:8px;"><strong>Oral:</strong></p>
-      <p>• ${tabs} tablet(s) K-Phos Neutral → ${tabs * 8} mmol P, ${(tabs * 1.1).toFixed(1)} mEq K, ${(tabs * 13).toFixed(0)} mEq Na</p>
-      <p>• ${pkts} packet(s) Phos-NaK → ${pkts * 8} mmol P, ~${(pkts * 7).toFixed(0)} mEq K, ~${(pkts * 7).toFixed(0)} mEq Na</p>
+      <p>• ${tabs} tablet(s) K-Phos Neutral → ${tabs * 8} mmol P, ${(tabs * 1.1).toFixed(1)} mEq K⁺, ${(tabs * 13).toFixed(0)} mEq Na⁺</p>
+      <p>• ${pkts} packet(s) Phos-NaK → ${pkts * 8} mmol P, ~${(pkts * 7).toFixed(0)} mEq K⁺, ~${(pkts * 7).toFixed(0)} mEq Na⁺</p>
     `;
   }
 
@@ -205,8 +206,8 @@ function calculate() {
     const na_total = (ml_na * 4).toFixed(1);
     html += `
       <p style="margin-top:8px;"><strong>IV (dilute and infuse slowly):</strong></p>
-      <p>• Potassium phosphate: ${ml_k} mL → ${deficit_mmol.toFixed(0)} mmol P + ${k_total} mEq K</p>
-      <p>• Sodium phosphate: ${ml_na} mL → ${deficit_mmol.toFixed(0)} mmol P + ${na_total} mEq Na</p>
+      <p>• Potassium phosphate: ${ml_k} mL → ${deficit_mmol.toFixed(0)} mmol P + ${k_total} mEq K⁺</p>
+      <p>• Sodium phosphate: ${ml_na} mL → ${deficit_mmol.toFixed(0)} mmol P + ${na_total} mEq Na⁺</p>
       <p class="note">Choose K-phos if K is low/normal; Na-phos if K is high or renal impairment. Max infusion rate ~6–7 mmol P/hr peripheral (higher central). Recheck labs.</p>
     `;
   }
