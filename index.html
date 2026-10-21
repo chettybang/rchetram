@@ -9,6 +9,15 @@
     --border: #e2e8f0;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('PWA Service Worker registered:', reg.scope))
+        .catch(err => console.error('PWA Service Worker registration failed:', err));
+    });
+  }
+</script>
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: #f1f5f9;
