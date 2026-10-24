@@ -55,9 +55,44 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
   .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
   
   label.field-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  
+  /* Touch-friendly stepper input for Height & Weight */
+  .stepper-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+  .stepper-input {
+    display: flex;
+    align-items: center;
+  }
+  .stepper-input input {
+    text-align: center;
+    border-radius: 0;
+    margin-bottom: 0;
+    border-left: none;
+    border-right: none;
+    font-weight: 600;
+  }
+  .btn-step {
+    background: #334155;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    min-width: 46px;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
   input[type="number"], input[type="text"], select {
     width: 100%;
     padding: 10px 12px;
@@ -74,7 +109,7 @@
     font-size: 0.95rem;
     font-weight: 700;
     color: var(--accent);
-    margin: 16px 0 10px 0;
+    margin: 18px 0 10px 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border);
@@ -98,6 +133,37 @@
   .checkbox-label:hover { background: rgba(56, 189, 248, 0.08); border-color: var(--accent); }
   .checkbox-label input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
   
+  /* Always-visible safety reference card (no checkboxes) */
+  .safety-reference-box {
+    background: rgba(248, 113, 113, 0.06);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-left: 4px solid var(--danger);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 12px 0 16px 0;
+    font-size: 0.88rem;
+  }
+  .safety-reference-box h3 {
+    color: var(--danger);
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+  }
+  .safety-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .safety-item {
+    background: rgba(15, 23, 42, 0.7);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .safety-item strong { color: #fca5a5; }
+
   button.btn-primary {
     width: 100%;
     padding: 14px;
@@ -171,6 +237,15 @@
     margin-top: 8px;
     border-radius: 0 6px 6px 0;
   }
+  .contra-alert {
+    background: rgba(248, 113, 113, 0.12);
+    border-left: 3px solid var(--danger);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: #fca5a5;
+    margin-top: 8px;
+    border-radius: 0 6px 6px 0;
+  }
   .dosing-box {
     background: rgba(15, 23, 42, 0.8);
     border: 1px dashed var(--border);
@@ -189,6 +264,7 @@
     body { padding: 12px 8px; }
     .card { padding: 14px; }
     .checkbox-group { grid-template-columns: 1fr; }
+    .safety-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -200,13 +276,21 @@
   <div class="card">
     <label class="field-label">1. Patient Anthropometrics & Mode Selection</label>
     <div class="grid-3">
-      <div>
-        <label for="heightInches" style="font-size:0.8rem; color:var(--muted);">Height (inches or cm)</label>
-        <input type="number" id="heightInches" placeholder="e.g. 67 (5'7&quot;)" value="67" oninput="calcBMIFromInputs()">
+      <div class="stepper-container">
+        <label for="heightInches" style="font-size:0.8rem; color:var(--muted);">Height (inches)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepValue('heightInches', -1)">−</button>
+          <input type="number" id="heightInches" value="67" oninput="calcBMIFromInputs()">
+          <button type="button" class="btn-step step-right" onclick="stepValue('heightInches', 1)">+</button>
+        </div>
       </div>
-      <div>
-        <label for="weightLbs" style="font-size:0.8rem; color:var(--muted);">Weight (lbs or kg)</label>
-        <input type="number" id="weightLbs" placeholder="e.g. 215" value="215" oninput="calcBMIFromInputs()">
+      <div class="stepper-container">
+        <label for="weightLbs" style="font-size:0.8rem; color:var(--muted);">Weight (lbs)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepValue('weightLbs', -5)">−</button>
+          <input type="number" id="weightLbs" value="215" oninput="calcBMIFromInputs()">
+          <button type="button" class="btn-step step-right" onclick="stepValue('weightLbs', 5)">+</button>
+        </div>
       </div>
       <div>
         <label for="bmi" style="font-size:0.8rem; color:var(--muted);">Calculated BMI (kg/m²)</label>
@@ -244,16 +328,23 @@
       <label class="checkbox-label"><input type="checkbox" id="pcos"> PCOS / Insulin Resistance</label>
     </div>
 
-    <div class="section-title" style="color: var(--danger);">3. Safety & Contraindication Screen</div>
-    <div class="checkbox-group">
-      <label class="checkbox-label"><input type="checkbox" id="mtc"> Personal/Family History of MTC or MEN 2</label>
-      <label class="checkbox-label"><input type="checkbox" id="pregnant"> Pregnant / Planning Pregnancy / Lactating</label>
-      <label class="checkbox-label"><input type="checkbox" id="seizure"> History of Seizures / Epilepsy / Abrupt Detox</label>
-      <label class="checkbox-label"><input type="checkbox" id="opioid"> Chronic Opioid Therapy / Methadone / Suboxone</label>
-      <label class="checkbox-label"><input type="checkbox" id="htn"> Uncontrolled Hypertension (SBP >160 or DBP >100)</label>
-      <label class="checkbox-label"><input type="checkbox" id="ed"> History of Eating Disorder (Anorexia/Bulimia)</label>
-      <label class="checkbox-label"><input type="checkbox" id="pancreatitis"> History of Severe Acute Pancreatitis</label>
-      <label class="checkbox-label"><input type="checkbox" id="glp_intolerant"> GLP-1 Intolerance / Intolerable GI Side Effects</label>
+    <div class="section-title" style="color: var(--danger);">3. Safety & Contraindication Reference Panel</div>
+    <div class="safety-reference-box">
+      <h3>Quick Point-of-Care Safety Checklist</h3>
+      <div class="safety-grid">
+        <div class="safety-item">
+          <strong>GLP-1 / GIP Agents:</strong> Contraindicated in MTC, MEN 2, Pregnancy/Lactation, or history of severe acute pancreatitis.
+        </div>
+        <div class="safety-item">
+          <strong>Qsymia (Phentermine/Topiramate):</strong> Contraindicated in Pregnancy (REMS cleft palate risk), Glaucoma, Hyperthyroidism, MAOIs. Requires gradual taper (seizure risk).
+        </div>
+        <div class="safety-item">
+          <strong>Contrave (Bupropion/Naltrexone):</strong> Contraindicated in Seizures, Chronic Opioids (precipitates withdrawal), Eating Disorders (Bulimia/Anorexia), Abrupt ETOH detox.
+        </div>
+        <div class="safety-item">
+          <strong>Phentermine Monotherapy:</strong> Avoid in Uncontrolled HTN (SBP >160 or DBP >100), Severe CVD, Glaucoma, Agitation, or MAOI use within 14 days.
+        </div>
+      </div>
     </div>
 
     <button class="btn-primary" onclick="evaluatePatient()">Evaluate Recommendations</button>
@@ -276,10 +367,17 @@ function calcBMIFromInputs() {
   const ht = parseFloat(document.getElementById("heightInches").value);
   const wt = parseFloat(document.getElementById("weightLbs").value);
   if (ht > 0 && wt > 0) {
-    // Standard BMI formula: (weight in lbs / (height in inches)^2) * 703
     const bmiVal = (wt / (ht * ht)) * 703;
     document.getElementById("bmi").value = bmiVal.toFixed(1);
   }
+}
+
+function stepValue(inputId, step) {
+  const input = document.getElementById(inputId);
+  let currentVal = parseFloat(input.value) || 0;
+  currentVal = Math.max(1, currentVal + step);
+  input.value = currentVal;
+  calcBMIFromInputs();
 }
 
 let globalResults = {
@@ -305,16 +403,6 @@ function evaluatePatient() {
   const depression = document.getElementById("depression").checked;
   const binge = document.getElementById("binge").checked;
   const pcos = document.getElementById("pcos").checked;
-
-  // Safety / Contraindications
-  const mtc = document.getElementById("mtc").checked;
-  const pregnant = document.getElementById("pregnant").checked;
-  const seizure = document.getElementById("seizure").checked;
-  const opioid = document.getElementById("opioid").checked;
-  const htn = document.getElementById("htn").checked;
-  const ed = document.getElementById("ed").checked;
-  const pancreatitis = document.getElementById("pancreatitis").checked;
-  const glpIntolerant = document.getElementById("glp_intolerant").checked;
 
   const hasComorbidity = osa || mash || cvd || hfpef || t2dm || migraine || tobacco || depression || binge || pcos;
   
@@ -346,9 +434,9 @@ function evaluatePatient() {
     </div>
   `;
 
-  const glp1Contraindicated = mtc || pregnant || pancreatitis || glpIntolerant || pathway === "no_glp1" || pathway === "oral" || pathway === "budget";
+  const glp1FilteredOut = pathway === "no_glp1" || pathway === "oral" || pathway === "budget";
 
-  if (!glp1Contraindicated) {
+  if (!glp1FilteredOut) {
     // Tirzepatide
     let tirzRank = (osa || pathway === "any") ? "first-line" : "alt-line";
     let tirzBadge = (osa || pathway === "any") ? "badge-first" : "badge-alt";
@@ -361,6 +449,9 @@ function evaluatePatient() {
         <div class="dosing-box">
           <strong>Dosing Titration Schedule:</strong><br>
           Start 2.5 mg SQ weekly x 4 weeks → 5 mg SQ weekly x 4 weeks → Escalating by 2.5 mg increments every 4 weeks up to max 15 mg SQ weekly as tolerated.
+        </div>
+        <div class="contra-alert">
+          <strong>Contraindications:</strong> Personal/family history of Medullary Thyroid Carcinoma (MTC), MEN 2, Pregnancy/Lactation, or severe acute pancreatitis history.
         </div>
         <p class="note">Common adverse effects: Nausea, diarrhea, constipation, vomiting, decreased appetite. Monitor for gallbladder disease.</p>
       </div>
@@ -379,103 +470,90 @@ function evaluatePatient() {
           <strong>Dosing Titration Schedule:</strong><br>
           0.25 mg SQ weekly x 4 wks → 0.5 mg SQ weekly x 4 wks → 1.0 mg SQ weekly x 4 wks → 1.7 mg SQ weekly x 4 wks → Maintenance 2.4 mg SQ weekly.
         </div>
-        <p class="note">Contraindicated in personal/family history of MTC or MEN 2.</p>
+        <div class="contra-alert">
+          <strong>Contraindications:</strong> Personal/family history of MTC, MEN 2, Pregnancy/Lactation.
+        </div>
       </div>
     `);
-  } else if (mtc || pancreatitis) {
+  } else {
     globalResults.glp1.push(`
-      <div class="result-card contraindicated">
-        <span class="badge badge-contra">GLP-1 / GIP AGONISTS CONTRAINDICATED</span>
-        <p><strong>Absolute Safety Warning:</strong> Incretin mimetics (Tirzepatide, Semaglutide, Liraglutide) are strictly contraindicated due to ${mtc ? "history of Medullary Thyroid Carcinoma or MEN 2" : "history of severe acute pancreatitis"}. Refer to the Non-GLP-1 Oral Alternatives section below.</p>
+      <div class="result-card info-line">
+        <span class="badge badge-info">GLP-1 / GIP AGONISTS BYPASSED</span>
+        <p>Incretin mimetics were bypassed based on selected mode preference (e.g. Oral Preferred, Budget, or GLP-1 Avoidance/Shortage). Review oral alternatives below.</p>
       </div>
     `);
   }
 
+  // NON-GLP-1 / ORAL ALTERNATIVES
   
   // 1. Phentermine-Topiramate (Qsymia)
-  if (!pregnant && !htn) {
-    let qsymiaRank = (migraine || pathway === "oral" || pathway === "no_glp1") ? "first-line" : "alt-line";
-    let qsymiaBadge = (migraine || pathway === "oral" || pathway === "no_glp1") ? "badge-first" : "badge-alt";
-    globalResults.nonglp1.push(`
-      <div class="result-card ${qsymiaRank}">
-        <span class="badge ${qsymiaBadge}">PHENTERMINE / TOPIRAMATE ER (Qsymia / Generic Split)</span>
-        <p><strong>Class:</strong> Sympathomimetic Anorexiant + Neurotherapeutic GABA/Glutamate Modulator (Oral Capsule)</p>
-        <p><strong>Efficacy:</strong> <strong>~8.6%–9.3% mean weight loss</strong> at 15mg/92mg dose (EQUIP / EQUATE trials).</p>
-        ${migraine ? '<div class="clinical-pearl">★ <strong>Dual Benefit:</strong> Topiramate component provides robust concurrent migraine prophylaxis.</div>' : ''}
-        <div class="dosing-box">
-          <strong>Dosing Titration Schedule:</strong><br>
-          Start 3.75 mg/23 mg QAM x 14 days → Increase to 7.5 mg/46 mg QAM.<br>
-          <em>Re-evaluate at 12 weeks:</em> If <3% weight loss, escalate to 11.25 mg/69 mg x 14 days → Max 15 mg/92 mg QAM.
-        </div>
-        <p class="note"><strong>Safety & Taper:</strong> Requires gradual taper upon discontinuation to avoid precipitating seizure. REMS program required due to teratogenicity (cleft palate risk). Monitor resting heart rate and serum bicarbonate.</p>
+  let qsymiaRank = (migraine || pathway === "oral" || pathway === "no_glp1") ? "first-line" : "alt-line";
+  let qsymiaBadge = (migraine || pathway === "oral" || pathway === "no_glp1") ? "badge-first" : "badge-alt";
+  globalResults.nonglp1.push(`
+    <div class="result-card ${qsymiaRank}">
+      <span class="badge ${qsymiaBadge}">PHENTERMINE / TOPIRAMATE ER (Qsymia / Generic Split)</span>
+      <p><strong>Class:</strong> Sympathomimetic Anorexiant + Neurotherapeutic GABA/Glutamate Modulator (Oral Capsule)</p>
+      <p><strong>Efficacy:</strong> <strong>~8.6%–9.3% mean weight loss</strong> at 15mg/92mg dose (EQUIP / EQUATE trials).</p>
+      ${migraine ? '<div class="clinical-pearl">★ <strong>Dual Benefit:</strong> Topiramate component provides robust concurrent migraine prophylaxis.</div>' : ''}
+      <div class="dosing-box">
+        <strong>Dosing Titration Schedule:</strong><br>
+        Start 3.75 mg/23 mg QAM x 14 days → Increase to 7.5 mg/46 mg QAM.<br>
+        <em>Re-evaluate at 12 weeks:</em> If <3% weight loss, escalate to 11.25 mg/69 mg x 14 days → Max 15 mg/92 mg QAM.
       </div>
-    `);
-  } else if (htn) {
-    globalResults.nonglp1.push(`
-      <div class="result-card contraindicated">
-        <span class="badge badge-contra">QSYMIA / PHENTERMINE CAUTION</span>
-        <p>Avoid or delay phentermine component due to uncontrolled hypertension. Optimize BP prior to initiation.</p>
+      <div class="contra-alert">
+        <strong>Safety & Contraindications:</strong> Strictly contraindicated in Pregnancy (cleft palate risk - REMS required), Glaucoma, Hyperthyroidism, or within 14 days of MAOIs. Caution in uncontrolled HTN. Requires gradual taper upon stopping to prevent seizures.
       </div>
-    `);
-  }
+    </div>
+  `);
 
   // 2. Naltrexone-Bupropion (Contrave) & Generic Split
-  if (!seizure && !pregnant && !htn && !opioid && !ed) {
-    let contraveRank = (tobacco || depression || binge || pathway === "oral") ? "first-line" : "alt-line";
-    let contraveBadge = (tobacco || depression || binge || pathway === "oral") ? "badge-first" : "badge-alt";
-    globalResults.nonglp1.push(`
-      <div class="result-card ${contraveRank}">
-        <span class="badge ${contraveBadge}">BUPROPION / NALTREXONE (Contrave / Generic Split)</span>
-        <p><strong>Class:</strong> Aminoketone Antidepressant + Opioid Antagonist (Oral Tablet)</p>
-        <p><strong>Efficacy:</strong> <strong>~5.0%–6.1% mean weight loss</strong> (COR trials). Modulates hypothalamic appetite center and mesolimbic reward pathway.</p>
-        ${(tobacco || depression || binge) ? '<div class="clinical-pearl">★ <strong>Multifactorial Clinical Benefit:</strong> Highly advantageous for co-managing depression, craving control, binge eating patterns, and nicotine dependence/smoking cessation.</div>' : ''}
-        <div class="dosing-box">
-          <strong>Contrave Titration Schedule:</strong> Wk 1: 1 tab QAM → Wk 2: 1 tab QAM + 1 tab QPM → Wk 3: 2 tabs QAM + 1 tab QPM → Wk 4 (Full dose): 2 tabs BID (8mg/90mg per tab).<br>
-          <strong>Cost-Saving Generic Co-Prescribing:</strong> Bupropion SR 150mg BID + Naltrexone 25mg–50mg daily (Reduces out-of-pocket cost from ~$300/mo to ~$25/mo).
-        </div>
-        <p class="note"><strong>Contraindications:</strong> Seizure disorder, abrupt alcohol/sedative withdrawal, chronic opioid therapy (will precipitate acute opioid withdrawal), eating disorders, or uncontrolled hypertension.</p>
+  let contraveRank = (tobacco || depression || binge || pathway === "oral") ? "first-line" : "alt-line";
+  let contraveBadge = (tobacco || depression || binge || pathway === "oral") ? "badge-first" : "badge-alt";
+  globalResults.nonglp1.push(`
+    <div class="result-card ${contraveRank}">
+      <span class="badge ${contraveBadge}">BUPROPION / NALTREXONE (Contrave / Generic Split)</span>
+      <p><strong>Class:</strong> Aminoketone Antidepressant + Opioid Antagonist (Oral Tablet)</p>
+      <p><strong>Efficacy:</strong> <strong>~5.0%–6.1% mean weight loss</strong> (COR trials). Modulates hypothalamic appetite center and mesolimbic reward pathway.</p>
+      ${(tobacco || depression || binge) ? '<div class="clinical-pearl">★ <strong>Multifactorial Clinical Benefit:</strong> Highly advantageous for co-managing depression, craving control, binge eating patterns, and nicotine dependence/smoking cessation.</div>' : ''}
+      <div class="dosing-box">
+        <strong>Contrave Titration Schedule:</strong> Wk 1: 1 tab QAM → Wk 2: 1 tab QAM + 1 tab QPM → Wk 3: 2 tabs QAM + 1 tab QPM → Wk 4 (Full dose): 2 tabs BID (8mg/90mg per tab).<br>
+        <strong>Cost-Saving Generic Co-Prescribing:</strong> Bupropion SR 150mg BID + Naltrexone 25mg–50mg daily (Reduces out-of-pocket cost from ~$300/mo to ~$25/mo).
       </div>
-    `);
-  } else if (seizure || opioid || ed) {
-    globalResults.nonglp1.push(`
-      <div class="result-card contraindicated">
-        <span class="badge badge-contra">CONTRAVE CONTRAINDICATED</span>
-        <p>Contraindicated due to ${seizure ? "seizure disorder" : opioid ? "chronic opioid therapy / buprenorphine / methadone" : "eating disorder history"}.</p>
+      <div class="contra-alert">
+        <strong>Contraindications:</strong> Seizure disorder, abrupt alcohol/sedative withdrawal, chronic opioid therapy (will precipitate acute opioid withdrawal), eating disorders (Bulimia/Anorexia), or uncontrolled hypertension.
       </div>
-    `);
-  }
+    </div>
+  `);
 
   // 3. Phentermine Monotherapy
-  if (!htn && !seizure) {
-    globalResults.nonglp1.push(`
-      <div class="result-card alt-line">
-        <span class="badge badge-alt">PHENTERMINE MONOTHERAPY (Adipex-P 37.5mg / Lomaira 8mg)</span>
-        <p><strong>Class:</strong> Sympathomimetic Amine Anorexiant (Oral Tablet / Capsule)</p>
-        <p><strong>Efficacy:</strong> <strong>~3.0%–5.0% weight loss</strong>. Low cost generic ($10–$15/month).</p>
-        <div class="dosing-box">
-          <strong>Dosing:</strong> Adipex-P 15 mg to 37.5 mg daily before breakfast or 1–2 hours after breakfast.<br>
-          <strong>Lomaira 8mg TID:</strong> Given 30 minutes before meals for patients needing targeted mealtime appetite suppression.
-        </div>
-        <p class="note">FDA approved for short-term (<12 weeks) adjunct, though often utilized long-term off-label under close medical supervision. Monitor BP, heart rate, insomnia, and anxiety.</p>
+  globalResults.nonglp1.push(`
+    <div class="result-card alt-line">
+      <span class="badge badge-alt">PHENTERMINE MONOTHERAPY (Adipex-P 37.5mg / Lomaira 8mg)</span>
+      <p><strong>Class:</strong> Sympathomimetic Amine Anorexiant (Oral Tablet / Capsule)</p>
+      <p><strong>Efficacy:</strong> <strong>~3.0%–5.0% weight loss</strong>. Ultra low cost generic ($10–$15/month).</p>
+      <div class="dosing-box">
+        <strong>Dosing:</strong> Adipex-P 15 mg to 37.5 mg daily before breakfast or 1–2 hours after breakfast.<br>
+        <strong>Lomaira 8mg TID:</strong> Given 30 minutes before meals for patients needing targeted mealtime appetite suppression.
       </div>
-    `);
-  }
+      <div class="contra-alert">
+        <strong>Contraindications:</strong> Uncontrolled hypertension, cardiovascular disease, hyperthyroidism, glaucoma, history of drug abuse, or MAOI use within 14 days. Monitor HR and BP.
+      </div>
+    </div>
+  `);
 
   // 4. Topiramate Monotherapy (Off-Label)
-  if (!pregnant) {
-    globalResults.nonglp1.push(`
-      <div class="result-card alt-line">
-        <span class="badge badge-info">TOPIRAMATE MONOTHERAPY (Topamax - Off-Label)</span>
-        <p><strong>Class:</strong> Neurotherapeutic / Carbonic Anhydrase Inhibitor</p>
-        <p><strong>Efficacy:</strong> <strong>~4.5% weight loss</strong>. Enhances satiety and alters taste acuity (carbonated beverage perversion).</p>
-        ${migraine ? '<div class="clinical-pearl">★ <strong>Off-Label Oral Choice:</strong> Excellent monotherapy choice if patient has concurrent migraines, binge eating disorder, or alcohol use disorder and cannot access GLP-1s.</div>' : ''}
-        <div class="dosing-box">
-          <strong>Dosing:</strong> Start 25 mg QHS x 1–2 weeks, titrate by 25 mg/day weekly up to 50 mg–100 mg BID as tolerated.
-        </div>
-        <p class="note">Monitor for paresthesias, cognitive slowing ("dope-amax"), kidney stones, and metabolic acidosis. Taper off gradually.</p>
+  globalResults.nonglp1.push(`
+    <div class="result-card alt-line">
+      <span class="badge badge-info">TOPIRAMATE MONOTHERAPY (Topamax - Off-Label)</span>
+      <p><strong>Class:</strong> Neurotherapeutic / Carbonic Anhydrase Inhibitor</p>
+      <p><strong>Efficacy:</strong> <strong>~4.5% weight loss</strong>. Enhances satiety and alters taste acuity.</p>
+      ${migraine ? '<div class="clinical-pearl">★ <strong>Off-Label Oral Choice:</strong> Excellent monotherapy choice if patient has concurrent migraines, binge eating disorder, or alcohol use disorder.</div>' : ''}
+      <div class="dosing-box">
+        <strong>Dosing:</strong> Start 25 mg QHS x 1–2 weeks, titrate by 25 mg/day weekly up to 50 mg–100 mg BID as tolerated.
       </div>
-    `);
-  }
+      <p class="note">Contraindicated in pregnancy. Monitor for paresthesias, cognitive slowing, kidney stones, and metabolic acidosis. Taper off gradually.</p>
+    </div>
+  `);
 
   // 5. Metformin (Off-Label)
   globalResults.nonglp1.push(`
@@ -500,7 +578,7 @@ function evaluatePatient() {
       <div class="dosing-box">
         <strong>Dosing:</strong> 120 mg capsule TID with each main fat-containing meal (or up to 1 hr after).
       </div>
-      <p class="note"><strong>Gastrointestinal Tolerability:</strong> Causes oily spotting, flatus with discharge, fecal urgency. Patient must maintain a low-fat diet (<30% calories from fat). Daily fat-soluble multivitamin (A, D, E, K) required taken ≥2 hours apart (e.g. bedtime).</p>
+      <p class="note"><strong>Gastrointestinal Tolerability & Contraindications:</strong> Contraindicated in chronic malabsorption syndrome and cholestasis. Causes oily spotting, flatus with discharge, fecal urgency. Patient must maintain a low-fat diet. Daily fat-soluble multivitamin (A, D, E, K) required at bedtime.</p>
     </div>
   `);
 
