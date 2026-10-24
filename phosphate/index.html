@@ -418,7 +418,7 @@ function calculate() {
           <thead>
             <tr>
               <th>Formulation</th>
-              <th>Dose / Units</th>
+              <th>Order Quantity (mmol & Units)</th>
               <th>Phosphate Delivered (mmol / mg / mEq)</th>
               <th>Co-administered Cations (mEq)</th>
             </tr>
@@ -426,7 +426,10 @@ function calculate() {
           <tbody>
             <tr>
               <td><strong>K-Phos Neutral</strong><br><span style="font-size:0.78rem; color:var(--muted);">Tablets</span></td>
-              <td><strong>${tabs} tab(s)</strong><br><span style="font-size:0.78rem; color:var(--muted);">(e.g. 2 tabs TID)</span></td>
+              <td>
+                <span style="font-size:1.05rem; font-weight:700; color:var(--success);">${kphos_p_mmol} mmol P</span><br>
+                <span style="font-size:0.82rem; color:var(--muted);">(${tabs} tab[s] @ 8 mmol/tab)</span>
+              </td>
               <td>
                 <strong>${kphos_p_mmol} mmol</strong> P<br>
                 <strong>${kphos_p_mg} mg</strong> P<br>
@@ -439,7 +442,10 @@ function calculate() {
             </tr>
             <tr>
               <td><strong>Phos-NaK / Neutra-Phos</strong><br><span style="font-size:0.78rem; color:var(--muted);">Powder Packets</span></td>
-              <td><strong>${pkts} packet(s)</strong><br><span style="font-size:0.78rem; color:var(--muted);">(mix in water)</span></td>
+              <td>
+                <span style="font-size:1.05rem; font-weight:700; color:var(--success);">${phosnak_p_mmol} mmol P</span><br>
+                <span style="font-size:0.82rem; color:var(--muted);">(${pkts} packet[s] @ 8 mmol/pkt)</span>
+              </td>
               <td>
                 <strong>${phosnak_p_mmol} mmol</strong> P<br>
                 <strong>${phosnak_p_mg} mg</strong> P<br>
@@ -484,7 +490,7 @@ function calculate() {
           <thead>
             <tr>
               <th>Formulation</th>
-              <th>Volume Required</th>
+              <th>Order Dose (mmol) & Volume</th>
               <th>Phosphate Delivered (mmol / mg / mEq)</th>
               <th>Co-administered Cations (mEq)</th>
             </tr>
@@ -492,7 +498,10 @@ function calculate() {
           <tbody>
             <tr>
               <td><strong>Potassium Phosphate IV</strong><br><span style="font-size:0.78rem; color:var(--muted);">(3 mmol P / 4.4 mEq K per mL)</span></td>
-              <td><strong>${iv_k_ml.toFixed(1)} mL</strong></td>
+              <td>
+                <span style="font-size:1.1rem; font-weight:700; color:var(--success);">${iv_k_p_mmol.toFixed(0)} mmol P</span><br>
+                <span style="font-size:0.82rem; color:var(--muted);">${iv_k_ml.toFixed(1)} mL required</span>
+              </td>
               <td>
                 <strong>${iv_k_p_mmol.toFixed(0)} mmol</strong> P<br>
                 <strong>${iv_k_p_mg.toFixed(0)} mg</strong> P<br>
@@ -505,7 +514,10 @@ function calculate() {
             </tr>
             <tr>
               <td><strong>Sodium Phosphate IV</strong><br><span style="font-size:0.78rem; color:var(--muted);">(3 mmol P / 4.0 mEq Na per mL)</span></td>
-              <td><strong>${iv_na_ml.toFixed(1)} mL</strong></td>
+              <td>
+                <span style="font-size:1.1rem; font-weight:700; color:var(--success);">${iv_na_p_mmol.toFixed(0)} mmol P</span><br>
+                <span style="font-size:0.82rem; color:var(--muted);">${iv_na_ml.toFixed(1)} mL required</span>
+              </td>
               <td>
                 <strong>${iv_na_p_mmol.toFixed(0)} mmol</strong> P<br>
                 <strong>${iv_na_p_mg.toFixed(0)} mg</strong> P<br>
@@ -518,6 +530,13 @@ function calculate() {
             </tr>
           </tbody>
         </table>
+        
+        <div style="background:rgba(15, 23, 42, 0.9); border:1px dashed var(--accent); border-radius:6px; padding:10px 12px; margin-top:10px; font-size:0.85rem;">
+          <strong style="color:var(--accent);">EHR Order Quick-Copy Sentences:</strong><br>
+          • <code>Potassium Phosphate IV <strong>${iv_k_p_mmol.toFixed(0)} mmol</strong> in 100 mL NS over 4 hours</code><br>
+          • <code>Sodium Phosphate IV <strong>${iv_na_p_mmol.toFixed(0)} mmol</strong> in 100 mL NS over 4 hours</code>
+        </div>
+
         <p class="note" style="margin-top:8px;">
           <strong>Clinical Selection Pearl:</strong> Choose <em>Potassium Phosphate</em> if baseline Serum K⁺ is normal/low (&lt;4.0 mEq/L). Choose <em>Sodium Phosphate</em> if baseline Serum K⁺ is elevated (&ge;4.5 mEq/L) or in significant renal impairment.
         </p>
