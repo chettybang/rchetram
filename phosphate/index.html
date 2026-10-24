@@ -51,22 +51,41 @@
     margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
-  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 
-  label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  /* Fixed 3-column layout to keep Current P, Target P, and Weight on the exact same line */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: flex;
+    align-items: flex-end;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    min-height: 2.2em; /* Normalizes label height across all columns */
+  }
 
   /* Touch-friendly stepper inputs */
   .stepper-container {
     display: flex;
     flex-direction: column;
-    margin-bottom: 12px;
   }
   .stepper-input {
     display: flex;
     align-items: center;
+    width: 100%;
   }
   .stepper-input input {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
     text-align: center;
     border-radius: 0;
     margin-bottom: 0;
@@ -85,6 +104,7 @@
     user-select: none;
     transition: background 0.15s;
     min-width: 44px;
+    flex-shrink: 0;
   }
   .btn-step:hover { background: var(--accent); color: #0f172a; }
   .btn-step.step-left { border-radius: 8px 0 0 8px; }
@@ -112,7 +132,7 @@
     font-weight: 700;
     font-size: 1.05rem;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 6px;
     transition: background 0.2s, transform 0.1s;
   }
   button.btn-primary:hover { background: var(--accent-hover); color: #ffffff; }
@@ -205,9 +225,11 @@
   table.ref-table th, table.ref-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
   table.ref-table th { color: var(--accent); font-weight: 600; }
 
-  @media (max-width: 600px) {
+  @media (max-width: 680px) {
     body { padding: 12px 8px; }
     .card { padding: 14px; }
+    .grid-3 { grid-template-columns: 1fr; gap: 10px; }
+    label { min-height: auto; }
     .breakdown-table th, .breakdown-table td { padding: 6px 6px; font-size: 0.82rem; }
   }
 </style>
@@ -247,22 +269,13 @@
       </div>
     </div>
 
-    <div class="grid-2">
-      <div>
-        <label for="routePref">Preferred Route Strategy</label>
-        <select id="routePref">
-          <option value="auto">Auto-Select (Oral for Mild/Mod, IV for Severe)</option>
-          <option value="oral">Oral Preferred Only</option>
-          <option value="iv">IV Preferred Only</option>
-        </select>
-      </div>
-      <div>
-        <label for="valFactor">Phosphate Valence Standard</label>
-        <select id="valFactor">
-          <option value="1.8">Physiological pH 7.4 (1 mmol = 1.8 mEq)</option>
-          <option value="1.5">Monobasic/Dibasic Mean (1 mmol = 1.5 mEq)</option>
-        </select>
-      </div>
+    <div>
+      <label for="routePref">Preferred Route Strategy</label>
+      <select id="routePref">
+        <option value="auto">Auto-Select (Oral for Mild/Mod, IV for Severe)</option>
+        <option value="oral">Oral Preferred Only</option>
+        <option value="iv">IV Preferred Only</option>
+      </select>
     </div>
 
     <button class="btn-primary" onclick="calculate()">Calculate Deficit & Formulations</button>
@@ -310,7 +323,7 @@
     </table>
     <p class="note">
       *Note on conversions: 1 mmol Elemental Phosphorus = 30.97 mg P ≈ 31 mg P.<br>
-      At physiological pH 7.4, phosphate exists as a mixture of monobasic (H₂PO₄⁻) and dibasic (HPO₄²⁻) ions in an ~1:4 ratio, yielding an effective net valence of ~1.8 mEq per mmol.
+      Calculations reflect physiological pH 7.4, where phosphate exists as an ~1:4 monobasic (H₂PO₄⁻) to dibasic (HPO₄²⁻) mixture, yielding an effective valence of 1.8 mEq per mmol.
     </p>
   </div>
 
@@ -327,7 +340,7 @@ function calculate() {
   const target = parseFloat(document.getElementById("target").value);
   const weight = parseFloat(document.getElementById("weight").value);
   const routePref = document.getElementById("routePref").value;
-  const valenceRatio = parseFloat(document.getElementById("valFactor").value) || 1.8;
+  const valenceRatio = 1.8; // Standard physiological valence at blood pH 7.4
   const resultsDiv = document.getElementById("results");
 
   if (!current || !target || !weight || target <= current) {
