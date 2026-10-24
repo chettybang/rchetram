@@ -3,17 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e3a5f">
-<title>Phosphate Deficit Calculator</title>
+<meta name="theme-color" content="#0f172a">
+<title>Phosphate Deficit & Replacement Calculator</title>
 <style>
   :root {
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --text: #1e293b;
-    --muted: #64748b;
-    --accent: #1e40af;
-    --success: #059669;
-    --border: #e2e8f0;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #818cf8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -22,201 +27,508 @@
     color: var(--text);
     line-height: 1.5;
     padding: 20px 16px;
-    max-width: 800px;
+    max-width: 880px;
     margin: 0 auto;
   }
-  h1 { font-size: 1.5rem; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 16px;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
-  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
-  select, input, button {
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+
+  label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Touch-friendly stepper inputs */
+  .stepper-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+  .stepper-input {
+    display: flex;
+    align-items: center;
+  }
+  .stepper-input input {
+    text-align: center;
+    border-radius: 0;
+    margin-bottom: 0;
+    border-left: none;
+    border-right: none;
+    font-weight: 600;
+  }
+  .btn-step {
+    background: #334155;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    min-width: 44px;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
+  input[type="number"], select {
     width: 100%;
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: #fff;
+    background: #0f172a;
     color: var(--text);
     font-size: 1rem;
     margin-bottom: 12px;
   }
-  .row { display: flex; gap: 12px; }
-  .row > div { flex: 1; }
-  button {
-    background: var(--accent);
-    color: white;
+  input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  button.btn-primary {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
     border: none;
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 1.05rem;
     cursor: pointer;
-    font-weight: 600;
+    margin-top: 10px;
+    transition: background 0.2s, transform 0.1s;
   }
-  .result {
-    background: #f1f5f9;
+  button.btn-primary:hover { background: var(--accent-hover); color: #ffffff; }
+  button.btn-primary:active { transform: scale(0.99); }
+
+  .summary-box {
+    background: var(--card-sub);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--accent);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .metric-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .metric-card .val {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--success);
+  }
+  .metric-card .lbl {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .formulation-card {
+    background: var(--card-sub);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 16px;
-    margin-top: 8px;
+    margin-bottom: 14px;
   }
-  .result strong { color: var(--success); }
-  .note { font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
-  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
-  th { color: var(--muted); font-weight: 500; }
-  .form-card { background: #f8fafc; border-radius: 8px; padding: 12px; margin-top: 10px; }
-  @media (max-width: 600px) { .row { flex-direction: column; gap: 0; } }
+  .formulation-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 10px;
+  }
+  .breakdown-table th, .breakdown-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .breakdown-table th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-oral { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+  .badge-iv { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  .error-box { background: rgba(248, 113, 113, 0.12); border-left: 4px solid var(--danger); padding: 12px; color: #fca5a5; border-radius: 6px; }
+
+  table.ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+  table.ref-table th, table.ref-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+  table.ref-table th { color: var(--accent); font-weight: 600; }
+
+  @media (max-width: 600px) {
+    body { padding: 12px 8px; }
+    .card { padding: 14px; }
+    .breakdown-table th, .breakdown-table td { padding: 6px 6px; font-size: 0.82rem; }
+  }
 </style>
 </head>
 <body>
-  <a href="/" style="display:inline-block; margin-bottom:12px; color:#1e40af; text-decoration:none; font-size:0.9rem;">← Back</a>
-  <h1>Phosphate Deficit Calculator</h1>
-  <p class="subtitle">Estimate phosphate replacement needs. Approximate — individualize and monitor electrolytes.</p>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Phosphate Deficit & Replacement Calculator</h1>
+  <p class="subtitle">Quantitative elemental replacement engine with complete mmol, mg, mEq, and cation breakdowns.</p>
 
   <div class="card">
-    <div class="row">
-      <div>
-        <label for="current">Current serum phosphorus (mg/dL)</label>
-        <input type="number" id="current" min="0" step="0.1" value="1.8">
+    <div class="grid-3">
+      <div class="stepper-container">
+        <label for="current">Current Serum P (mg/dL)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepVal('current', -0.1)">−</button>
+          <input type="number" id="current" step="0.1" value="1.8">
+          <button type="button" class="btn-step step-right" onclick="stepVal('current', 0.1)">+</button>
+        </div>
       </div>
-      <div>
-        <label for="target">Target serum phosphorus (mg/dL)</label>
-        <input type="number" id="target" min="0" step="0.1" value="3.0">
+
+      <div class="stepper-container">
+        <label for="target">Target Serum P (mg/dL)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepVal('target', -0.1)">−</button>
+          <input type="number" id="target" step="0.1" value="3.0">
+          <button type="button" class="btn-step step-right" onclick="stepVal('target', 0.1)">+</button>
+        </div>
+      </div>
+
+      <div class="stepper-container">
+        <label for="weight">Patient Weight (kg)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepVal('weight', -5)">−</button>
+          <input type="number" id="weight" step="0.5" value="70">
+          <button type="button" class="btn-step step-right" onclick="stepVal('weight', 5)">+</button>
+        </div>
       </div>
     </div>
-    <div class="row">
+
+    <div class="grid-2">
       <div>
-        <label for="weight">Weight (kg)</label>
-        <input type="number" id="weight" min="1" step="0.5" value="70">
+        <label for="routePref">Preferred Route Strategy</label>
+        <select id="routePref">
+          <option value="auto">Auto-Select (Oral for Mild/Mod, IV for Severe)</option>
+          <option value="oral">Oral Preferred Only</option>
+          <option value="iv">IV Preferred Only</option>
+        </select>
       </div>
       <div>
-        <label for="routePref">Preferred route</label>
-        <select id="routePref">
-          <option value="auto">Auto (based on severity)</option>
-          <option value="oral">Oral preferred</option>
-          <option value="iv">IV preferred</option>
+        <label for="valFactor">Phosphate Valence Standard</label>
+        <select id="valFactor">
+          <option value="1.8">Physiological pH 7.4 (1 mmol = 1.8 mEq)</option>
+          <option value="1.5">Monobasic/Dibasic Mean (1 mmol = 1.5 mEq)</option>
         </select>
       </div>
     </div>
-    <button onclick="calculate()">Calculate</button>
-    <div id="result" class="result" style="display:none;"></div>
+
+    <button class="btn-primary" onclick="calculate()">Calculate Deficit & Formulations</button>
   </div>
 
-  <div class="card">
-    <h2 style="font-size:1.05rem; margin-bottom:8px;">Common Formulations</h2>
-    <table>
+  <div id="results" style="display:none;"></div>
+
+  <div class="card" style="margin-top: 20px;">
+    <h2 style="font-size:1.05rem; color:var(--accent); margin-bottom:8px;">Formulation Reference Table</h2>
+    <table class="ref-table">
       <thead>
         <tr>
           <th>Formulation</th>
-          <th>Phosphorus</th>
+          <th>Phosphorus Content</th>
           <th>Potassium (K⁺)</th>
           <th>Sodium (Na⁺)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>K-Phos Neutral (tab)</td>
-          <td>8 mmol (250 mg)</td>
-          <td>1.1 mEq K⁺ (45 mg)</td>
-          <td>13 mEq Na⁺ (298 mg)</td>
+          <td><strong>K-Phos Neutral</strong> (Tablet)</td>
+          <td>8 mmol (250 mg P / 14.4 mEq)</td>
+          <td>1.1 mEq (45 mg)</td>
+          <td>13.0 mEq (298 mg)</td>
         </tr>
         <tr>
-          <td>Phos-NaK / Neutra-Phos (pkt)</td>
-          <td>8 mmol (250 mg)</td>
-          <td>~7 mEq K⁺ (280 mg)</td>
-          <td>~7 mEq Na⁺ (160 mg)</td>
+          <td><strong>Phos-NaK / Neutra-Phos</strong> (Packet)</td>
+          <td>8 mmol (250 mg P / 14.4 mEq)</td>
+          <td>7.1 mEq (280 mg)</td>
+          <td>7.1 mEq (160 mg)</td>
         </tr>
         <tr>
-          <td>Potassium phosphate IV</td>
-          <td>3 mmol/mL (93 mg/mL)</td>
-          <td>4.4 mEq/mL K⁺ (170 mg/mL)</td>
+          <td><strong>Potassium Phosphate IV</strong> (per mL)</td>
+          <td>3 mmol/mL (93 mg/mL P)</td>
+          <td>4.4 mEq/mL</td>
           <td>—</td>
         </tr>
         <tr>
-          <td>Sodium phosphate IV</td>
-          <td>3 mmol/mL (93 mg/mL)</td>
+          <td><strong>Sodium Phosphate IV</strong> (per mL)</td>
+          <td>3 mmol/mL (93 mg/mL P)</td>
           <td>—</td>
-          <td>4 mEq/mL Na⁺ (92 mg/mL)</td>
+          <td>4.0 mEq/mL</td>
         </tr>
       </tbody>
     </table>
     <p class="note">
-      Conversion: 1 mmol phosphorus ≈ 31 mg. Serum mg/dL × 0.323 ≈ mmol/L.<br>
-      IV phosphate must be diluted and infused slowly. Monitor calcium, potassium, and phosphate. 
-      Oral preferred when GI function is intact and deficit is not severe. Always individualize.
+      *Note on conversions: 1 mmol Elemental Phosphorus = 30.97 mg P ≈ 31 mg P.<br>
+      At physiological pH 7.4, phosphate exists as a mixture of monobasic (H₂PO₄⁻) and dibasic (HPO₄²⁻) ions in an ~1:4 ratio, yielding an effective net valence of ~1.8 mEq per mmol.
     </p>
   </div>
 
 <script>
-const VOD_FACTOR = 0.6;
+function stepVal(id, step) {
+  const input = document.getElementById(id);
+  let val = parseFloat(input.value) || 0;
+  val = Math.max(0.1, val + step);
+  input.value = id === 'weight' ? val.toFixed(0) : val.toFixed(1);
+}
 
 function calculate() {
   const current = parseFloat(document.getElementById("current").value);
   const target = parseFloat(document.getElementById("target").value);
   const weight = parseFloat(document.getElementById("weight").value);
   const routePref = document.getElementById("routePref").value;
-  const result = document.getElementById("result");
+  const valenceRatio = parseFloat(document.getElementById("valFactor").value) || 1.8;
+  const resultsDiv = document.getElementById("results");
 
   if (!current || !target || !weight || target <= current) {
-    result.style.display = "block";
-    result.innerHTML = "Enter valid values. Target should be higher than current.";
+    resultsDiv.style.display = "block";
+    resultsDiv.innerHTML = `<div class="error-box"><strong>Error:</strong> Enter valid patient values. Target serum phosphorus must be higher than current level.</div>`;
     return;
   }
 
+  // Deficit Math
+  // Rule-of-thumb: 0.6 mmol/kg volume of distribution factor per 1 mg/dL serum rise
+  const VOD_FACTOR = 0.6;
   const deficit_mgdl = target - current;
   const deficit_mmol = weight * VOD_FACTOR * deficit_mgdl;
-  const current_mmolL = current * 0.323;
-  const target_mmolL = target * 0.323;
+  const deficit_mg = deficit_mmol * 30.97;
+  const deficit_meq = deficit_mmol * valenceRatio;
 
-  let severity = "mild";
-  if (current < 1.0) severity = "severe";
-  else if (current < 2.0) severity = "moderate";
+  // Severity Classification
+  let severity = "Mild";
+  let severityClass = "var(--success)";
+  if (current < 1.0) {
+    severity = "Severe (<1.0 mg/dL)";
+    severityClass = "var(--danger)";
+  } else if (current < 2.0) {
+    severity = "Moderate (1.0–1.9 mg/dL)";
+    severityClass = "var(--warning)";
+  }
 
   let route = routePref;
   if (route === "auto") {
-    route = (severity === "severe" || current < 1.5) ? "iv" : "oral";
+    route = (current < 1.5 || severity.includes("Severe")) ? "iv" : "oral";
   }
 
   let html = `
-    <strong>Estimated phosphate deficit: ${deficit_mmol.toFixed(0)} mmol</strong><br>
-    Current: ${current} mg/dL (${current_mmolL.toFixed(2)} mmol/L)<br>
-    Target: ${target} mg/dL (${target_mmolL.toFixed(2)} mmol/L)<br>
-    Rise needed: ${deficit_mgdl.toFixed(1)} mg/dL<br>
-    Severity: ${severity}<br>
-    Suggested route: <strong>${route.toUpperCase()}</strong>
+    <div class="summary-box">
+      <h2 style="font-size:1.15rem; color:#fff;">Calculated Phosphorus Deficit</h2>
+      <p style="font-size:0.88rem; color:var(--muted); margin-top:2px;">
+        Current: <strong>${current.toFixed(1)} mg/dL</strong> (${(current * 0.323).toFixed(2)} mmol/L) · Target: <strong>${target.toFixed(1)} mg/dL</strong> · Target Rise: <strong>+${deficit_mgdl.toFixed(1)} mg/dL</strong><br>
+        Severity Level: <strong style="color:${severityClass};">${severity}</strong> · Primary Strategy: <strong>${route.toUpperCase()} REPLACEMENT</strong>
+      </p>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val">${deficit_mmol.toFixed(0)} <span style="font-size:0.9rem;">mmol</span></div>
+          <div class="lbl">Phosphate (mmol)</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${deficit_mg.toFixed(0)} <span style="font-size:0.9rem;">mg</span></div>
+          <div class="lbl">Elemental P (mg)</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${deficit_meq.toFixed(1)} <span style="font-size:0.9rem;">mEq</span></div>
+          <div class="lbl">Phosphate (mEq)</div>
+        </div>
+      </div>
+    </div>
   `;
 
-  html += `<div class="form-card"><strong>Formulation options</strong>`;
+  // FORMULATION RECOMMENDATIONS
+  html += `<div class="card"><h2 style="font-size:1.05rem; color:var(--accent); margin-bottom:14px;">Formulation Dosing & Elemental Content Breakdown</h2>`;
 
-  if (route === "oral" || routePref === "oral") {
+  // 1. ORAL FORMULATIONS
+  if (route === "oral" || routePref === "oral" || routePref === "auto") {
+    // K-Phos Neutral (8 mmol P, 250mg P per tab)
     const tabs = Math.ceil(deficit_mmol / 8);
+    const kphos_p_mmol = tabs * 8;
+    const kphos_p_mg = tabs * 250;
+    const kphos_p_meq = kphos_p_mmol * valenceRatio;
+    const kphos_k_meq = tabs * 1.1;
+    const kphos_na_meq = tabs * 13.0;
+
+    // Phos-NaK Packet (8 mmol P, 250mg P per pkt)
     const pkts = Math.ceil(deficit_mmol / 8);
+    const phosnak_p_mmol = pkts * 8;
+    const phosnak_p_mg = pkts * 250;
+    const phosnak_p_meq = phosnak_p_mmol * valenceRatio;
+    const phosnak_k_meq = pkts * 7.1;
+    const phosnak_na_meq = pkts * 7.1;
+
     html += `
-      <p style="margin-top:8px;"><strong>Oral:</strong></p>
-      <p>• ${tabs} tablet(s) K-Phos Neutral → ${tabs * 8} mmol P, ${(tabs * 1.1).toFixed(1)} mEq K⁺, ${(tabs * 13).toFixed(0)} mEq Na⁺</p>
-      <p>• ${pkts} packet(s) Phos-NaK → ${pkts * 8} mmol P, ~${(pkts * 7).toFixed(0)} mEq K⁺, ~${(pkts * 7).toFixed(0)} mEq Na⁺</p>
+      <div class="formulation-card">
+        <div class="formulation-title">
+          <span>Oral Replacement Options</span>
+          <span class="badge badge-oral">Oral Preferred</span>
+        </div>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Divide total dose into 3–4 daily doses with food to minimize GI side effects (diarrhea).</p>
+
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>Formulation</th>
+              <th>Dose / Units</th>
+              <th>Phosphate Delivered (mmol / mg / mEq)</th>
+              <th>Co-administered Cations (mEq)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>K-Phos Neutral</strong><br><span style="font-size:0.78rem; color:var(--muted);">Tablets</span></td>
+              <td><strong>${tabs} tab(s)</strong><br><span style="font-size:0.78rem; color:var(--muted);">(e.g. 2 tabs TID)</span></td>
+              <td>
+                <strong>${kphos_p_mmol} mmol</strong> P<br>
+                <strong>${kphos_p_mg} mg</strong> P<br>
+                <strong>${kphos_p_meq.toFixed(1)} mEq</strong> Phosphate
+              </td>
+              <td>
+                <strong>${kphos_k_meq.toFixed(1)} mEq</strong> Potassium (K⁺)<br>
+                <strong>${kphos_na_meq.toFixed(0)} mEq</strong> Sodium (Na⁺)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Phos-NaK / Neutra-Phos</strong><br><span style="font-size:0.78rem; color:var(--muted);">Powder Packets</span></td>
+              <td><strong>${pkts} packet(s)</strong><br><span style="font-size:0.78rem; color:var(--muted);">(mix in water)</span></td>
+              <td>
+                <strong>${phosnak_p_mmol} mmol</strong> P<br>
+                <strong>${phosnak_p_mg} mg</strong> P<br>
+                <strong>${phosnak_p_meq.toFixed(1)} mEq</strong> Phosphate
+              </td>
+              <td>
+                <strong>${phosnak_k_meq.toFixed(1)} mEq</strong> Potassium (K⁺)<br>
+                <strong>${phosnak_na_meq.toFixed(1)} mEq</strong> Sodium (Na⁺)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
-  if (route === "iv" || routePref === "iv") {
-    const ml_k = (deficit_mmol / 3).toFixed(1);
-    const ml_na = (deficit_mmol / 3).toFixed(1);
-    const k_total = (ml_k * 4.4).toFixed(1);
-    const na_total = (ml_na * 4).toFixed(1);
+  // 2. IV FORMULATIONS
+  if (route === "iv" || routePref === "iv" || routePref === "auto") {
+    // IV Potassium Phosphate (3 mmol P / mL, 4.4 mEq K+ / mL)
+    const iv_k_ml = deficit_mmol / 3;
+    const iv_k_p_mmol = deficit_mmol;
+    const iv_k_p_mg = deficit_mmol * 30.97;
+    const iv_k_p_meq = deficit_mmol * valenceRatio;
+    const iv_k_k_meq = iv_k_ml * 4.4;
+
+    // IV Sodium Phosphate (3 mmol P / mL, 4.0 mEq Na+ / mL)
+    const iv_na_ml = deficit_mmol / 3;
+    const iv_na_p_mmol = deficit_mmol;
+    const iv_na_p_mg = deficit_mmol * 30.97;
+    const iv_na_p_meq = deficit_mmol * valenceRatio;
+    const iv_na_na_meq = iv_na_ml * 4.0;
+
     html += `
-      <p style="margin-top:8px;"><strong>IV (dilute and infuse slowly):</strong></p>
-      <p>• Potassium phosphate: ${ml_k} mL → ${deficit_mmol.toFixed(0)} mmol P + ${k_total} mEq K⁺</p>
-      <p>• Sodium phosphate: ${ml_na} mL → ${deficit_mmol.toFixed(0)} mmol P + ${na_total} mEq Na⁺</p>
-      <p class="note">Choose K-phos if K is low/normal; Na-phos if K is high or renal impairment. Max infusion rate ~6–7 mmol P/hr peripheral (higher central). Recheck labs.</p>
+      <div class="formulation-card">
+        <div class="formulation-title">
+          <span>Intravenous (IV) Replacement Options</span>
+          <span class="badge badge-iv">IV Required / Preferred</span>
+        </div>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Must be diluted in NS or D5W and infused slowly over 4–6 hours (max peripheral rate ~7 mmol P/hr).</p>
+
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>Formulation</th>
+              <th>Volume Required</th>
+              <th>Phosphate Delivered (mmol / mg / mEq)</th>
+              <th>Co-administered Cations (mEq)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Potassium Phosphate IV</strong><br><span style="font-size:0.78rem; color:var(--muted);">(3 mmol P / 4.4 mEq K per mL)</span></td>
+              <td><strong>${iv_k_ml.toFixed(1)} mL</strong></td>
+              <td>
+                <strong>${iv_k_p_mmol.toFixed(0)} mmol</strong> P<br>
+                <strong>${iv_k_p_mg.toFixed(0)} mg</strong> P<br>
+                <strong>${iv_k_p_meq.toFixed(1)} mEq</strong> Phosphate
+              </td>
+              <td>
+                <strong>${iv_k_k_meq.toFixed(1)} mEq</strong> Potassium (K⁺)<br>
+                <strong>0 mEq</strong> Sodium
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Sodium Phosphate IV</strong><br><span style="font-size:0.78rem; color:var(--muted);">(3 mmol P / 4.0 mEq Na per mL)</span></td>
+              <td><strong>${iv_na_ml.toFixed(1)} mL</strong></td>
+              <td>
+                <strong>${iv_na_p_mmol.toFixed(0)} mmol</strong> P<br>
+                <strong>${iv_na_p_mg.toFixed(0)} mg</strong> P<br>
+                <strong>${iv_na_p_meq.toFixed(1)} mEq</strong> Phosphate
+              </td>
+              <td>
+                <strong>${iv_na_na_meq.toFixed(1)} mEq</strong> Sodium (Na⁺)<br>
+                <strong>0 mEq</strong> Potassium
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:8px;">
+          <strong>Clinical Selection Pearl:</strong> Choose <em>Potassium Phosphate</em> if baseline Serum K⁺ is normal/low (&lt;4.0 mEq/L). Choose <em>Sodium Phosphate</em> if baseline Serum K⁺ is elevated (&ge;4.5 mEq/L) or in significant renal impairment.
+        </p>
+      </div>
     `;
   }
 
   html += `</div>`;
-  html += `<p class="note">Estimate uses ~0.6 mmol/kg per 1 mg/dL rise (highly variable). Actual rise depends on distribution, ongoing losses, and renal function. Recheck phosphate, calcium, and potassium after replacement.</p>`;
 
-  result.style.display = "block";
-  result.innerHTML = html;
+  resultsDiv.innerHTML = html;
+  resultsDiv.style.display = "block";
 }
 </script>
 </body>
