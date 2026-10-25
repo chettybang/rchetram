@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Steroid Equivalence & Step-Down Taper Generator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0f172a;
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .stepper-container { display: flex; flex-direction: column; }
+  .stepper-input { display: flex; align-items: center; width: 100%; }
+  .stepper-input input {
+    width: 100%; flex: 1; min-width: 0; text-align: center;
+    border-radius: 0; margin-bottom: 0; border-left: none; border-right: none;
+    font-weight: 700; font-size: 1.05rem;
+  }
+  .btn-step {
+    background: #334155; color: var(--text); border: 1px solid var(--border);
+    padding: 10px 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    user-select: none; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
+  button.btn-primary {
+    width: 100%; padding: 14px; border-radius: 10px; border: none;
+    background: var(--accent); color: #0f172a; font-weight: 700; font-size: 1.05rem;
+    cursor: pointer; margin-top: 6px; transition: background 0.2s, transform 0.1s;
+  }
+  button.btn-primary:hover { background: var(--accent-hover); color: #ffffff; }
+
+  .eq-table, .taper-table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 10px;
+  }
+  .eq-table th, .eq-table td, .taper-table th, .taper-table td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .eq-table th, .taper-table th {
+    color: var(--accent); font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
+  }
+
+  .copy-box {
+    background: var(--card-sub); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0;
+    position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .tab-group { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted); font-size: 0.95rem; font-weight: 600;
+    padding: 6px 12px; cursor: pointer; border-radius: 6px;
+  }
+  .tab-btn.active { background: var(--card-sub); color: var(--accent); border: 1px solid var(--border); }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Steroid Equivalence & Step-Down Taper Generator</h1>
+  <p class="subtitle">Convert systemic corticosteroids and generate instant patient instruction schedules with EHR prescription sigs.</p>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('equivalence', this)">Dose Equivalence Calculator</button>
+      <button class="tab-btn" onclick="switchTab('taper', this)">Step-Down Taper Schedule</button>
+    </div>
+
+    <!-- EQUIVALENCE TAB -->
+    <div id="tab-equivalence">
+      <div class="grid-2">
+        <div>
+          <label for="eqSource">Source Corticosteroid</label>
+          <select id="eqSource" onchange="calcEquivalence()">
+            <option value="prednisone" selected>Prednisone</option>
+            <option value="prednisolone">Prednisolone</option>
+            <option value="methylprednisolone">Methylprednisolone (Medrol)</option>
+            <option value="dexamethasone">Dexamethasone (Decadron)</option>
+            <option value="hydrocortisone">Hydrocortisone (Cortef)</option>
+            <option value="triamcinolone">Triamcinolone (Kenalog)</option>
+          </select>
+        </div>
+
+        <div class="stepper-container">
+          <label for="eqDose">Source Dose (mg)</label>
+          <div class="stepper-input">
+            <button type="button" class="btn-step step-left" onclick="stepVal('eqDose', -5)">−</button>
+            <input type="number" id="eqDose" value="40" step="1" oninput="calcEquivalence()">
+            <button type="button" class="btn-step step-right" onclick="stepVal('eqDose', 5)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:8px;">Equivalent Anti-Inflammatory Doses</h3>
+        <table class="eq-table">
+          <thead>
+            <tr>
+              <th>Corticosteroid</th>
+              <th>Equivalent Dose</th>
+              <th>Glucocorticoid : Mineralocorticoid Potency</th>
+              <th>Half-Life</th>
+            </tr>
+          </thead>
+          <tbody id="eqResultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAPER TAB -->
+    <div id="tab-taper" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="taperAgent">Select Steroid Agent & Tablet Strength</label>
+          <select id="taperAgent" onchange="generateTaper()">
+            <option value="prednisone_20">Prednisone 20 mg tablets</option>
+            <option value="prednisone_10" selected>Prednisone 10 mg tablets</option>
+            <option value="prednisone_5">Prednisone 5 mg tablets</option>
+            <option value="medrol_4">Methylprednisolone (Medrol) 4 mg tablets</option>
+            <option value="dexa_4">Dexamethasone 4 mg tablets</option>
+            <option value="dexa_05">Dexamethasone 0.5 mg tablets</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="taperPreset">Taper Protocol / Protocol Duration</label>
+          <select id="taperPreset" onchange="generateTaper()">
+            <option value="copd_5">5-Day Acute COPD/Asthma Flare (40mg x 5 days - Non-taper)</option>
+            <option value="medrol_6" selected>6-Day Medrol Dosepak Style (24mg -> 4mg step-down)</option>
+            <option value="taper_7">7-Day Step-Down Taper (40mg -> 10mg)</option>
+            <option value="taper_10">10-Day Moderate Taper (40mg -> 5mg)</option>
+            <option value="taper_14">14-Day Poison Ivy / Severe Rash Taper (60mg -> 10mg)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:8px;">Generated Daily Taper Schedule</h3>
+        <table class="taper-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Total Daily Dose</th>
+              <th>Instructions (Morning / Evening Split)</th>
+              <th>Tablets Count</th>
+            </tr>
+          </thead>
+          <tbody id="taperTableBody"></tbody>
+        </table>
+
+        <div class="copy-box">
+          <button class="btn-copy" onclick="copyText('patientInstructions')">Copy Patient Instructions</button>
+          <strong>Patient Instruction Schedule (After-Care Summary):</strong><br>
+          <div id="patientInstructions" style="white-space: pre-wrap; margin-top:6px;"></div>
+        </div>
+
+        <div class="copy-box" style="margin-top:10px;">
+          <button class="btn-copy" onclick="copyText('ehrSig')">Copy EHR Sig</button>
+          <strong>EHR Prescription Sig String:</strong><br>
+          <div id="ehrSig" style="white-space: pre-wrap; margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">Clinical Reference Standards</h3>
+    <p class="note">
+      • Baseline Anti-inflammatory Equivalence: Hydrocortisone 20 mg ≈ Prednisone 5 mg ≈ Prednisolone 5 mg ≈ Methylprednisolone 4 mg ≈ Triamcinolone 4 mg ≈ Dexamethasone 0.75 mg.<br>
+      • Short bursts (≤14 days) generally do not require prolonged hypothalamic-pituitary-adrenal (HPA) axis tapering unless the patient has received recent repeated systemic steroid courses.<br>
+      • Taking daily doses in the morning (QAM) reduces circadian HPA-axis suppression and insomnia.
+    </p>
+  </div>
+
+<script>
+// Relative anti-inflammatory potency factors relative to Prednisone (Prednisone = 1.0)
+const STEROID_FACTORS = {
+  hydrocortisone: { factor: 0.25, ratio: "1 : 1", halfLife: "8–12 hrs (Short)" },
+  prednisone: { factor: 1.0, ratio: "4 : 0.8", halfLife: "18–36 hrs (Intermediate)" },
+  prednisolone: { factor: 1.0, ratio: "4 : 0.8", halfLife: "18–36 hrs (Intermediate)" },
+  methylprednisolone: { factor: 1.25, ratio: "5 : 0.5", halfLife: "18–36 hrs (Intermediate)" },
+  triamcinolone: { factor: 1.25, ratio: "5 : 0", halfLife: "18–36 hrs (Intermediate)" },
+  dexamethasone: { factor: 6.67, ratio: "30 : 0", halfLife: "36–54 hrs (Long)" }
+};
+
+function stepVal(id, step) {
+  const input = document.getElementById(id);
+  let val = parseFloat(input.value) || 0;
+  val = Math.max(1, val + step);
+  input.value = val;
+  calcEquivalence();
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-equivalence').style.display = tab === 'equivalence' ? 'block' : 'none';
+  document.getElementById('tab-taper').style.display = tab === 'taper' ? 'block' : 'none';
+  if (tab === 'taper') generateTaper();
+}
+
+function calcEquivalence() {
+  const source = document.getElementById("eqSource").value;
+  const dose = parseFloat(document.getElementById("eqDose").value) || 0;
+  const sourceFactor = STEROID_FACTORS[source].factor;
+  const predEquivalent = dose * sourceFactor;
+
+  const tbody = document.getElementById("eqResultsBody");
+  let html = "";
+
+  Object.keys(STEROID_FACTORS).forEach(key => {
+    const target = STEROID_FACTORS[key];
+    const targetDose = predEquivalent / target.factor;
+    const isSource = key === source;
+    
+    html += `
+      <tr style="${isSource ? 'background: rgba(56, 189, 248, 0.12); font-weight:700;' : ''}">
+        <td><strong>${key.charAt(0).toUpperCase() + key.slice(1)}</strong> ${isSource ? '(Selected)' : ''}</td>
+        <td><strong style="color:var(--success); font-size:1rem;">${targetDose < 1 ? targetDose.toFixed(2) : targetDose.toFixed(1)} mg</strong></td>
+        <td>${target.ratio}</td>
+        <td>${target.halfLife}</td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function generateTaper() {
+  const agentKey = document.getElementById("taperAgent").value;
+  const preset = document.getElementById("taperPreset").value;
+
+  let schedule = [];
+  let drugName = "Prednisone";
+  let tabStrength = 10;
+
+  if (agentKey.startsWith("prednisone")) {
+    drugName = "Prednisone";
+    tabStrength = parseInt(agentKey.split("_")[1]);
+  } else if (agentKey.startsWith("medrol")) {
+    drugName = "Methylprednisolone (Medrol)";
+    tabStrength = 4;
+  } else if (agentKey.startsWith("dexa")) {
+    drugName = "Dexamethasone";
+    tabStrength = parseFloat(agentKey.split("_")[1] === "05" ? 0.5 : 4);
+  }
+
+  if (preset === "copd_5") {
+    schedule = [
+      { day: "Day 1–5", dose: 40, am: 40, pm: 0 }
+    ];
+  } else if (preset === "medrol_6") {
+    schedule = [
+      { day: "Day 1", dose: 24, am: 8, pm: 16, note: "2 tabs before breakfast, 1 tab after lunch, 1 tab after dinner, 2 tabs at bedtime" },
+      { day: "Day 2", dose: 20, am: 8, pm: 12, note: "1 tab before breakfast, 1 tab after lunch, 1 tab after dinner, 2 tabs at bedtime" },
+      { day: "Day 3", dose: 16, am: 4, pm: 12, note: "1 tab before breakfast, 1 tab after lunch, 1 tab after dinner, 1 tab at bedtime" },
+      { day: "Day 4", dose: 12, am: 4, pm: 8, note: "1 tab before breakfast, 1 tab after lunch, 1 tab at bedtime" },
+      { day: "Day 5", dose: 8, am: 4, pm: 4, note: "1 tab before breakfast, 1 tab at bedtime" },
+      { day: "Day 6", dose: 4, am: 4, pm: 0, note: "1 tab before breakfast" }
+    ];
+  } else if (preset === "taper_7") {
+    schedule = [
+      { day: "Day 1–2", dose: 40, am: 40, pm: 0 },
+      { day: "Day 3–4", dose: 30, am: 30, pm: 0 },
+      { day: "Day 5–6", dose: 20, am: 20, pm: 0 },
+      { day: "Day 7", dose: 10, am: 10, pm: 0 }
+    ];
+  } else if (preset === "taper_10") {
+    schedule = [
+      { day: "Day 1–2", dose: 40, am: 40, pm: 0 },
+      { day: "Day 3–4", dose: 30, am: 30, pm: 0 },
+      { day: "Day 5–6", dose: 20, am: 20, pm: 0 },
+      { day: "Day 7–8", dose: 10, am: 10, pm: 0 },
+      { day: "Day 9–10", dose: 5, am: 5, pm: 0 }
+    ];
+  } else if (preset === "taper_14") {
+    schedule = [
+      { day: "Day 1–3", dose: 60, am: 60, pm: 0 },
+      { day: "Day 4–6", dose: 40, am: 40, pm: 0 },
+      { day: "Day 7–9", dose: 30, am: 30, pm: 0 },
+      { day: "Day 10–12", dose: 20, am: 20, pm: 0 },
+      { day: "Day 13–14", dose: 10, am: 10, pm: 0 }
+    ];
+  }
+
+  let tableHtml = "";
+  let patientText = `${drugName} ${tabStrength} mg Taper Schedule:\n`;
+  let totalTabs = 0;
+
+  schedule.forEach(item => {
+    const tabs = item.dose / tabStrength;
+    totalTabs += (item.day.includes("–") ? (parseInt(item.day.split("–")[1]) - parseInt(item.day.split(" ")[0].replace("Day","")) + 1) : 1) * tabs;
+    
+    let instruction = item.note || (item.pm === 0 ? `Take ${tabs} tab(s) (${item.dose} mg) in the morning with food.` : `Take ${item.am / tabStrength} tab(s) in the morning and ${item.pm / tabStrength} tab(s) in the evening.`);
+
+    tableHtml += `
+      <tr>
+        <td><strong>${item.day}</strong></td>
+        <td><strong style="color:var(--success);">${item.dose} mg/day</strong></td>
+        <td>${instruction}</td>
+        <td>${tabs} tab(s)/day</td>
+      </tr>
+    `;
+
+    patientText += `• ${item.day}: Take ${item.dose} mg daily (${instruction})\n`;
+  });
+
+  document.getElementById("taperTableBody").innerHTML = tableHtml;
+  document.getElementById("patientInstructions").textContent = patientText + `\nTake all doses with meals or milk to prevent stomach upset.`;
+
+  const ehrSigText = `${drugName} ${tabStrength} mg tablets. Take according to taper schedule: ${patientText.replace(/\n/g, " ")} Qty: ${Math.ceil(totalTabs)} tablets.`;
+  document.getElementById("ehrSig").textContent = ehrSigText;
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+}
