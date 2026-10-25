@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Pediatric Antibiotic Weight-Based Dosing Calculator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  input[type="number"], select {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .stepper-container { display: flex; flex-direction: column; }
+  .stepper-input { display: flex; align-items: center; width: 100%; }
+  .stepper-input input {
+    width: 100%; flex: 1; min-width: 0; text-align: center; border-radius: 0;
+    margin-bottom: 0; border-left: none; border-right: none; font-weight: 700; font-size: 1.05rem;
+  }
+  .btn-step {
+    background: #334155; color: var(--text); border: 1px solid var(--border);
+    padding: 10px 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    user-select: none; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 5px solid var(--accent);
+    border-radius: 8px; padding: 18px; margin-top: 16px;
+  }
+
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 14px;
+  }
+  .metric-card {
+    background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px;
+    border-radius: 8px; text-align: center;
+  }
+  .metric-card .val { font-size: 1.35rem; font-weight: 700; color: var(--success); }
+  .metric-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+  .copy-box {
+    background: var(--card-sub); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .warning-banner {
+    background: rgba(251, 191, 36, 0.12); border-left: 4px solid var(--warning); padding: 10px 12px;
+    color: #fde047; border-radius: 6px; font-size: 0.85rem; margin-top: 10px;
+  }
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Pediatric Antibiotic Calculator</h1>
+  <p class="subtitle">Precision weight-based mg/kg suspension dosing, liquid concentration matcher, and sig builder.</p>
+
+  <div class="card">
+    <div class="grid-3">
+      <div>
+        <label for="unitToggle">Weight Input Unit</label>
+        <select id="unitToggle" onchange="convertWeightUnit()">
+          <option value="lbs" selected>Pounds (lbs)</option>
+          <option value="kg">Kilograms (kg)</option>
+        </select>
+      </div>
+
+      <div class="stepper-container">
+        <label id="weightLabel" for="weightInput">Patient Weight (lbs)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepWeight(-1)">−</button>
+          <input type="number" id="weightInput" value="30" step="0.5" oninput="calculateDose()">
+          <button type="button" class="btn-step step-right" onclick="stepWeight(1)">+</button>
+        </div>
+      </div>
+
+      <div>
+        <label for="treatmentDays">Treatment Duration</label>
+        <select id="treatmentDays" onchange="calculateDose()">
+          <option value="5">5 Days</option>
+          <option value="7">7 Days</option>
+          <option value="10" selected>10 Days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:10px;">
+      <div style="grid-column: span 2;">
+        <label for="drugSelect">Select Antibiotic & Clinical Regimen</label>
+        <select id="drugSelect" onchange="calculateDose()">
+          <option value="amox_high" selected>Amoxicillin — High Dose Acute Otitis Media (90 mg/kg/day divided BID)</option>
+          <option value="amox_std">Amoxicillin — Standard Dose / Strep Pharyngitis (50 mg/kg/day divided BID or QD)</option>
+          <option value="augmentin_es">Augmentin ES-600 — High-Dose AOM (90 mg/kg/day divided BID)</option>
+          <option value="augmentin_71">Augmentin 7:1 (400mg/5mL) — Standard (45 mg/kg/day divided BID)</option>
+          <option value="cefdinir">Cefdinir — Otitis Media / Sinusitis (14 mg/kg/day QD or divided BID)</option>
+          <option value="cephalexin">Cephalexin (Keflex) — Skin/Soft Tissue (45 mg/kg/day divided BID)</option>
+          <option value="azithromycin">Azithromycin — Day 1 (10 mg/kg QD), Days 2–5 (5 mg/kg QD)</option>
+          <option value="bactrim">TMP-SMX (Bactrim) — UTI / Skin (8 mg/kg TMP component divided BID)</option>
+          <option value="clindamycin">Clindamycin — Skin / Staph (30 mg/kg/day divided TID)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="concSelect">Liquid Concentration</label>
+        <select id="concSelect" onchange="calculateDose()"></select>
+      </div>
+    </div>
+
+    <div id="resultsOutput"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">High-Yield Pediatric Prescribing Pearls</h3>
+    <p class="note">
+      • <strong>High-Dose Amoxicillin (80–90 mg/kg/day):</strong> Recommended for AOM to overcome penicillin-nonsusceptible <em>S. pneumoniae</em>.<br>
+      • <strong>Augmentin Ratio Selection:</strong> Use Augmentin ES-600 (600mg amox / 42.9mg clavulanate per 5mL) for high-dose regimens to minimize clavulanate-induced diarrhea.<br>
+      • <strong>Practical Syringe Rounding:</strong> Doses are rounded to the nearest 0.5 mL for realistic administration with oral dosing syringes.
+    </p>
+  </div>
+
+<script>
+const DRUG_DATA = {
+  amox_high: {
+    name: "Amoxicillin High-Dose",
+    dailyDoseMgKg: 90,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 1000,
+    concs: [{ text: "400 mg / 5 mL", mg: 400, ml: 5 }, { text: "200 mg / 5 mL", mg: 200, ml: 5 }, { text: "250 mg / 5 mL", mg: 250, ml: 5 }]
+  },
+  amox_std: {
+    name: "Amoxicillin Standard",
+    dailyDoseMgKg: 50,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 1000,
+    concs: [{ text: "400 mg / 5 mL", mg: 400, ml: 5 }, { text: "250 mg / 5 mL", mg: 250, ml: 5 }]
+  },
+  augmentin_es: {
+    name: "Augmentin ES-600",
+    dailyDoseMgKg: 90,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 1000,
+    concs: [{ text: "600 mg / 5 mL (Augmentin ES)", mg: 600, ml: 5 }]
+  },
+  augmentin_71: {
+    name: "Augmentin 7:1",
+    dailyDoseMgKg: 45,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 875,
+    concs: [{ text: "400 mg / 5 mL", mg: 400, ml: 5 }, { text: "200 mg / 5 mL", mg: 200, ml: 5 }]
+  },
+  cefdinir: {
+    name: "Cefdinir",
+    dailyDoseMgKg: 14,
+    freq: 1,
+    freqText: "Once daily (or divided BID)",
+    maxSingleDose: 600,
+    concs: [{ text: "250 mg / 5 mL", mg: 250, ml: 5 }, { text: "125 mg / 5 mL", mg: 125, ml: 5 }]
+  },
+  cephalexin: {
+    name: "Cephalexin (Keflex)",
+    dailyDoseMgKg: 45,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 1000,
+    concs: [{ text: "250 mg / 5 mL", mg: 250, ml: 5 }, { text: "125 mg / 5 mL", mg: 125, ml: 5 }]
+  },
+  azithromycin: {
+    name: "Azithromycin",
+    dailyDoseMgKg: 10,
+    freq: 1,
+    freqText: "Once daily (Day 1: 10mg/kg, Days 2-5: 5mg/kg)",
+    maxSingleDose: 500,
+    concs: [{ text: "200 mg / 5 mL", mg: 200, ml: 5 }, { text: "100 mg / 5 mL", mg: 100, ml: 5 }]
+  },
+  bactrim: {
+    name: "TMP-SMX (Bactrim)",
+    dailyDoseMgKg: 8,
+    freq: 2,
+    freqText: "BID (every 12 hours)",
+    maxSingleDose: 160,
+    concs: [{ text: "40 mg TMP / 200 mg SMX per 5 mL", mg: 40, ml: 5 }]
+  },
+  clindamycin: {
+    name: "Clindamycin",
+    dailyDoseMgKg: 30,
+    freq: 3,
+    freqText: "TID (every 8 hours)",
+    maxSingleDose: 450,
+    concs: [{ text: "75 mg / 5 mL", mg: 75, ml: 5 }]
+  }
+};
+
+function stepWeight(delta) {
+  const input = document.getElementById("weightInput");
+  let val = parseFloat(input.value) || 0;
+  val = Math.max(1, val + delta);
+  input.value = val;
+  calculateDose();
+}
+
+function convertWeightUnit() {
+  const unit = document.getElementById("unitToggle").value;
+  const input = document.getElementById("weightInput");
+  const label = document.getElementById("weightLabel");
+  let val = parseFloat(input.value) || 0;
+
+  if (unit === "kg") {
+    label.textContent = "Patient Weight (kg)";
+    input.value = (val / 2.20462).toFixed(1);
+  } else {
+    label.textContent = "Patient Weight (lbs)";
+    input.value = (val * 2.20462).toFixed(1);
+  }
+  calculateDose();
+}
+
+function populateConcs() {
+  const drugKey = document.getElementById("drugSelect").value;
+  const drug = DRUG_DATA[drugKey];
+  const concSelect = document.getElementById("concSelect");
+  concSelect.innerHTML = "";
+
+  drug.concs.forEach((c, i) => {
+    concSelect.add(new Option(c.text, i));
+  });
+}
+
+function calculateDose() {
+  const drugKey = document.getElementById("drugSelect").value;
+  const drug = DRUG_DATA[drugKey];
+  const unit = document.getElementById("unitToggle").value;
+  let weightVal = parseFloat(document.getElementById("weightInput").value) || 0;
+  const days = parseInt(document.getElementById("treatmentDays").value);
+
+  const concIdx = document.getElementById("concSelect").value || 0;
+  const conc = drug.concs[concIdx] || drug.concs[0];
+
+  const weightKg = unit === "lbs" ? weightVal / 2.20462 : weightVal;
+
+  let totalDailyMg = weightKg * drug.dailyDoseMgKg;
+  let singleDoseMg = totalDailyMg / drug.freq;
+
+  let capped = false;
+  if (singleDoseMg > drug.maxSingleDose) {
+    singleDoseMg = drug.maxSingleDose;
+    totalDailyMg = singleDoseMg * drug.freq;
+    capped = true;
+  }
+
+  const exactMlPerDose = (singleDoseMg / conc.mg) * conc.ml;
+  const roundedMlPerDose = Math.round(exactMlPerDose * 2) / 2; // round to nearest 0.5 mL
+  const totalMlPerDay = roundedMlPerDose * drug.freq;
+  const totalBottleMlNeeded = totalMlPerDay * days;
+
+  let bottleSize = 100;
+  if (totalBottleMlNeeded > 150) bottleSize = 200;
+  else if (totalBottleMlNeeded > 100) bottleSize = 150;
+
+  const sigText = `${drug.name} (${conc.text}) — Give ${roundedMlPerDose} mL oral ${drug.freqText} for ${days} days. (Total volume: ${totalBottleMlNeeded.toFixed(0)} mL -> Dispense ${bottleSize} mL bottle).`;
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">Calculated Dosing & Dispensing Summary</h3>
+      <p style="font-size:0.88rem; color:var(--muted); margin-top:2px;">
+        Weight: <strong>${weightKg.toFixed(1)} kg</strong> (${(weightKg * 2.20462).toFixed(1)} lbs) · Regimen: <strong>${drug.name}</strong>
+      </p>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val">${roundedMlPerDose} <span style="font-size:0.85rem;">mL</span></div>
+          <div class="lbl">Per Dose (${singleDoseMg.toFixed(0)} mg)</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${drug.freqText.split(" ")[0]}</div>
+          <div class="lbl">Frequency</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${totalBottleMlNeeded.toFixed(0)} <span style="font-size:0.85rem;">mL</span></div>
+          <div class="lbl">Total Course Volume</div>
+        </div>
+      </div>
+
+      ${capped ? `<div class="warning-banner">⚠️ <strong>Adult Maximum Dose Reached:</strong> Dose capped at adult maximum of ${drug.maxSingleDose} mg per dose.</div>` : ''}
+
+      <div class="copy-box">
+        <button class="btn-copy" onclick="navigator.clipboard.writeText('${sigText.replace(/'/g, "\\'")}')">Copy Sig</button>
+        <strong>EHR Prescription Sig String:</strong><br>
+        <code>${sigText}</code>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("resultsOutput").innerHTML = html;
+}
+
+// Initial setup
+document.getElementById("drugSelect").addEventListener("change", populateConcs);
+populateConcs();
+calculateDose();
+</script>
+</body>
+</html>
