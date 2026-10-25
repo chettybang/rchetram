@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Levothyroxine Dosing & Strength Matcher</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: 20px 16px; max-width: 880px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  input[type="number"], select {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .stepper-container { display: flex; flex-direction: column; }
+  .stepper-input { display: flex; align-items: center; width: 100%; }
+  .stepper-input input {
+    width: 100%; flex: 1; min-width: 0; text-align: center; border-radius: 0;
+    margin-bottom: 0; border-left: none; border-right: none; font-weight: 700; font-size: 1.05rem;
+  }
+  .btn-step {
+    background: #334155; color: var(--text); border: 1px solid var(--border);
+    padding: 10px 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    user-select: none; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
+  .pill-badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px;
+    border-radius: 20px; font-weight: 700; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 5px solid var(--accent);
+    border-radius: 8px; padding: 18px; margin-top: 16px;
+  }
+
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 14px;
+  }
+  .metric-card {
+    background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px;
+    border-radius: 8px; text-align: center;
+  }
+  .metric-card .val { font-size: 1.35rem; font-weight: 700; color: var(--success); }
+  .metric-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Levothyroxine Dosing & Strength Matcher</h1>
+  <p class="subtitle">Calculate weight-based full replacement (1.6 mcg/kg), snap to manufactured tablet colors, and refine weekly dosing.</p>
+
+  <div class="card">
+    <div class="grid-3">
+      <div class="stepper-container">
+        <label for="weight">Weight (kg)</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepVal('weight', -5)">−</button>
+          <input type="number" id="weight" value="70" step="1" oninput="calculateThyroid()">
+          <button type="button" class="btn-step step-right" onclick="stepVal('weight', 5)">+</button>
+        </div>
+      </div>
+
+      <div class="stepper-container">
+        <label for="age">Patient Age</label>
+        <div class="stepper-input">
+          <button type="button" class="btn-step step-left" onclick="stepVal('age', -1)">−</button>
+          <input type="number" id="age" value="45" step="1" oninput="calculateThyroid()">
+          <button type="button" class="btn-step step-right" onclick="stepVal('age', 1)">+</button>
+        </div>
+      </div>
+
+      <div>
+        <label for="cardiacStatus">CAD / Elderly Status</label>
+        <select id="cardiacStatus" onchange="calculateThyroid()">
+          <option value="none" selected>Young / Healthy (Full Replacement)</option>
+          <option value="elderly">Elderly (>65 yrs) or Known CAD (Partial)</option>
+          <option value="subclinical">Subclinical Hypothyroidism (25-50 mcg)</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="thyroidResults"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:8px;">Levothyroxine Commercial Color Matrix (12 Strengths)</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:8px;">
+      <div class="pill-badge" style="background:#f97316; color:#fff;">25 mcg (Orange)</div>
+      <div class="pill-badge" style="background:#f8fafc; color:#0f172a;">50 mcg (White)</div>
+      <div class="pill-badge" style="background:#a855f7; color:#fff;">75 mcg (Violet)</div>
+      <div class="pill-badge" style="background:#84cc16; color:#0f172a;">88 mcg (Olive)</div>
+      <div class="pill-badge" style="background:#eab308; color:#0f172a;">100 mcg (Yellow)</div>
+      <div class="pill-badge" style="background:#f43f5e; color:#fff;">112 mcg (Rose)</div>
+      <div class="pill-badge" style="background:#a16207; color:#fff;">125 mcg (Brown)</div>
+      <div class="pill-badge" style="background:#14b8a6; color:#fff;">137 mcg (Turq)</div>
+      <div class="pill-badge" style="background:#3b82f6; color:#fff;">150 mcg (Blue)</div>
+      <div class="pill-badge" style="background:#c084fc; color:#0f172a;">175 mcg (Lilac)</div>
+      <div class="pill-badge" style="background:#ec4899; color:#fff;">200 mcg (Pink)</div>
+      <div class="pill-badge" style="background:#22c55e; color:#0f172a;">300 mcg (Green)</div>
+    </div>
+    <p class="note">
+      Counseling Pearl: Instruct patients to take Levothyroxine with water on an empty stomach first thing in the morning (30–60 minutes before breakfast). Keep separate from Calcium, Iron, and Antacids by at least 4 hours.
+    </p>
+  </div>
+
+<script>
+const PILLS = [
+  { mcg: 25, color: "Orange", bg: "#f97316", text: "#fff" },
+  { mcg: 50, color: "White", bg: "#f8fafc", text: "#0f172a" },
+  { mcg: 75, color: "Violet", bg: "#a855f7", text: "#fff" },
+  { mcg: 88, color: "Olive", bg: "#84cc16", text: "#0f172a" },
+  { mcg: 100, color: "Yellow", bg: "#eab308", text: "#0f172a" },
+  { mcg: 112, color: "Rose", bg: "#f43f5e", text: "#fff" },
+  { mcg: 125, color: "Brown", bg: "#a16207", text: "#fff" },
+  { mcg: 137, color: "Turquoise", bg: "#14b8a6", text: "#fff" },
+  { mcg: 150, color: "Blue", bg: "#3b82f6", text: "#fff" },
+  { mcg: 175, color: "Lilac", bg: "#c084fc", text: "#0f172a" },
+  { mcg: 200, color: "Pink", bg: "#ec4899", text: "#fff" },
+  { mcg: 300, color: "Green", bg: "#22c55e", text: "#0f172a" }
+];
+
+function stepVal(id, step) {
+  const input = document.getElementById(id);
+  let val = parseFloat(input.value) || 0;
+  val = Math.max(1, val + step);
+  input.value = val;
+  calculateThyroid();
+}
+
+function findNearestPill(targetMcg) {
+  return PILLS.reduce((prev, curr) => 
+    Math.abs(curr.mcg - targetMcg) < Math.abs(prev.mcg - targetMcg) ? curr : prev
+  );
+}
+
+function calculateThyroid() {
+  const weight = parseFloat(document.getElementById("weight").value) || 70;
+  const age = parseFloat(document.getElementById("age").value) || 45;
+  const status = document.getElementById("cardiacStatus").value;
+
+  let calculatedMcg = weight * 1.6;
+  let strategy = "Full Replacement (1.6 mcg/kg/day)";
+
+  if (status === "elderly" || age > 65) {
+    calculatedMcg = 25; // Conservative starting dose
+    strategy = "Conservative CAD/Elderly Starting Dose (25–50 mcg/day)";
+  } else if (status === "subclinical") {
+    calculatedMcg = 50;
+    strategy = "Subclinical Hypothyroidism Mild Starting Dose";
+  }
+
+  const matchedPill = findNearestPill(calculatedMcg);
+  const weeklyTotal = matchedPill.mcg * 7;
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">Levothyroxine Prescription Dosing</h3>
+      <p style="font-size:0.88rem; color:var(--muted); margin-top:2px;">
+        Strategy: <strong>${strategy}</strong> · Calculated Full Ideal: <strong>${(weight * 1.6).toFixed(0)} mcg/day</strong>
+      </p>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val">${matchedPill.mcg} <span style="font-size:0.85rem;">mcg/day</span></div>
+          <div class="lbl">Nearest Tablet Strength</div>
+        </div>
+        <div class="metric-card">
+          <div style="margin-top:4px;">
+            <span class="pill-badge" style="background:${matchedPill.bg}; color:${matchedPill.text};">${matchedPill.mcg} mcg (${matchedPill.color})</span>
+          </div>
+          <div class="lbl" style="margin-top:6px;">Commercial Pill Color</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${weeklyTotal} <span style="font-size:0.85rem;">mcg</span></div>
+          <div class="lbl">Total Weekly Dose</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(15, 23, 42, 0.9); border:1px dashed var(--accent); border-radius:6px; padding:10px 12px; margin-top:12px; font-size:0.85rem;">
+        <strong>Weekly Fine-Tuning Helper (For Minor TSH Adjustments):</strong><br>
+        • <em>To increase dose slightly (+5–10%):</em> Take ${matchedPill.mcg} mcg Mon–Fri, and ${matchedPill.mcg * 1.5} mcg Sat–Sun (Total: ${(matchedPill.mcg * 5 + matchedPill.mcg * 1.5 * 2).toFixed(0)} mcg/week).<br>
+        • Re-check TSH and free T4 in 6–8 weeks after any dose adjustment.
+      </div>
+    </div>
+  `;
+
+  document.getElementById("thyroidResults").innerHTML = html;
+}
+
+calculateThyroid();
+</script>
+</body>
+</html>
