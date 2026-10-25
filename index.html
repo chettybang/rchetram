@@ -4,29 +4,30 @@
 <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#0f172a">
 <title>Ryan Chetram, MD — Clinical Tools</title>
 <style>
   :root {
-    --bg-overlay: linear-gradient(135deg, rgba(248, 250, 252, 0.92) 0%, rgba(226, 232, 240, 0.90) 100%);
-    --card-bg: rgba(255, 255, 255, 0.88);
-    --card-hover-bg: rgba(255, 255, 255, 0.96);
-    --text: #0f172a;
-    --muted: #475569;
-    --accent: #1e40af;
-    --border: rgba(226, 232, 240, 0.9);
-    --shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-    --shadow-hover: 0 8px 24px rgba(30, 64, 175, 0.12);
+    --bg-overlay: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.90) 100%);
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --card-hover-bg: rgba(30, 41, 59, 0.98);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --border: rgba(51, 65, 85, 0.8);
+    --border-hover: rgba(56, 189, 248, 0.5);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 8px 24px rgba(56, 189, 248, 0.15);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: #0f172a;
-    /* High-resolution official clinical background with multi-stage soft overlay */
     background-image: 
-      radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.4) 0%, rgba(241, 245, 249, 0.92) 80%),
-      linear-gradient(180deg, rgba(241, 245, 249, 0.88) 0%, rgba(226, 232, 240, 0.94) 100%),
+      radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.94) 75%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.90) 0%, rgba(15, 23, 42, 0.96) 100%),
       url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=2000&q=80');
     background-size: cover;
     background-position: center;
@@ -35,11 +36,11 @@
     color: var(--text);
     line-height: 1.5;
     min-height: 100vh;
-    padding: 48px 16px;
+    padding: 40px 16px;
   }
 
   .container { 
-    max-width: 880px; 
+    max-width: 920px; 
     margin: 0 auto; 
   }
 
@@ -49,17 +50,17 @@
   }
 
   .caduceus { 
-    font-size: 2.4rem; 
+    font-size: 2.5rem; 
     margin-bottom: 6px; 
     color: var(--accent);
     display: inline-block;
-    filter: drop-shadow(0 2px 4px rgba(30, 64, 175, 0.15));
+    filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.3));
   }
 
   header h1 { 
     font-size: 2.1rem; 
     font-weight: 700; 
-    color: #0f172a; 
+    color: #ffffff; 
     letter-spacing: -0.02em;
     margin-bottom: 4px; 
   }
@@ -85,47 +86,46 @@
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 20px 22px;
+    padding: 20px;
     text-decoration: none;
     color: inherit;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .app-card:hover { 
     background: var(--card-hover-bg);
-    border-color: #93c5fd; 
+    border-color: var(--border-hover); 
     box-shadow: var(--shadow-hover); 
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 
   .app-card h2 { 
-    font-size: 1.15rem; 
+    font-size: 1.1rem; 
     font-weight: 600; 
     margin-bottom: 6px; 
     display: flex; 
     align-items: center; 
     gap: 10px; 
-    color: #1e3a8a; 
+    color: var(--accent); 
   }
 
   .app-card p { 
     color: var(--muted); 
-    font-size: 0.92rem; 
-    line-height: 1.48; 
+    font-size: 0.88rem; 
+    line-height: 1.45; 
   }
 
   .icon { 
     font-size: 1.25rem; 
-    color: var(--accent);
   }
 
   footer { 
     text-align: center; 
     margin-top: 40px; 
-    font-size: 0.88rem; 
+    font-size: 0.85rem; 
     color: var(--muted); 
     font-weight: 500;
   }
@@ -133,7 +133,7 @@
   /* Single column responsive breakpoint for tablets/mobile */
   @media (max-width: 680px) {
     .app-grid { grid-template-columns: 1fr; gap: 12px; }
-    body { padding: 28px 12px; }
+    body { padding: 24px 12px; }
     header h1 { font-size: 1.75rem; }
   }
 </style>
@@ -149,37 +149,57 @@
     <div class="app-grid">
       <a class="app-card" href="/obesity/">
         <h2><span class="icon">⚕</span> Obesity Pharmacotherapy</h2>
-        <p>AACE/AGA decision support engine, GLP-1/GIP criteria & non-GLP-1 oral alternatives.</p>
+        <p>AACE/AGA decision support engine, GLP-1/GIP trial evidence & complete non-GLP-1 oral alternatives.</p>
+      </a>
+
+      <a class="app-card" href="/steroids/">
+        <h2><span class="icon">⚕</span> Steroid Equivalence & Taper</h2>
+        <p>Convert systemic corticosteroids and generate instant patient instruction schedules with EHR sigs.</p>
+      </a>
+
+      <a class="app-card" href="/peds-antibiotics/">
+        <h2><span class="icon">⚕</span> Pediatric Antibiotic Dosing</h2>
+        <p>Weight-based mg/kg liquid suspension dosing, concentration matcher, and auto-rounded sig builder.</p>
+      </a>
+
+      <a class="app-card" href="/thyroid/">
+        <h2><span class="icon">⚕</span> Levothyroxine Dosing & Color Matcher</h2>
+        <p>1.6 mcg/kg full replacement calculation, snap to 12 commercial tablet colors, and weekly fine-tuning.</p>
+      </a>
+
+      <a class="app-card" href="/inhalers/">
+        <h2><span class="icon">⚕</span> Inhaler Equivalence & GINA Matrix</h2>
+        <p>Cross-reference ICS potencies, dual/triple combination therapies, GINA SMART regimens, and device techniques.</p>
       </a>
 
       <a class="app-card" href="/prices/">
         <h2><span class="icon">⚕</span> Prescription Prices</h2>
-        <p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, and more.</p>
+        <p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, Walmart $4 list, and SingleCare.</p>
       </a>
 
       <a class="app-card" href="/stimulants/">
         <h2><span class="icon">⚕</span> ADHD Stimulant Converter</h2>
-        <p>Approximate dose equivalencies for common ADHD stimulants.</p>
+        <p>Approximate dose equivalencies for common methylphenidate and amphetamine stimulants.</p>
       </a>
 
       <a class="app-card" href="/antidepressants/">
         <h2><span class="icon">⚕</span> Antidepressant Converter</h2>
-        <p>Approximate dose equivalencies for common antidepressants.</p>
+        <p>Approximate dose equivalencies for SSRIs, SNRIs, Bupropion, and Mirtazapine based on fluoxetine units.</p>
       </a>
 
       <a class="app-card" href="/medicaid/">
         <h2><span class="icon">⚕</span> Medicaid Preferred List</h2>
-        <p>Check Louisiana & Texas Medicaid preferred status and suggested alternatives.</p>
+        <p>Check Louisiana & Texas Medicaid preferred drug list (PDL) status and suggested alternatives.</p>
       </a>
 
       <a class="app-card" href="/mme/">
         <h2><span class="icon">⚕</span> MME Converter</h2>
-        <p>Calculate morphine milligram equivalents for common opioids and routes.</p>
+        <p>Calculate morphine milligram equivalents for common opioids, routes, and cross-tolerance switches.</p>
       </a>
 
       <a class="app-card" href="/phosphate/">
-        <h2><span class="icon">⚕</span> Phosphate Calculator</h2>
-        <p>Estimate phosphate deficit and replacement with formulation details.</p>
+        <h2><span class="icon">⚕</span> Phosphate Deficit Calculator</h2>
+        <p>Quantitative elemental replacement engine with mmol, mg, mEq, and co-administered cation breakdowns.</p>
       </a>
     </div>
 
