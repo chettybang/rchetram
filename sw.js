@@ -1,20 +1,27 @@
-/* STREAMING_CHUNK:Defining cache version and static asset manifest... /
 /*
 
-PWA Service Worker for rchetram.com
+Service Worker for rchetram.com
 
-Provides offline caching for all clinical decision tools and micro-apps.
+Provides offline caching for all 11 clinical tools and micro-apps.
 */
 
-const CACHE_NAME = 'rchetram-clinical-v2';
+const CACHE_NAME = 'rchetram-clinical-v3';
 
-// List of all static app assets to cache for offline access
+// Complete manifest of static assets across all 11 micro-apps
 const ASSETS_TO_CACHE = [
 '/',
 '/index.html',
 '/manifest.json',
 '/obesity/',
 '/obesity/index.html',
+'/steroids/',
+'/steroids/index.html',
+'/peds-antibiotics/',
+'/peds-antibiotics/index.html',
+'/thyroid/',
+'/thyroid/index.html',
+'/inhalers/',
+'/inhalers/index.html',
 '/prices/',
 '/prices/index.html',
 '/prices/manifest.json',
@@ -30,31 +37,26 @@ const ASSETS_TO_CACHE = [
 '/phosphate/index.html'
 ];
 
-/* STREAMING_CHUNK:Handling service worker installation event... */
+// Install Event: Cache all micro-apps locally
 self.addEventListener('install', (event) => {
-// Force the waiting service worker to become the active service worker
 self.skipWaiting();
-
 event.waitUntil(
 caches.open(CACHE_NAME).then((cache) => {
-console.log('[Service Worker] Caching root clinical app assets');
+console.log('[Service Worker] Caching all 11 clinical app assets');
 return cache.addAll(ASSETS_TO_CACHE);
-}).catch((error) => {
-console.error('[Service Worker] Pre-cache failed:', error);
-})
+}).catch((err) => console.error('[Service Worker] Cache install failed:', err))
 );
 });
 
-/* STREAMING_CHUNK:Handling service worker activation and cache cleanup... */
+// Activate Event: Clean up outdated caches
 self.addEventListener('activate', (event) => {
-// Claim any clients immediately
 event.waitUntil(
-caches.keys().then((cacheNames) => {
+caches.keys().then((keys) => {
 return Promise.all(
-cacheNames.map((cache) => {
-if (cache !== CACHE_NAME) {
-console.log('[Service Worker] Purging old cache:', cache);
-return caches.delete(cache);
+keys.map((key) => {
+if (key !== CACHE_NAME) {
+console.log('[Service Worker] Deleting old cache:', key);
+return caches.delete(key);
 }
 })
 );
@@ -62,21 +64,19 @@ return caches.delete(cache);
 );
 });
 
-/* STREAMING_CHUNK:Interpreting network requests and applying cache strategies... */
+// Fetch Event: Stale-While-Revalidate Strategy
 self.addEventListener('fetch', (event) => {
-const requestUrl = new URL(event.request.url);
+const url = new URL(event.request.url);
 
-// Exclude third-party API proxies (like Cloudflare workers) from static cache
-if (requestUrl.hostname.includes('workers.dev') || requestUrl.hostname.includes('costplusdrugs.com')) {
-return; // Pass directly to network
+// Bypass worker API calls (like Cost Plus Drugs proxy)
+if (url.hostname.includes('workers.dev') || url.hostname.includes('costplusdrugs.com')) {
+return;
 }
 
-// Stale-While-Revalidate caching strategy for HTML/CSS/JS assets
 event.respondWith(
 caches.match(event.request).then((cachedResponse) => {
 const fetchPromise = fetch(event.request)
 .then((networkResponse) => {
-// Verify valid response before updating cache
 if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
 const responseToCache = networkResponse.clone();
 caches.open(CACHE_NAME).then((cache) => {
@@ -86,10 +86,9 @@ cache.put(event.request, responseToCache);
 return networkResponse;
 })
 .catch(() => {
-// Silently fail fetch when offline; cached response will be served
+/* Fail silently offline; served from cache */
 });
 
-  // Serve from cache first if available, otherwise wait for network fetch
   return cachedResponse || fetchPromise;
 })
 
