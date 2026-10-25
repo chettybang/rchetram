@@ -43,6 +43,7 @@
   .back-link:hover { text-decoration: underline; }
   h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
   .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -52,27 +53,27 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
 
-  /* Fixed 3-column layout to keep Current P, Target P, and Weight on the exact same line */
+  /* 3-column input layout for Current P, Target P, and Weight */
   .grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    gap: 12px;
     margin-bottom: 16px;
   }
 
   label {
     display: flex;
     align-items: flex-end;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--muted);
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    min-height: 2.2em; /* Normalizes label height across all columns */
+    min-height: 2.2em; /* Ensures smooth label alignment across columns */
   }
 
-  /* Touch-friendly stepper inputs */
+  /* Stepper inputs (+ / - buttons) */
   .stepper-container {
     display: flex;
     flex-direction: column;
@@ -91,19 +92,20 @@
     margin-bottom: 0;
     border-left: none;
     border-right: none;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.05rem;
   }
   .btn-step {
     background: #334155;
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 10px 14px;
-    font-size: 1.2rem;
+    padding: 10px 12px;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
     user-select: none;
     transition: background 0.15s;
-    min-width: 44px;
+    min-width: 38px;
     flex-shrink: 0;
   }
   .btn-step:hover { background: var(--accent); color: #0f172a; }
@@ -230,6 +232,7 @@
     .card { padding: 14px; }
     .grid-3 { grid-template-columns: 1fr; gap: 10px; }
     label { min-height: auto; }
+    .btn-step { padding: 10px 14px; min-width: 44px; }
     .breakdown-table th, .breakdown-table td { padding: 6px 6px; font-size: 0.82rem; }
   }
 </style>
@@ -323,7 +326,7 @@
     </table>
     <p class="note">
       *Note on conversions: 1 mmol Elemental Phosphorus = 30.97 mg P ≈ 31 mg P.<br>
-      Calculations reflect physiological pH 7.4, where phosphate exists as an ~1:4 monobasic (H₂PO₄⁻) to dibasic (HPO₄²⁻) mixture, yielding an effective valence of 1.8 mEq per mmol.
+      Calculations permanently reflect physiological pH 7.4, where phosphate exists as an ~1:4 monobasic (H₂PO₄⁻) to dibasic (HPO₄²⁻) mixture, yielding an effective valence of 1.8 mEq per mmol.
     </p>
   </div>
 
@@ -340,7 +343,9 @@ function calculate() {
   const target = parseFloat(document.getElementById("target").value);
   const weight = parseFloat(document.getElementById("weight").value);
   const routePref = document.getElementById("routePref").value;
-  const valenceRatio = 1.8; // Standard physiological valence at blood pH 7.4
+  
+  // Standard physiological valence at blood pH 7.4 (1.8 mEq per mmol)
+  const valenceRatio = 1.8; 
   const resultsDiv = document.getElementById("results");
 
   if (!current || !target || !weight || target <= current) {
@@ -349,8 +354,8 @@ function calculate() {
     return;
   }
 
-  // Deficit Math
-  // Rule-of-thumb: 0.6 mmol/kg volume of distribution factor per 1 mg/dL serum rise
+  // Deficit Calculation
+  // Standard rule-of-thumb: 0.6 mmol/kg volume of distribution factor per 1 mg/dL serum rise
   const VOD_FACTOR = 0.6;
   const deficit_mgdl = target - current;
   const deficit_mmol = weight * VOD_FACTOR * deficit_mgdl;
