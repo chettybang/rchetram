@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Oral Contraceptive (OCP) Switch & Missed Dose Advisor</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --pink: #ec4899;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: 20px 16px; max-width: 920px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  
+  .tab-group {
+    display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+  }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted); font-size: 0.92rem; font-weight: 600;
+    padding: 8px 14px; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab-btn.active { background: var(--card-sub); color: var(--pink); border: 1px solid var(--border); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  select, input {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  select:focus, input:focus { outline: 2px solid var(--pink); border-color: transparent; }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 5px solid var(--pink);
+    border-radius: 8px; padding: 18px; margin-top: 16px;
+  }
+
+  .pill-table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 10px;
+  }
+  .pill-table th, .pill-table td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .pill-table th { color: var(--pink); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  }
+  .badge-pop { background: rgba(236, 72, 153, 0.15); color: var(--pink); border: 1px solid var(--pink); }
+  .badge-coc { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent); }
+
+  .advice-card {
+    background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-top: 10px;
+  }
+  .advice-card h4 { color: var(--pink); font-size: 1rem; margin-bottom: 6px; }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Oral Contraceptive (OCP) Switch & Missed Dose Advisor</h1>
+  <p class="subtitle">Match oral contraceptives by estrogen/progestin generation and apply CDC Selected Practice Recommendations for missed pills.</p>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('matcher', this)">1. OCP Brand & Component Matcher</button>
+      <button class="tab-btn" onclick="switchTab('missed', this)">2. CDC Missed Pill Engine</button>
+    </div>
+
+    <!-- TAB 1: MATCH & SWITCH -->
+    <div id="tab-matcher">
+      <div class="grid-2">
+        <div>
+          <label for="goalSelect">Select Primary Clinical Goal / Constraint</label>
+          <select id="goalSelect" onchange="filterPills()">
+            <option value="all" selected>Show All Pill Classes</option>
+            <option value="acne">Acne / Hirsutism (Low Androgenic Progestin)</option>
+            <option value="bleeding">Breakthrough Bleeding (Higher EE 30–35 mcg)</option>
+            <option value="pmdd">PMDD / Severe Bloating (Drospirenone)</option>
+            <option value="pop">Contraindications to Estrogen / POP Only (Migraine w/ aura, VTE, HTN, Breastfeeding)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="eeSelect">Filter by Ethinyl Estradiol (EE) Dose</label>
+          <select id="eeSelect" onchange="filterPills()">
+            <option value="all" selected>All EE Strengths</option>
+            <option value="10">Ultra Low (10 mcg EE)</option>
+            <option value="20">Low Dose (20–25 mcg EE)</option>
+            <option value="30">Standard Dose (30–35 mcg EE)</option>
+            <option value="0">Progestin-Only (0 mcg EE)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <h3 style="font-size:0.95rem; color:var(--pink); margin-bottom:8px;">Oral Contraceptive Brand Matrix</h3>
+        <table class="pill-table">
+          <thead>
+            <tr>
+              <th>Class / Type</th>
+              <th>Common Brand Names</th>
+              <th>EE Dose</th>
+              <th>Progestin Component & Generation</th>
+              <th>Clinical Pearls</th>
+            </tr>
+          </thead>
+          <tbody id="pillTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: MISSED PILL ENGINE -->
+    <div id="tab-missed" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="pillType">Contraceptive Pill Type</label>
+          <select id="pillType" onchange="calcMissedPill()">
+            <option value="coc" selected>Combined Oral Contraceptive (COC - Estrogen + Progestin)</option>
+            <option value="pop_traditional">Progestin-Only Pill (POP - Norethindrone 0.35mg / Errin / Heather)</option>
+            <option value="pop_slynd">Progestin-Only Pill (Slynd - Drospirenone 4mg)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="missedCount">Number of Consecutive Active Pills Missed</label>
+          <select id="missedCount" onchange="calcMissedPill()">
+            <option value="1" selected>1 Active Pill (or 24–48 hours late)</option>
+            <option value="2">2 Consecutive Active Pills (or 48–72 hours late)</option>
+            <option value="3">3 or More Consecutive Active Pills (≥72 hours late)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:10px;">
+        <div>
+          <label for="cycleWeek">Timing in Pack (Cycle Week)</label>
+          <select id="cycleWeek" onchange="calcMissedPill()">
+            <option value="week1" selected>Week 1 (Pills 1–7)</option>
+            <option value="week2">Week 2 (Pills 8–14)</option>
+            <option value="week3">Week 3 (Pills 15–21)</option>
+            <option value="placebo">Placebo / Inactive Week (Pills 22–28)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="intercourse">Unprotected Sex in Last 5 Days?</label>
+          <select id="intercourse" onchange="calcMissedPill()">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="missedOutput"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--pink); margin-bottom:6px;">CDC Selected Practice Recommendations (SPR) Summary</h3>
+    <p class="note">
+      • <strong>7-Day Rule for Combined OCPs:</strong> If 2 or more active combined pills are missed, backup contraception (condoms) or abstinence is required until active pills have been taken for <strong>7 consecutive days</strong>.<br>
+      • <strong>3-Hour Window for Traditional POPs:</strong> Traditional Norethindrone POPs must be taken within a strict 3-hour window daily. If >3 hours late, backup contraception is needed for <strong>48 hours</strong>.<br>
+      • <strong>Emergency Contraception (EC):</strong> Plan B (Levonorgestrel 1.5mg) is most effective within 72 hours; Ella (Ulipristal acetate 30mg) or Copper IUD is preferred if BMI > 30 kg/m² or up to 120 hours post-intercourse.
+    </p>
+  </div>
+
+<script>
+const PILL_DATA = [
+  { class: "COC (4th Gen)", brands: "Yaz, Gianvi, Loryna", ee: "20 mcg", progestin: "Drospirenone 3mg (4th Gen)", goal: "pmdd acne", pearl: "Anti-androgenic & anti-mineralocorticoid (less bloating/acne). Monitor K+ if on ACEi/ARB." },
+  { class: "COC (4th Gen)", brands: "Yasmin, Ocella, Zarah", ee: "30 mcg", progestin: "Drospirenone 3mg (4th Gen)", goal: "pmdd bleeding acne", pearl: "Higher EE for cycle control plus anti-androgenic benefit." },
+  { class: "COC (3rd Gen)", brands: "Sprintec, Ortho-Cyclen, Estarylla", ee: "35 mcg", progestin: "Norgestimate 0.25mg (3rd Gen)", goal: "acne bleeding", pearl: "Low androgenic activity; FDA approved for acne vulgaris." },
+  { class: "COC (3rd Gen)", brands: "Tri-Sprintec, Ortho Tri-Cyclen", ee: "35 mcg (Triphasic)", progestin: "Norgestimate (3rd Gen)", goal: "acne", pearl: "Triphasic dosing mimics natural cycle; excellent for mild acne." },
+  { class: "COC (2nd Gen)", brands: "Alesse, Aviane, Lessina", ee: "20 mcg", progestin: "Levonorgestrel 0.1mg (2nd Gen)", goal: "all", pearl: "2nd gen progestin has lowest overall venous thromboembolism (VTE) risk." },
+  { class: "COC (2nd Gen)", brands: "Seasonique, Amethia", ee: "30 mcg (Extended)", progestin: "Levonorgestrel 0.15mg (2nd Gen)", goal: "bleeding", pearl: "Extended 84-day cycle regimen (only 4 withdrawal bleeds per year)." },
+  { class: "COC (1st Gen)", brands: "Lo Loestrin Fe", ee: "10 mcg", progestin: "Norethindrone acetate 1mg (1st Gen)", goal: "all", pearl: "Lowest EE dose available; reduces estrogen side effects (nausea/breast tenderness)." },
+  { class: "COC (1st Gen)", brands: "Junel Fe, Microgestin Fe, Loestrin Fe", ee: "20 mcg", progestin: "Norethindrone acetate 1mg (1st Gen)", goal: "all", pearl: "Popular low-dose starter option with iron supplementation pills." },
+  { class: "POP (Progestin Only)", brands: "Slynd", ee: "0 mcg", progestin: "Drospirenone 4mg", goal: "pop", pearl: "Estrogen-free with a generous 24-hour missed pill window (unlike 3-hr Norethindrone)." },
+  { class: "POP (Progestin Only)", brands: "Errin, Heather, Camilla, Micronor", ee: "0 mcg", progestin: "Norethindrone 0.35mg", goal: "pop", pearl: "Safe in hypertension, migraines with aura, VTE history, and postpartum/breastfeeding. Strict 3-hr dosing window." }
+];
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-matcher').style.display = tab === 'matcher' ? 'block' : 'none';
+  document.getElementById('tab-missed').style.display = tab === 'missed' ? 'block' : 'none';
+  if (tab === 'missed') calcMissedPill();
+}
+
+function filterPills() {
+  const goal = document.getElementById("goalSelect").value;
+  const ee = document.getElementById("eeSelect").value;
+
+  const tbody = document.getElementById("pillTableBody");
+  let html = "";
+
+  PILL_DATA.forEach(p => {
+    let matchGoal = goal === "all" || p.goal.includes(goal);
+    let matchEE = ee === "all" || (ee === "0" && p.ee === "0 mcg") || (p.ee.includes(ee));
+
+    if (matchGoal && matchEE) {
+      const isPop = p.ee === "0 mcg";
+      html += `
+        <tr>
+          <td><span class="badge ${isPop ? 'badge-pop' : 'badge-coc'}">${p.class}</span></td>
+          <td><strong>${p.brands}</strong></td>
+          <td>${p.ee}</td>
+          <td>${p.progestin}</td>
+          <td style="font-size:0.82rem; color:var(--muted);">${p.pearl}</td>
+        </tr>
+      `;
+    }
+  });
+
+  tbody.innerHTML = html || `<tr><td colspan="5" style="text-align:center; color:var(--muted);">No pills match the selected filters.</td></tr>`;
+}
+
+function calcMissedPill() {
+  const type = document.getElementById("pillType").value;
+  const count = parseInt(document.getElementById("missedCount").value);
+  const week = document.getElementById("cycleWeek").value;
+  const sex = document.getElementById("intercourse").value;
+
+  let advice = "";
+  let backupDays = 0;
+  let ecNeeded = false;
+
+  if (type === "pop_traditional") {
+    advice = "Take 1 pill as soon as remembered (even if taking 2 pills in 1 day). Continue taking remaining pills at your usual time.";
+    backupDays = 2; // 48 hours
+    if (sex === "yes") ecNeeded = true;
+  } else if (type === "pop_slynd") {
+    if (count === 1) {
+      advice = "Take missed pill immediately and resume normal schedule. Backup contraception is NOT needed.";
+    } else {
+      advice = "Take last missed pill immediately. Use backup contraception for 7 days.";
+      backupDays = 7;
+      if (sex === "yes") ecNeeded = true;
+    }
+  } else { // Combined OCP
+    if (week === "placebo") {
+      advice = "Discard the missed placebo pills. Continue taking remaining placebo pills on schedule. Backup contraception is NOT needed.";
+    } else if (count === 1) {
+      advice = "Take the missed pill as soon as possible. Take the next pill at the regular time (even if it means taking 2 pills on the same day). No backup contraception needed.";
+    } else if (count >= 2) {
+      backupDays = 7;
+      advice = "Take the most recent missed pill as soon as possible. Discard other missed active pills. Continue taking active pills daily.<br>• <strong>Backup Contraception Needed:</strong> Use condoms or abstain for <strong>7 consecutive days</strong>.";
+
+      if (week === "week1") {
+        if (sex === "yes") ecNeeded = true;
+      } else if (week === "week3") {
+        advice += "<br>• <strong>Week 3 Special Action:</strong> Finish active pills in current pack and <strong>SKIP PLACEBO WEEK</strong>. Start a new pack immediately the next day.";
+      }
+    }
+  }
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">CDC Selected Practice Recommendations (SPR)</h3>
+      <div class="advice-card">
+        <h4>Action Steps Required:</h4>
+        <p style="font-size:0.9rem; color:#f8fafc;">${advice}</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:12px;">
+        <div style="background:rgba(15, 23, 42, 0.8); padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:${backupDays > 0 ? 'var(--warning)' : 'var(--success)'};">${backupDays > 0 ? backupDays + ' Days' : 'None Needed'}</div>
+          <div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase;">Backup Contraception (Condoms)</div>
+        </div>
+        <div style="background:rgba(15, 23, 42, 0.8); padding:10px; border-radius:6px; border:1px solid var(--border); text-align:center;">
+          <div style="font-size:1.2rem; font-weight:700; color:${ecNeeded ? 'var(--danger)' : 'var(--success)'};">${ecNeeded ? 'RECOMMENDED' : 'Not Indicated'}</div>
+          <div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase;">Emergency Contraception (EC)</div>
+        </div>
+      </div>
+
+      ${ecNeeded ? `
+        <div style="background:rgba(248, 113, 113, 0.12); border-left:4px solid var(--danger); padding:10px 12px; color:#fca5a5; border-radius:6px; font-size:0.85rem; margin-top:12px;">
+          ⚠️ <strong>Emergency Contraception Indicated:</strong> Consider Plan B (Levonorgestrel 1.5mg) or Ella (Ulipristal acetate 30mg) if unprotected intercourse occurred in the last 5 days during Week 1 or with missed POPs.
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  document.getElementById("missedOutput").innerHTML = html;
+}
+
+// Initial populate
+filterPills();
+</script>
+</body>
+</html>
