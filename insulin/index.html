@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Insulin Dosing, Sliding Scale & Switch Engine</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px 16px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  
+  .tab-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab-btn.active { background: var(--card-sub); color: var(--accent); border: 1px solid var(--border); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0f172a;
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .stepper-container { display: flex; flex-direction: column; }
+  .stepper-input { display: flex; align-items: center; width: 100%; }
+  .stepper-input input {
+    width: 100%; flex: 1; min-width: 0; text-align: center; border-radius: 0;
+    margin-bottom: 0; border-left: none; border-right: none; font-weight: 700; font-size: 1.05rem;
+  }
+  .btn-step {
+    background: #334155; color: var(--text); border: 1px solid var(--border);
+    padding: 10px 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    user-select: none; transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-step:hover { background: var(--accent); color: #0f172a; }
+  .btn-step.step-left { border-radius: 8px 0 0 8px; }
+  .btn-step.step-right { border-radius: 0 8px 8px 0; }
+
+  .summary-box {
+    background: var(--card-sub);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--accent);
+    border-radius: 8px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .metric-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .metric-card .val { font-size: 1.35rem; font-weight: 700; color: var(--success); }
+  .metric-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+  .scale-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 10px;
+  }
+  .scale-table th, .scale-table td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .scale-table th { color: var(--accent); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+
+  .copy-box {
+    background: var(--card-sub); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .warning-banner {
+    background: rgba(251, 191, 36, 0.12); border-left: 4px solid var(--warning); padding: 10px 12px;
+    color: #fde047; border-radius: 6px; font-size: 0.85rem; margin-top: 12px;
+  }
+  .danger-banner {
+    background: rgba(248, 113, 113, 0.12); border-left: 4px solid var(--danger); padding: 10px 12px;
+    color: #fca5a5; border-radius: 6px; font-size: 0.85rem; margin-top: 12px;
+  }
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Insulin Dosing, Sliding Scale & Switch Engine</h1>
+  <p class="subtitle">Calculate TDD, split basal/prandial regimens, convert insulin products, and build EHR correction scales.</p>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('initiation', this)">1. TDD & Regimen Initiation</button>
+      <button class="tab-btn" onclick="switchTab('switch', this)">2. Insulin Switch Calculator</button>
+      <button class="tab-btn" onclick="switchTab('scale', this)">3. EHR Correction Scale Builder</button>
+    </div>
+
+    <!-- TAB 1: TDD & INITIATION -->
+    <div id="tab-initiation">
+      <div class="grid-3">
+        <div>
+          <label for="weightUnit">Weight Unit</label>
+          <select id="weightUnit" onchange="convertWeightUnit()">
+            <option value="lbs" selected>Pounds (lbs)</option>
+            <option value="kg">Kilograms (kg)</option>
+          </select>
+        </div>
+
+        <div class="stepper-container">
+          <label id="weightLbl" for="weightVal">Patient Weight (lbs)</label>
+          <div class="stepper-input">
+            <button type="button" class="btn-step step-left" onclick="stepVal('weightVal', -5)">−</button>
+            <input type="number" id="weightVal" value="180" step="1" oninput="calcInitiation()">
+            <button type="button" class="btn-step step-right" onclick="stepVal('weightVal', 5)">+</button>
+          </div>
+        </div>
+
+        <div>
+          <label for="clinicalState">Clinical Profile & Dose Factor</label>
+          <select id="clinicalState" onchange="calcInitiation()">
+            <option value="0.3">0.3 units/kg — T1D / Frail / Elderly / CKD</option>
+            <option value="0.4" selected>0.4 units/kg — T2D Insulin Naive / Standard</option>
+            <option value="0.5">0.5 units/kg — T2D Uncontrolled (A1c > 9.5%)</option>
+            <option value="0.6">0.6 units/kg — Obese / High Insulin Resistance</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="initiationOutput"></div>
+    </div>
+
+    <!-- TAB 2: INSULIN SWITCH -->
+    <div id="tab-switch" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="switchType">Select Insulin Conversion Scenario</label>
+          <select id="switchType" onchange="calcSwitch()">
+            <option value="nph_bid_to_glargine" selected>NPH Twice Daily (BID) → Glargine (Lantus/Basaglar) Once Daily (QD)</option>
+            <option value="toujeo_to_lantus">Toujeo U-300 (Glargine) → Lantus U-100 (Glargine)</option>
+            <option value="lantus_to_toujeo">Lantus U-100 (Glargine) → Toujeo U-300 (Glargine)</option>
+            <option value="degludec_to_glargine">Degludec (Tresiba) QD → Glargine (Lantus) QD (1:1 Ratio)</option>
+            <option value="regular_to_rapid">Regular Insulin (Humulin R) → Rapid Analog (Lispro/Aspart)</option>
+          </select>
+        </div>
+
+        <div class="stepper-container">
+          <label for="currentDose">Current Total Daily Basal/Insulin Dose (Units)</label>
+          <div class="stepper-input">
+            <button type="button" class="btn-step step-left" onclick="stepVal('currentDose', -2)">−</button>
+            <input type="number" id="currentDose" value="40" step="1" oninput="calcSwitch()">
+            <button type="button" class="btn-step step-right" onclick="stepVal('currentDose', 2)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="switchOutput"></div>
+    </div>
+
+    <!-- TAB 3: CORRECTION SCALE -->
+    <div id="tab-scale" style="display:none;">
+      <div class="grid-2">
+        <div class="stepper-container">
+          <label for="tddScale">Estimated Total Daily Dose (TDD Units)</label>
+          <div class="stepper-input">
+            <button type="button" class="btn-step step-left" onclick="stepVal('tddScale', -5)">−</button>
+            <input type="number" id="tddScale" value="50" step="1" oninput="calcScale()">
+            <button type="button" class="btn-step step-right" onclick="stepVal('tddScale', 5)">+</button>
+          </div>
+        </div>
+
+        <div>
+          <label for="sensitivityPreset">Scale Sensitivity Level</label>
+          <select id="sensitivityPreset" onchange="calcScale()">
+            <option value="low">Low Sensitivity (Resistant / High TDD >60u)</option>
+            <option value="moderate" selected>Moderate Sensitivity (Standard TDD 30–60u)</option>
+            <option value="high">High Sensitivity (Insulin Sensitive / TDD <30u)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="scaleOutput"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">Clinical Practice Pearls</h3>
+    <p class="note">
+      • <strong>Basal Titration Rule:</strong> Increase basal dose by 2 units every 3 days until fasting blood glucose target (80–130 mg/dL) is met without hypoglycemia.<br>
+      • <strong>NPH to Glargine Conversion:</strong> Always reduce the total daily NPH dose by 20% when converting NPH BID to Glargine QD to prevent nocturnal hypoglycemia.<br>
+      • <strong>Correction Factor (1800 Rule):</strong> Sensitivity Factor = 1800 / TDD. Tells how many mg/dL 1 unit of rapid-acting insulin analog lowers blood glucose.
+    </p>
+  </div>
+
+<script>
+function stepVal(id, step) {
+  const input = document.getElementById(id);
+  let val = parseFloat(input.value) || 0;
+  val = Math.max(1, val + step);
+  input.value = val;
+  updateActiveTab();
+}
+
+function updateActiveTab() {
+  if (document.getElementById('tab-initiation').style.display !== 'none') calcInitiation();
+  else if (document.getElementById('tab-switch').style.display !== 'none') calcSwitch();
+  else if (document.getElementById('tab-scale').style.display !== 'none') calcScale();
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-initiation').style.display = tab === 'initiation' ? 'block' : 'none';
+  document.getElementById('tab-switch').style.display = tab === 'switch' ? 'block' : 'none';
+  document.getElementById('tab-scale').style.display = tab === 'scale' ? 'block' : 'none';
+  updateActiveTab();
+}
+
+function convertWeightUnit() {
+  const unit = document.getElementById("weightUnit").value;
+  const input = document.getElementById("weightVal");
+  const lbl = document.getElementById("weightLbl");
+  let val = parseFloat(input.value) || 0;
+
+  if (unit === "kg") {
+    lbl.textContent = "Patient Weight (kg)";
+    input.value = (val / 2.20462).toFixed(0);
+  } else {
+    lbl.textContent = "Patient Weight (lbs)";
+    input.value = (val * 2.20462).toFixed(0);
+  }
+  calcInitiation();
+}
+
+function calcInitiation() {
+  const unit = document.getElementById("weightUnit").value;
+  let wt = parseFloat(document.getElementById("weightVal").value) || 0;
+  const factor = parseFloat(document.getElementById("clinicalState").value);
+
+  const wtKg = unit === "lbs" ? wt / 2.20462 : wt;
+  const tdd = Math.round(wtKg * factor);
+
+  const basal = Math.round(tdd * 0.5);
+  const totalPrandial = tdd - basal;
+  const mealPrandial = Math.round(totalPrandial / 3);
+
+  const html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">Calculated Regimen initiation (${factor} units/kg)</h3>
+      <p style="font-size:0.88rem; color:var(--muted); margin-top:2px;">
+        Weight: <strong>${wtKg.toFixed(1)} kg</strong> (${(wtKg * 2.20462).toFixed(0)} lbs) · Total Daily Dose (TDD): <strong>${tdd} Units/day</strong>
+      </p>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val">${basal} <span style="font-size:0.85rem;">Units</span></div>
+          <div class="lbl">Basal Insulin QD (Glargine / Degludec)</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${mealPrandial} <span style="font-size:0.85rem;">Units TID</span></div>
+          <div class="lbl">Prandial Insulin per meal (Lispro / Aspart)</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${basal + mealPrandial * 3} <span style="font-size:0.85rem;">Units</span></div>
+          <div class="lbl">Total Calculated Daily Units</div>
+        </div>
+      </div>
+
+      <div class="copy-box">
+        <button class="btn-copy" onclick="copyText('initiationSig')">Copy Order Sigs</button>
+        <strong>EHR Prescription Orders:</strong><br>
+        <div id="initiationSig">
+• Basal: Insulin Glargine (Lantus) 100 units/mL. Inject ${basal} units subcutaneously once daily at bedtime.<br>
+• Prandial: Insulin Lispro (Humalog) 100 units/mL. Inject ${mealPrandial} units subcutaneously 15 minutes before meals 3 times daily.
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("initiationOutput").innerHTML = html;
+}
+
+function calcSwitch() {
+  const switchType = document.getElementById("switchType").value;
+  const currentDose = parseFloat(document.getElementById("currentDose").value) || 0;
+
+  let newDose = currentDose;
+  let explanation = "";
+  let warning = "";
+
+  if (switchType === "nph_bid_to_glargine") {
+    newDose = Math.round(currentDose * 0.80);
+    explanation = "Reduced by 20% to prevent nocturnal hypoglycemia (Standard ADA/AACE standard for NPH BID to Glargine QD switch).";
+    warning = "Administer the new Glargine dose ONCE daily (typically at bedtime or QAM consistently).";
+  } else if (switchType === "toujeo_to_lantus") {
+    newDose = Math.round(currentDose * 0.80);
+    explanation = "Toujeo U-300 has higher bioavailability variance; reduce by 20% when converting to Lantus U-100.";
+  } else if (switchType === "lantus_to_toujeo") {
+    newDose = Math.round(currentDose * 1.20);
+    explanation = "Increase dose by ~20% when converting from Lantus U-100 to Toujeo U-300 to maintain glycemic control.";
+  } else if (switchType === "degludec_to_glargine") {
+    newDose = currentDose;
+    explanation = "Unit-for-unit (1:1 ratio) conversion between Degludec QD and Glargine QD.";
+  } else if (switchType === "regular_to_rapid") {
+    newDose = currentDose;
+    explanation = "Unit-for-unit (1:1 ratio) conversion. Rapid-acting analogs (Lispro/Aspart) should be given 0–15 mins before meals vs 30 mins for Regular.";
+  }
+
+  const html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">Converted Dose Recommendation</h3>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val" style="color:var(--muted);">${currentDose} Units</div>
+          <div class="lbl">Original Daily Dose</div>
+        </div>
+        <div class="metric-card">
+          <div class="val">${newDose} Units</div>
+          <div class="lbl">New Target Daily Dose</div>
+        </div>
+      </div>
+
+      <p style="font-size:0.88rem; color:#e2e8f0; margin-top:12px;"><strong>Switch Logic:</strong> ${explanation}</p>
+      ${warning ? `<div class="warning-banner">⚠️ <strong>Clinical Safety Alert:</strong> ${warning}</div>` : ''}
+    </div>
+  `;
+
+  document.getElementById("switchOutput").innerHTML = html;
+}
+
+function calcScale() {
+  const tdd = parseFloat(document.getElementById("tddScale").value) || 50;
+  const level = document.getElementById("sensitivityPreset").value;
+
+  const corrFactor = Math.round(1800 / tdd);
+
+  let step = 2;
+  if (level === "low") step = 3;
+  else if (level === "high") step = 1;
+
+  const brackets = [
+    { bg: "150–199 mg/dL", units: step },
+    { bg: "200–249 mg/dL", units: step * 2 },
+    { bg: "250–299 mg/dL", units: step * 3 },
+    { bg: "300–349 mg/dL", units: step * 4 },
+    { bg: "≥ 350 mg/dL", units: step * 5 + " units + call provider" }
+  ];
+
+  let tableRows = "";
+  let sigText = `Outpatient Correction Scale (Rapid-Acting Insulin Analog - Lispro/Aspart):\nTarget BG < 150 mg/dL (No insulin).\n`;
+
+  brackets.forEach(b => {
+    tableRows += `
+      <tr>
+        <td><strong>${b.bg}</strong></td>
+        <td><strong style="color:var(--success); font-size:1rem;">${b.units} ${typeof b.units === 'number' ? 'Units' : ''}</strong></td>
+      </tr>
+    `;
+    sigText += `• BG ${b.bg}: Give ${b.units} ${typeof b.units === 'number' ? 'Units' : ''}\n`;
+  });
+
+  const html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">Generated Correction Scale (${level.toUpperCase()} Sensitivity)</h3>
+      <p style="font-size:0.88rem; color:var(--muted); margin-top:2px;">
+        1800 Rule Sensitivity Factor: <strong>1 Unit lowers BG by ~${corrFactor} mg/dL</strong>
+      </p>
+
+      <table class="scale-table">
+        <thead>
+          <tr>
+            <th>Blood Glucose Range</th>
+            <th>Correction Dose (Subcutaneous Rapid-Acting)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+
+      <div class="copy-box">
+        <button class="btn-copy" onclick="copyText('scaleSig')">Copy Scale Sig</button>
+        <strong>EHR Order String:</strong><br>
+        <div id="scaleSig" style="white-space:pre-wrap;">${sigText}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("scaleOutput").innerHTML = html;
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text);
+}
+
+// Initial calculation
+calcInitiation();
+</script>
+</body>
+</html>
