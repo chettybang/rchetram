@@ -1,36 +1,36 @@
-/*
-* Service Worker for rchetram.com
-* Provides offline caching for all 13 clinical tools and micro-apps.
-*/
+const CACHE_NAME = 'rchetram-clinical-v5';
 
-const CACHE_NAME = 'rchetram-clinical-v4';
-
-// Complete manifest of static assets across all 13 micro-apps
+// Complete manifest of static assets across all micro-apps
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/prices/',
+  '/prices/index.html',
+  '/antidepressants/',
+  '/antidepressants/index.html',
+  '/stimulants/',
+  '/stimulants/index.html',
+  '/peds-antibiotics/',
+  '/peds-antibiotics/index.html',
+  '/obesity/',
+  '/obesity/index.html',
+  '/preop/',
+  '/preop/index.html',
+  '/vaccines/',
+  '/vaccines/index.html',
+  '/antibiotics/',
+  '/antibiotics/index.html',
   '/insulin/',
   '/insulin/index.html',
   '/contraceptive/',
   '/contraceptive/index.html',
-  '/obesity/',
-  '/obesity/index.html',
   '/steroids/',
   '/steroids/index.html',
-  '/peds-antibiotics/',
-  '/peds-antibiotics/index.html',
   '/thyroid/',
   '/thyroid/index.html',
   '/inhalers/',
   '/inhalers/index.html',
-  '/prices/',
-  '/prices/index.html',
-  '/prices/manifest.json',
-  '/stimulants/',
-  '/stimulants/index.html',
-  '/antidepressants/',
-  '/antidepressants/index.html',
   '/medicaid/',
   '/medicaid/index.html',
   '/mme/',
@@ -44,7 +44,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all 13 clinical app assets');
+      console.log('[Service Worker] Caching all clinical app assets');
       return cache.addAll(ASSETS_TO_CACHE);
     }).catch((err) => console.error('[Service Worker] Cache install failed:', err))
   );
