@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Adult Outpatient Antibiotic Selection Engine</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #818cf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: 20px 16px; max-width: 920px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  select, input {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 5px solid var(--accent);
+    border-radius: 8px; padding: 18px; margin-top: 16px;
+  }
+
+  .regimen-card {
+    background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .regimen-card.first { border-left: 4px solid var(--success); }
+  .regimen-card.alt { border-left: 4px solid var(--warning); }
+
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  }
+  .badge-first { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+  .badge-alt { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+  .badge-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  .duration-highlight {
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.12);
+    color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 6px;
+    font-weight: 700; font-size: 0.88rem; margin-top: 6px;
+  }
+
+  .clinical-pearl {
+    background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--accent); padding: 8px 10px;
+    font-size: 0.85rem; color: #cbd5e1; margin-top: 10px; border-radius: 0 6px 6px 0;
+  }
+  
+  .citation-box {
+    background: rgba(129, 140, 248, 0.08); border-left: 3px solid var(--info); padding: 8px 10px;
+    font-size: 0.82rem; color: #c7d2fe; margin-top: 10px; border-radius: 0 6px 6px 0;
+  }
+
+  .warning-banner {
+    background: rgba(248, 113, 113, 0.12); border-left: 4px solid var(--danger); padding: 10px 12px;
+    color: #fca5a5; border-radius: 6px; font-size: 0.85rem; margin-top: 10px;
+  }
+
+  .copy-box {
+    background: rgba(15,23,42,0.9); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Adult Outpatient Antibiotic Selection Engine</h1>
+  <p class="subtitle">IDSA guideline-directed empirical antimicrobial therapy, evidence-based durations, PCN allergy alternatives, and renal dose adjustments.</p>
+
+  <div class="card">
+    <div class="grid-2">
+      <div>
+        <label for="categorySelect">Infection Category</label>
+        <select id="categorySelect" onchange="populateDiagnoses()">
+          <option value="resp" selected>Respiratory Tract Infections</option>
+          <option value="uti">Urinary Tract Infections (UTI)</option>
+          <option value="ssti">Skin & Soft Tissue Infections (SSTI)</option>
+          <option value="gi">Gastrointestinal & Intra-Abdominal</option>
+          <option value="sti">Sexually Transmitted Infections (STI)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="diagnosisSelect">Clinical Diagnosis</label>
+        <select id="diagnosisSelect" onchange="evaluateAntibiotic()"></select>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:10px;">
+      <div>
+        <label for="allergySelect">Beta-Lactam / Penicillin Allergy</label>
+        <select id="allergySelect" onchange="evaluateAntibiotic()">
+          <option value="none" selected>No Known Beta-Lactam Allergy</option>
+          <option value="mild">Mild / Non-Anaphylactic (Rash, Hives)</option>
+          <option value="severe">Severe / Anaphylactic (IgE-Mediated / Angioedema)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="renalSelect">Renal Function (CrCl / eGFR)</label>
+        <select id="renalSelect" onchange="evaluateAntibiotic()">
+          <option value="normal" selected>Normal (CrCl > 50 mL/min)</option>
+          <option value="mod">Moderate Impairment (CrCl 30–50 mL/min)</option>
+          <option value="sev">Severe Impairment (CrCl 15–29 mL/min)</option>
+          <option value="esrd">ESRD / Dialysis (CrCl < 15 mL/min)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="pregSelect">Pregnancy Status</label>
+        <select id="pregSelect" onchange="evaluateAntibiotic()">
+          <option value="no" selected>Not Pregnant</option>
+          <option value="yes">Pregnant</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="antibioticOutput"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">IDSA Stewardship & Safety Principles</h3>
+    <p class="note">
+      • <strong>Shorter Courses are Safer:</strong> IDSA guidelines emphasize shorter evidence-based courses (e.g., 3 days for cystitis, 5 days for CAP, 5 days for cellulitis) to minimize <em>C. difficile</em> infection and resistance.<br>
+      • <strong>Cephalosporin Cross-Reactivity:</strong> True cross-reactivity between Penicillins and 3rd/4th generation Cephalosporins (e.g., Cefdinir, Ceftriaxone) is &lt;1–2%. Cephalosporins are generally safe in non-severe rash histories.<br>
+      • <strong>Fluoroquinolone Black Box Warning:</strong> Avoid Ciprofloxacin or Levofloxacin for uncomplicated cystitis, sinusitis, or acute bronchitis unless no alternative exists due to risks of tendinitis, neuropathy, aortic dissection, and QTc prolongation.
+    </p>
+  </div>
+
+<script>
+const DIAGNOSES = {
+  resp: [
+    { id: "cap_healthy", name: "Community-Acquired Pneumonia (CAP) — Healthy Outpatient" },
+    { id: "cap_comorbid", name: "Community-Acquired Pneumonia (CAP) — With Comorbidities (COPD/DM/CKD)" },
+    { id: "sinusitis", name: "Acute Bacterial Rhinosinusitis (ABRS)" },
+    { id: "copd_flare", name: "Acute COPD Exacerbation (Purulent Sputum)" },
+    { id: "strep", name: "Group A Streptococcal Pharyngitis" }
+  ],
+  uti: [
+    { id: "cystitis_uncomp", name: "Uncomplicated Acute Cystitis (Female)" },
+    { id: "pyelo_outpatient", name: "Uncomplicated Acute Pyelonephritis (Outpatient)" },
+    { id: "uti_male", name: "Male Urinary Tract Infection / Prostatitis" }
+  ],
+  ssti: [
+    { id: "cellulitis_nonpurulent", name: "Non-Purulent Cellulitis (Erysipelas / Streptococcal)" },
+    { id: "cellulitis_purulent", name: "Purulent Cellulitis / Cutaneous Abscess (MRSA Focus)" },
+    { id: "bite_human_animal", name: "Human or Animal Bite Wounds (Pasteurella / Eikenella)" }
+  ],
+  gi: [
+    { id: "diverticulitis", name: "Uncomplicated Acute Diverticulitis (Outpatient)" },
+    { id: "diarrhea_infectious", name: "Severe Bacterial Gastroenteritis / Traveler's Diarrhea" }
+  ],
+  sti: [
+    { id: "chlamydia_gono", name: "Uncomplicated Gonorrhea & Chlamydia Dual Empirical" },
+    { id: "pid_outpatient", name: "Pelvic Inflammatory Disease (PID) Outpatient" }
+  ]
+};
+
+function populateDiagnoses() {
+  const cat = document.getElementById("categorySelect").value;
+  const diagSelect = document.getElementById("diagnosisSelect");
+  diagSelect.innerHTML = "";
+
+  DIAGNOSES[cat].forEach(d => {
+    diagSelect.add(new Option(d.name, d.id));
+  });
+
+  evaluateAntibiotic();
+}
+
+function evaluateAntibiotic() {
+  const dx = document.getElementById("diagnosisSelect").value;
+  const allergy = document.getElementById("allergySelect").value;
+  const renal = document.getElementById("renalSelect").value;
+  const preg = document.getElementById("pregSelect").value === "yes";
+
+  let title = "";
+  let firstLine = {};
+  let altLine = {};
+  let duration = "";
+  let pearl = "";
+  let citation = "";
+  let warning = "";
+
+  if (dx === "cap_healthy") {
+    title = "Community-Acquired Pneumonia (Healthy Outpatient)";
+    duration = "5 Days (Must be afebrile for 48–72h before stopping)";
+    citation = "IDSA/ATS 2019 Clinical Practice Guidelines for CAP (Metlay JP et al. Am J Respir Crit Care Med 2019).";
+
+    if (preg) {
+      firstLine = { drug: "Amoxicillin 1000 mg PO TID OR Azithromycin 500 mg Day 1, 250 mg Days 2–5", sig: "Amoxicillin 1000 mg PO TID x 5 days" };
+    } else if (allergy === "severe") {
+      firstLine = { drug: "Doxycycline 100 mg PO BID OR Levofloxacin 750 mg PO QD", sig: "Doxycycline 100 mg PO BID x 5 days" };
+    } else {
+      firstLine = { drug: "Amoxicillin 1000 mg PO TID (High-Dose) OR Doxycycline 100 mg PO BID", sig: "Amoxicillin 1000 mg PO TID x 5 days" };
+      altLine = { drug: "Azithromycin 500 mg Day 1, 250 mg Days 2–5 (Only if local macrolide resistance <25%)", sig: "Azithromycin 500 mg Day 1, 250 mg Days 2-5" };
+    }
+    pearl = "High-dose Amoxicillin overcomes penicillin-resistant pneumococcus. Monotherapy macrolide is discouraged in areas with >25% pneumococcal resistance.";
+  } else if (dx === "cap_comorbid") {
+    title = "CAP with Comorbidities (COPD, Diabetes, CKD, CHF)";
+    duration = "5 Days";
+    citation = "IDSA/ATS 2019 Clinical Practice Guidelines for CAP (Metlay JP et al. Am J Respir Crit Care Med 2019).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Levofloxacin 750 mg PO QD OR Moxifloxacin 400 mg PO QD", sig: "Levofloxacin 750 mg PO QD x 5 days" };
+    } else {
+      firstLine = { drug: "Augmentin 875/125 mg PO BID + Azithromycin 500mg Day 1, 250mg Days 2-5 (or Doxycycline 100mg BID)", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 5 days AND Azithromycin 500 mg Day 1, 250 mg Days 2-5" };
+      altLine = { drug: "Cefpodoxime 200 mg PO BID + Macrolide", sig: "Cefpodoxime 200 mg PO BID x 5 days" };
+    }
+    pearl = "Combination therapy (Beta-lactam + Macrolide or Doxycycline) provides coverage against resistant pneumococcus and atypical pathogens (Legionella/Mycoplasma).";
+  } else if (dx === "sinusitis") {
+    title = "Acute Bacterial Rhinosinusitis (ABRS)";
+    duration = "5–7 Days";
+    citation = "IDSA 2012 Clinical Practice Guideline for Acute Bacterial Rhinosinusitis (Chow AW et al. Clin Infect Dis 2012).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Doxycycline 100 mg PO BID OR Levofloxacin 500 mg PO QD", sig: "Doxycycline 100 mg PO BID x 5-7 days" };
+    } else {
+      firstLine = { drug: "Augmentin 875/125 mg PO BID (Standard Dose)", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 5-7 days" };
+      altLine = { drug: "Augmentin ES-1000/62.5 mg ER 2 tabs PO BID (High Risk / Recent Abx)", sig: "Augmentin ER 1000 mg 2 tabs PO BID x 7 days" };
+    }
+    pearl = "Plain Amoxicillin is no longer first-line for ABRS due to high prevalence of beta-lactamase producing H. influenzae and M. catarrhalis.";
+  } else if (dx === "copd_flare") {
+    title = "Acute COPD Exacerbation (Purulent Sputum)";
+    duration = "5 Days";
+    citation = "GOLD 2024 Global Strategy for Prevention, Diagnosis & Management of COPD / ERS-ATS Guidelines.";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Doxycycline 100 mg PO BID OR Azithromycin 500 mg Day 1, 250 mg Days 2–5", sig: "Doxycycline 100 mg PO BID x 5 days" };
+    } else {
+      firstLine = { drug: "Augmentin 875/125 mg PO BID OR Azithromycin 500 mg Day 1, 250 mg Days 2–5", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 5 days" };
+    }
+    pearl = "Indicated when patient exhibits increased dyspnea, sputum volume, AND sputum purulence (Anthonisen Type I or II criteria).";
+  } else if (dx === "strep") {
+    title = "Group A Streptococcal Pharyngitis";
+    duration = "10 Days (or 1 dose Benzathine Penicillin G IM)";
+    citation = "IDSA 2012 Practice Guidelines for Diagnosis and Management of Group A Streptococcal Pharyngitis (Shulman ST et al.).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Azithromycin 500 mg PO Day 1, 250 mg Days 2–5 OR Clindamycin 300 mg PO TID x 10 days", sig: "Azithromycin 500 mg Day 1, 250 mg Days 2-5" };
+    } else if (allergy === "mild") {
+      firstLine = { drug: "Cephalexin 500 mg PO BID x 10 days OR Cefdinir 300 mg PO BID x 10 days", sig: "Cephalexin 500 mg PO BID x 10 days" };
+    } else {
+      firstLine = { drug: "Penicillin V 500 mg PO BID x 10 days OR Amoxicillin 1000 mg PO QD x 10 days", sig: "Amoxicillin 1000 mg PO QD x 10 days" };
+    }
+    pearl = "A full 10-day regimen is necessary to eradicate GAS pharyngitis and prevent acute rheumatic fever.";
+  } else if (dx === "cystitis_uncomp") {
+    title = "Uncomplicated Acute Cystitis";
+    duration = "3–5 Days (Drug Dependent)";
+    citation = "IDSA/ESCMID 2011 International Clinical Practice Guidelines for Uncomplicated Cystitis (Gupta K et al.) & FDA Drug Safety Communication.";
+
+    if (preg) {
+      firstLine = { drug: "Nitrofurantoin 100 mg PO BID (Avoid in 1st trimester & at term) OR Cefpodoxime 100 mg PO BID", sig: "Nitrofurantoin Monohydrate 100 mg PO BID x 7 days" };
+    } else if (renal === "sev" || renal === "esrd") {
+      firstLine = { drug: "TMP-SMX DS (Bactrim) 1 tab PO BID OR Cefdinir 300 mg PO QD", sig: "TMP-SMX DS 1 tab PO BID x 3 days" };
+      warning = "Nitrofurantoin is CONTRAINDICATED / Ineffective when CrCl < 30 mL/min.";
+    } else {
+      firstLine = { drug: "Nitrofurantoin (Macrobid) 100 mg PO BID x 5 Days", sig: "Nitrofurantoin monohydrate/macrocrystals 100 mg PO BID x 5 days" };
+      altLine = { drug: "TMP-SMX DS (Bactrim) 1 tab PO BID x 3 Days (If local E. coli resistance <20%) OR Fosfomycin 3g PO 1 dose", sig: "Trimethoprim-sulfamethoxazole DS 1 tab PO BID x 3 days" };
+    }
+    pearl = "Avoid Fluoroquinolones (Ciprofloxacin) for uncomplicated cystitis due to FDA black box warnings.";
+  } else if (dx === "pyelo_outpatient") {
+    title = "Uncomplicated Acute Pyelonephritis (Outpatient)";
+    duration = "7–14 Days";
+    citation = "IDSA/ESCMID 2011 Guidelines for Acute Pyelonephritis (Gupta K et al. Clin Infect Dis 2011).";
+
+    if (preg) {
+      firstLine = { drug: "Ceftriaxone 1g IV in clinic → Ceftibuten or Cefpodoxime PO x 10-14 days", sig: "Cefpodoxime 200 mg PO BID x 10-14 days" };
+    } else if (allergy === "severe") {
+      firstLine = { drug: "Ciprofloxacin 500 mg PO BID x 7 Days OR Levofloxacin 750 mg PO QD x 5 Days", sig: "Ciprofloxacin 500 mg PO BID x 7 days" };
+    } else {
+      firstLine = { drug: "Ciprofloxacin 500 mg PO BID x 7 Days OR Levofloxacin 750 mg PO QD x 5 Days", sig: "Ciprofloxacin 500 mg PO BID x 7 days" };
+      altLine = { drug: "Ceftriaxone 1g IV dose in clinic → TMP-SMX DS 1 tab PO BID x 14 Days", sig: "TMP-SMX DS 1 tab PO BID x 14 days" };
+    }
+    pearl = "If fluoroquinolone resistance >10% in community, give initial dose of long-acting IV Ceftriaxone 1g in clinic before oral discharge.";
+  } else if (dx === "uti_male") {
+    title = "Male UTI / Acute Bacterial Prostatitis";
+    duration = "14 Days (UTI) to 28 Days (Prostatitis)";
+    citation = "AUA / European Association of Urology (EAU) Guidelines on Urological Infections.";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Ciprofloxacin 500 mg PO BID OR Levofloxacin 500 mg PO QD x 14–28 days", sig: "Ciprofloxacin 500 mg PO BID x 14 days" };
+    } else {
+      firstLine = { drug: "Ciprofloxacin 500 mg PO BID OR TMP-SMX DS 1 tab PO BID x 14–28 days", sig: "Ciprofloxacin 500 mg PO BID x 14 days" };
+    }
+    pearl = "Fluoroquinolones and Bactrim achieve high prostatic tissue concentration. Nitrofurantoin and Beta-lactams do NOT penetrate prostate tissue adequately.";
+  } else if (dx === "cellulitis_nonpurulent") {
+    title = "Non-Purulent Cellulitis (Streptococcal Focus)";
+    duration = "5 Days";
+    citation = "IDSA 2014 Practice Guidelines for the Management of Skin and Soft Tissue Infections (Stevens DL et al.).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Clindamycin 300–450 mg PO TID OR Levofloxacin 500 mg PO QD", sig: "Clindamycin 300 mg PO TID x 5 days" };
+    } else {
+      firstLine = { drug: "Cephalexin (Keflex) 500 mg PO QID", sig: "Cephalexin 500 mg PO QID x 5 days" };
+      altLine = { drug: "Penicillin VK 500 mg PO QID OR Amoxicillin 875 mg PO BID", sig: "Amoxicillin 875 mg PO BID x 5 days" };
+    }
+    pearl = "MRSA coverage is NOT required for typical non-purulent cellulitis. 5 days is equal in efficacy to 10 days.";
+  } else if (dx === "cellulitis_purulent") {
+    title = "Purulent Cellulitis / Abscess (MRSA Focus)";
+    duration = "5–7 Days";
+    citation = "IDSA 2014 SSTI Guidelines for MRSA Infections (Stevens DL et al. Clin Infect Dis 2014).";
+
+    firstLine = { drug: "TMP-SMX DS (Bactrim) 1–2 tabs PO BID OR Doxycycline 100 mg PO BID", sig: "TMP-SMX DS 2 tabs PO BID x 5-7 days" };
+    altLine = { drug: "Clindamycin 300–450 mg PO TID", sig: "Clindamycin 300 mg PO TID x 5-7 days" };
+    pearl = "Primary treatment of cutaneous abscess is Incision & Drainage (I&D). Antibiotics added if purulent cellulitis surrounding or systemic symptoms.";
+  } else if (dx === "bite_human_animal") {
+    title = "Animal or Human Bite Wounds";
+    duration = "7–10 Days";
+    citation = "IDSA 2014 SSTI Guidelines: Animal and Human Bite Wounds (Stevens DL et al.).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Fluoroquinolone (Ciprofloxacin 500mg BID) + Metronidazole 500mg TID OR Doxycycline 100mg BID", sig: "Doxycycline 100 mg PO BID x 7-10 days" };
+    } else {
+      firstLine = { drug: "Augmentin 875/125 mg PO BID", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 7-10 days" };
+    }
+    pearl = "Must cover Pasteurella multocida (cats/dogs) or Eikenella corrodens (humans). Cephalexin and Clindamycin DO NOT cover Pasteurella.";
+  } else if (dx === "diverticulitis") {
+    title = "Uncomplicated Acute Diverticulitis";
+    duration = "7–10 Days (If Antibiotics Indicated)";
+    citation = "AGA 2022 Clinical Practice Update on Management of Acute Diverticulitis (Peery AF et al. Gastroenterology 2022).";
+
+    if (allergy === "severe") {
+      firstLine = { drug: "Ciprofloxacin 500 mg PO BID + Metronidazole 500 mg PO TID", sig: "Ciprofloxacin 500 mg PO BID AND Metronidazole 500 mg PO TID x 7 days" };
+    } else {
+      firstLine = { drug: "Augmentin 875/125 mg PO BID Monotherapy", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 7-10 days" };
+      altLine = { drug: "Ciprofloxacin 500 mg PO BID + Metronidazole 500 mg PO TID", sig: "Ciprofloxacin 500 mg PO BID AND Metronidazole 500 mg PO TID x 7 days" };
+    }
+    pearl = "IDSA/AGA 2022 guidelines support selective non-antibiotic management for mild uncomplicated diverticulitis in immunocompetent patients without systemic inflammation.";
+  } else if (dx === "diarrhea_infectious") {
+    title = "Severe Bacterial Gastroenteritis / Traveler's Diarrhea";
+    duration = "1–3 Days";
+    citation = "IDSA 2017 Clinical Practice Guidelines for Diagnosis and Management of Infectious Diarrhea (Shane AL et al.).";
+
+    firstLine = { drug: "Azithromycin 1000 mg PO x 1 dose (or 500 mg PO QD x 3 days)", sig: "Azithromycin 500 mg PO QD x 3 days" };
+    altLine = { drug: "Ciprofloxacin 500 mg PO BID x 3 days (Avoid in Campylobacter risk or SEA travel)", sig: "Ciprofloxacin 500 mg PO BID x 3 days" };
+    pearl = "Azithromycin is preferred first-line for dysentery (bloody stool/fever) and high fluoroquinolone resistance regions (South Asia).";
+  } else if (dx === "chlamydia_gono") {
+    title = "Uncomplicated Gonorrhea & Chlamydia";
+    duration = "Single Dose Regimen + 7-Day Course";
+    citation = "CDC Sexually Transmitted Infections Treatment Guidelines, 2021 (Workowski KA et al. MMWR 2021).";
+
+    firstLine = { drug: "Ceftriaxone 500 mg IM x 1 dose (for Gonorrhea) + Doxycycline 100 mg PO BID x 7 days (for Chlamydia)", sig: "Ceftriaxone 500 mg IM single dose IN CLINIC + Doxycycline 100 mg PO BID x 7 days" };
+    pearl = "If weight ≥150 kg, increase Ceftriaxone dose to 1 gram IM. Doxycycline has replaced Azithromycin 1g for Chlamydia due to higher cure rates.";
+  } else if (dx === "pid_outpatient") {
+    title = "Pelvic Inflammatory Disease (PID) Outpatient";
+    duration = "14 Days";
+    citation = "CDC Sexually Transmitted Infections Treatment Guidelines, 2021 (Workowski KA et al. MMWR 2021).";
+
+    firstLine = { drug: "Ceftriaxone 500 mg IM x 1 dose + Doxycycline 100 mg PO BID x 14 days + Metronidazole 500 mg PO BID x 14 days", sig: "Ceftriaxone 500 mg IM single dose IN CLINIC + Doxycycline 100 mg PO BID x 14 days + Metronidazole 500 mg PO BID x 14 days" };
+    pearl = "Metronidazole added to provide anaerobic coverage for bacterial vaginosis pathogens frequently co-isolated in PID.";
+  }
+
+  // Renal Adjustments Callout
+  let renalNote = "";
+  if (renal === "mod") {
+    renalNote = "CrCl 30–50 mL/min: Reduce Cefdinir to 300mg QD. Reduce Ciprofloxacin to 250-500mg QD.";
+  } else if (renal === "sev" || renal === "esrd") {
+    renalNote = "CrCl <30 mL/min: Reduce Augmentin to 500/125mg QD or BID. Reduce Ciprofloxacin to 250mg Q24H. Nitrofurantoin contraindicated.";
+  }
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.15rem; color:#fff;">${title}</h3>
+      <div class="duration-highlight">
+        <span>⏱️ Recommended Duration: ${duration}</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="regimen-card first">
+          <div class="badge badge-first">First-Line Regimen</div>
+          <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-top:4px;">${firstLine.drug}</div>
+        </div>
+
+        ${altLine.drug ? `
+          <div class="regimen-card alt">
+            <div class="badge badge-alt">Alternative Regimen</div>
+            <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-top:4px;">${altLine.drug}</div>
+          </div>
+        ` : ''}
+      </div>
+
+      ${warning ? `<div class="warning-banner">⚠️ <strong>Safety Warning:</strong> ${warning}</div>` : ''}
+      ${renalNote ? `<div class="warning-banner" style="background:rgba(129,140,248,0.12); border-left-color:var(--info); color:#c7d2fe;">⚖️ <strong>Renal Adjustment Note:</strong> ${renalNote}</div>` : ''}
+
+      <div class="clinical-pearl">
+        ★ <strong>IDSA Clinical Pearl:</strong> ${pearl}
+      </div>
+
+      <div class="citation-box">
+        📚 <strong>Evidence & Guideline Citation:</strong> ${citation}
+      </div>
+
+      <div class="copy-box">
+        <button class="btn-copy" onclick="navigator.clipboard.writeText('${firstLine.sig.replace(/'/g, "\\'")}')">Copy EHR Sig</button>
+        <strong>EHR Order String:</strong><br>
+        <code>${firstLine.sig}</code>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("antibioticOutput").innerHTML = html;
+}
+
+// Initial setup
+populateDiagnoses();
+</script>
+</body>
+</html>
