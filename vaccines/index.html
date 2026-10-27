@@ -1,1 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Vaccine Schedule & Catch-Up Checker</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #818cf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: 20px 16px; max-width: 920px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
 
+  .tab-group {
+    display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; overflow-x: auto;
+  }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted); font-size: 0.92rem; font-weight: 600;
+    padding: 8px 14px; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab-btn.active { background: var(--card-sub); color: var(--accent); border: 1px solid var(--border); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  select, input {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .checkbox-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 10px 0;
+  }
+  .checkbox-card {
+    display: flex; align-items: flex-start; gap: 10px; background: var(--card-sub);
+    border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.88rem; transition: border-color 0.15s;
+  }
+  .checkbox-card:hover { border-color: var(--accent); }
+  .checkbox-card input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  }
+  .badge-routine { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+  .badge-risk { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+  .badge-contra { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+  .badge-info { background: rgba(129, 140, 248, 0.15); color: var(--info); border: 1px solid var(--info); }
+
+  .vaccine-item {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 14px; margin-bottom: 12px;
+  }
+  .vaccine-item.routine { border-left-color: var(--success); }
+  .vaccine-item.risk { border-left-color: var(--warning); }
+  .vaccine-item.contra { border-left-color: var(--danger); background: rgba(69, 10, 10, 0.2); }
+
+  .vaccine-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .vaccine-desc { font-size: 0.88rem; color: #e2e8f0; margin-top: 4px; }
+  .clinical-pearl { background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--accent); padding: 8px 10px; font-size: 0.82rem; color: #cbd5e1; margin-top: 8px; border-radius: 0 6px 6px 0; }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 14px;
+  }
+
+  .copy-box {
+    background: rgba(15,23,42,0.8); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Vaccine Schedule & Catch-Up Checker</h1>
+  <p class="subtitle">CDC ACIP immunization schedules, risk-based indications, minimum-interval catch-up rules, and adult pneumococcal/RSV algorithms.</p>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('pediatric', this)">1. Pediatric & Adolescent (0–18 yrs)</button>
+      <button class="tab-btn" onclick="switchTab('adult', this)">2. Adult Routine (19+ yrs)</button>
+      <button class="tab-btn" onclick="switchTab('adult-risk', this)">3. Adult Risk Factors & Medical Conditions</button>
+      <button class="tab-btn" onclick="switchTab('catchup', this)">4. Interval Catch-Up Guide</button>
+    </div>
+
+    <!-- TAB 1: PEDIATRIC SCHEDULE -->
+    <div id="tab-pediatric">
+      <div class="grid-2">
+        <div>
+          <label for="pedsMilestone">Select Age Milestone</label>
+          <select id="pedsMilestone" onchange="renderPediatric()">
+            <option value="birth">Birth</option>
+            <option value="2m">2 Months</option>
+            <option value="4m">4 Months</option>
+            <option value="6m">6 Months</option>
+            <option value="12m">12–15 Months</option>
+            <option value="18m">18–23 Months</option>
+            <option value="4y" selected>4–6 Years (Kindergarten Entry)</option>
+            <option value="11y">11–12 Years (Adolescent Entry)</option>
+            <option value="16y">16 Years (Meningococcal Booster)</option>
+          </select>
+        </div>
+        <div>
+          <label for="pedsSeason">Flu / COVID Season Status</label>
+          <select id="pedsSeason" onchange="renderPediatric()">
+            <option value="in_season" selected>Current Annual Flu / COVID Season</option>
+            <option value="off_season">Off-Season</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="pedsOutput"></div>
+    </div>
+
+    <!-- TAB 2: ADULT ROUTINE -->
+    <div id="tab-adult" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="adultAge">Select Adult Age Bracket</label>
+          <select id="adultAge" onchange="renderAdult()">
+            <option value="19-26">19–26 Years</option>
+            <option value="27-49">27–49 Years</option>
+            <option value="50-59">50–59 Years</option>
+            <option value="60-64">60–64 Years</option>
+            <option value="65+" selected>65 Years and Older</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="pneuStatus">Prior Adult Pneumococcal Vaccine History</label>
+          <select id="pneuStatus" onchange="renderAdult()">
+            <option value="naive" selected>Never received any pneumococcal vaccine</option>
+            <option value="ppsv23_only">Received PPSV23 (Pneumovax 23) only in past</option>
+            <option value="pcv13_only">Received PCV13 (Prevnar 13) only in past</option>
+            <option value="pcv15_done">Received PCV15 (Vaxneuva) — Awaiting PPSV23</option>
+            <option value="pcv20_done">Received PCV20 (Prevnar 20) or PCV21 (Capvaxive) — Fully Vaccinated</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="adultOutput"></div>
+    </div>
+
+    <!-- TAB 3: ADULT SPECIAL RISK FACTORS -->
+    <div id="tab-adult-risk" style="display:none;">
+      <label>Select Patient Medical Conditions & High-Risk Profiles</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-card"><input type="checkbox" id="riskPregnancy" onchange="renderAdultRisk()"> Pregnancy / Gestational (32–36 wks)</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskAsplenia" onchange="renderAdultRisk()"> Anatomic / Functional Asplenia / Sickle Cell</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskImmuno" onchange="renderAdultRisk()"> Immunocompromised / HIV / Biologics / Cancer</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskCkd" onchange="renderAdultRisk()"> CKD Stage 4–5 / Dialysis (ESRD)</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskDiabetes" onchange="renderAdultRisk()"> Diabetes Mellitus</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskHeartLung" onchange="renderAdultRisk()"> Chronic Heart, Lung (COPD/Asthma) or Liver Disease</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskHCW" onchange="renderAdultRisk()"> Healthcare Worker / First Responder</label>
+        <label class="checkbox-card"><input type="checkbox" id="riskMSM" onchange="renderAdultRisk()"> Men Who Have Sex with Men / Multiple Partners</label>
+      </div>
+
+      <div id="adultRiskOutput"></div>
+    </div>
+
+    <!-- TAB 4: CATCH-UP INTERVAL GUIDE -->
+    <div id="tab-catchup" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="catchupVaccine">Select Interrupted Vaccine Series</label>
+          <select id="catchupVaccine" onchange="renderCatchup()">
+            <option value="dtap">DTaP / Tdap (Pediatric/Adolescent)</option>
+            <option value="mmr">MMR (Measles, Mumps, Rubella)</option>
+            <option value="varicella">Varicella (Chickenpox)</option>
+            <option value="hepb">Hepatitis B</option>
+            <option value="hpv">HPV (Human Papillomavirus)</option>
+            <option value="ipv">IPV (Inactivated Polio)</option>
+            <option value="shingrix">RZV (Shingrix - Shingles)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="dosesDone">Doses Completed So Far</label>
+          <select id="dosesDone" onchange="renderCatchup()">
+            <option value="1" selected>1 Dose Completed</option>
+            <option value="2">2 Doses Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="catchupOutput"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">CDC ACIP 2024–2025 General Best Practice Pearls</h3>
+    <p class="note">
+      • <strong>Do NOT Restart Interrupted Series:</strong> Regardless of time elapsed between doses, routine vaccine series do not need to be restarted from dose 1.<br>
+      • <strong>Simultaneous Administration:</strong> Most live and non-live vaccines can be administered at the same clinic visit using different anatomical injection sites (separated by ≥1 inch).<br>
+      • <strong>Live Vaccine Separation Rule:</strong> Parenteral live vaccines (MMR, Varicella, Yellow Fever) not given on the same day must be separated by at least <strong>4 weeks (28 days)</strong>.
+    </p>
+  </div>
+
+<script>
+function switchTab(tabKey, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  ['pediatric', 'adult', 'adult-risk', 'catchup'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tabKey) ? 'block' : 'none';
+  });
+
+  if (tabKey === 'pediatric') renderPediatric();
+  else if (tabKey === 'adult') renderAdult();
+  else if (tabKey === 'adult-risk') renderAdultRisk();
+  else if (tabKey === 'catchup') renderCatchup();
+}
+
+function renderPediatric() {
+  const milestone = document.getElementById("pedsMilestone").value;
+  const inSeason = document.getElementById("pedsSeason").value === "in_season";
+
+  let items = [];
+
+  if (milestone === "birth") {
+    items.push({ name: "Hepatitis B (HepB) #1", type: "routine", desc: "Administer within 24 hours of birth for monovalent HepB. If maternal HBsAg positive, give HepB vaccine + HBIG within 12 hours.", pearl: "Single dose at birth serves as crucial safety net." });
+  } else if (milestone === "2m") {
+    items.push({ name: "Rotavirus (RV) #1", type: "routine", desc: "RV1 (2-dose series) or RV5 (3-dose series) oral vaccine.", pearl: "Maximum age for 1st dose is 14 weeks 6 days." });
+    items.push({ name: "DTaP #1", type: "routine", desc: "Diphtheria, tetanus, & acellular pertussis.", pearl: "Primary 3-dose series starts at 2 months." });
+    items.push({ name: "Hib #1", type: "routine", desc: "Haemophilus influenzae type b conjugate.", pearl: "ActHIB, Hiberix, or PedvaxHIB." });
+    items.push({ name: "PCV20 or PCV15 #1", type: "routine", desc: "Pneumococcal conjugate vaccine.", pearl: "PCV20 or PCV15 preferred for routine infant series." });
+    items.push({ name: "IPV #1", type: "routine", desc: "Inactivated poliovirus vaccine.", pearl: "Injectable IPV." });
+    items.push({ name: "HepB #2", type: "routine", desc: "Hepatitis B dose 2 (given at 1–2 months).", pearl: "Minimum 4 weeks after dose 1." });
+  } else if (milestone === "4m") {
+    items.push({ name: "Rotavirus (RV) #2", type: "routine", desc: "Oral Rotavirus dose 2." });
+    items.push({ name: "DTaP #2", type: "routine", desc: "Diphtheria, tetanus, acellular pertussis dose 2." });
+    items.push({ name: "Hib #2", type: "routine", desc: "Haemophilus influenzae type b dose 2." });
+    items.push({ name: "PCV20 or PCV15 #2", type: "routine", desc: "Pneumococcal conjugate dose 2." });
+    items.push({ name: "IPV #2", type: "routine", desc: "Inactivated polio dose 2." });
+  } else if (milestone === "6m") {
+    items.push({ name: "DTaP #3", type: "routine", desc: "Diphtheria, tetanus, acellular pertussis dose 3." });
+    items.push({ name: "PCV20 or PCV15 #3", type: "routine", desc: "Pneumococcal conjugate dose 3." });
+    items.push({ name: "HepB #3", type: "routine", desc: "Hepatitis B dose 3 (given between 6–18 months).", pearl: "Dose 3 must be at or after age 24 weeks and at least 16 weeks after dose 1." });
+    items.push({ name: "IPV #3", type: "routine", desc: "Inactivated polio dose 3 (given between 6–18 months)." });
+    items.push({ name: "RV #3 (if RV5 used)", type: "routine", desc: "Rotavirus dose 3 if 3-dose series used." });
+    if (inSeason) {
+      items.push({ name: "Influenza (Annual)", type: "routine", desc: "First-time recipients age 6m–8y require 2 doses separated by ≥4 weeks.", pearl: "Start annual flu vaccination at 6 months." });
+      items.push({ name: "COVID-19 (Annual)", type: "routine", desc: "Age-appropriate updated monovalent COVID-19 vaccine." });
+    }
+  } else if (milestone === "12m") {
+    items.push({ name: "MMR #1", type: "routine", desc: "Measles, mumps, rubella live vaccine (Age 12–15m).", pearl: "Live vaccine; do not give before 12 months for routine schedule." });
+    items.push({ name: "Varicella #1", type: "routine", desc: "Varicella (chickenpox) live vaccine (Age 12–15m)." });
+    items.push({ name: "PCV20 or PCV15 #4", type: "routine", desc: "Pneumococcal booster dose (Age 12–15m)." });
+    items.push({ name: "Hib #3/#4 Booster", type: "routine", desc: "Hib booster dose (Age 12–15m)." });
+    items.push({ name: "Hepatitis A (HepA) #1", type: "routine", desc: "HepA 2-dose series (Dose 1 at 12–23m; Dose 2 ≥6 months later)." });
+  } else if (milestone === "18m") {
+    items.push({ name: "DTaP #4", type: "routine", desc: "DTaP dose 4 (Age 15–18m).", pearl: "Can be given as early as 12m if 6 months elapsed since dose 3." });
+    items.push({ name: "HepA #2", type: "routine", desc: "Hepatitis A dose 2 (must be separated by at least 6 months from dose 1)." });
+  } else if (milestone === "4y") {
+    items.push({ name: "DTaP #5", type: "routine", desc: "DTaP booster prior to school entry (Age 4–6y).", pearl: "Dose 5 not necessary if dose 4 was given at or after 4th birthday." });
+    items.push({ name: "IPV #4", type: "routine", desc: "Polio booster (Age 4–6y).", pearl: "Final dose in series must be given on or after 4th birthday." });
+    items.push({ name: "MMR #2", type: "routine", desc: "MMR dose 2 (Age 4–6y)." });
+    items.push({ name: "Varicella #2", type: "routine", desc: "Varicella dose 2 (Age 4–6y)." });
+  } else if (milestone === "11y") {
+    items.push({ name: "Tdap #1", type: "routine", desc: "Adolescent Tdap booster (Age 11–12y).", pearl: "Substitutes one Td booster with pertussis protection." });
+    items.push({ name: "HPV #1 & #2", type: "routine", desc: "Human Papillomavirus 2-dose series (started at 9–12y).", pearl: "If started before 15th birthday, only 2 doses needed (0, 6–12 months). If started ≥15y, 3 doses needed (0, 1–2m, 6m)." });
+    items.push({ name: "MenACWY #1", type: "routine", desc: "Meningococcal ACWY conjugate (Age 11–12y)." });
+  } else if (milestone === "16y") {
+    items.push({ name: "MenACWY #2 Booster", type: "routine", desc: "Meningococcal ACWY booster dose (Age 16y).", pearl: "Required before college entry." });
+    items.push({ name: "MenB (Shared Decision)", type: "risk", desc: "Meningococcal B series (Bexsero 2 doses or Trumenba 2-3 doses) for ages 16–23y (preferred 16–18y).", pearl: "Shared clinical decision-making for healthy adolescents; routine for asplenia." });
+  }
+
+  let html = "";
+  items.forEach(it => {
+    html += `
+      <div class="vaccine-item ${it.type}">
+        <div class="vaccine-title">
+          <span>${it.name}</span>
+          <span class="badge ${it.type === 'routine' ? 'badge-routine' : 'badge-risk'}">${it.type.toUpperCase()}</span>
+        </div>
+        <div class="vaccine-desc">${it.desc}</div>
+        ${it.pearl ? `<div class="clinical-pearl">★ <strong>Clinical Pearl:</strong> ${it.pearl}</div>` : ''}
+      </div>
+    `;
+  });
+
+  document.getElementById("pedsOutput").innerHTML = html;
+}
+
+function renderAdult() {
+  const age = document.getElementById("adultAge").value;
+  const pneu = document.getElementById("pneuStatus").value;
+
+  let items = [];
+
+  // Universal Adult Vaccines
+  items.push({ name: "Tdap / Td Booster", type: "routine", desc: "Administer Tdap once if never received, then Td or Tdap booster every 10 years.", pearl: "Give Tdap during EACH pregnancy (27–36 weeks gestation) regardless of prior interval." });
+  items.push({ name: "Influenza (Annual)", type: "routine", desc: "Annual seasonal inactivated or recombinant influenza vaccine.", pearl: "Age ≥65: High-dose (Fluzone High-Dose) or Adjuvanted (Fluad) preferred." });
+  items.push({ name: "COVID-19 (Annual)", type: "routine", desc: "Updated 2024–2025 monovalent formula for all adults." });
+
+  // Shingrix (RZV)
+  if (age === "50-59" || age === "60-64" || age === "65+") {
+    items.push({ name: "Recombinant Zoster Vaccine (Shingrix - RZV)", type: "routine", desc: "2-dose series (Dose 2 given 2–6 months after Dose 1) for all adults age ≥50.", pearl: "Recommended regardless of prior shingles infection or prior Zostavax (live) history." });
+  }
+
+  // RSV Vaccine
+  if (age === "60-64") {
+    items.push({ name: "RSV Vaccine (Arexvy / Abrysvo / mRESVIA)", type: "risk", desc: "Shared clinical decision-making for age 60–74 with risk factors (chronic lung/heart disease, diabetes).", pearl: "Single lifetime dose." });
+  } else if (age === "65+") {
+    items.push({ name: "RSV Vaccine (Arexvy / Abrysvo / mRESVIA)", type: "routine", desc: "Recommended for ALL adults age 75+, and age 60–74 with chronic medical conditions.", pearl: "Single lifetime dose." });
+  }
+
+  // Pneumococcal Logic
+  if (age === "65+") {
+    if (pneu === "naive") {
+      items.push({ name: "Pneumococcal: PCV20 (Prevnar 20) OR PCV21 (Capvaxive) SINGLE DOSE", type: "routine", desc: "Option A: Administer 1 dose of PCV20 or PCV21 alone. Series complete!<br>Option B: Give PCV15, followed by PPSV23 ≥1 year later.", pearl: "PCV20 or PCV21 single-dose regimen eliminates complex sequential testing!" });
+    } else if (pneu === "ppsv23_only") {
+      items.push({ name: "Pneumococcal: PCV20 or PCV15", type: "routine", desc: "Give 1 dose of PCV20 or PCV15 at least 1 year after the last PPSV23 dose.", pearl: "Completes pneumococcal protection." });
+    } else if (pneu === "pcv13_only") {
+      items.push({ name: "Pneumococcal: PCV20 OR PPSV23", type: "routine", desc: "Give 1 dose of PCV20 (completes series) OR 1 dose of PPSV23 ≥1 year after PCV13." });
+    } else if (pneu === "pcv15_done") {
+      items.push({ name: "Pneumococcal: PPSV23 Due", type: "routine", desc: "Administer 1 dose of PPSV23 at least 1 year after PCV15." });
+    } else if (pneu === "pcv20_done") {
+      items.push({ name: "Pneumococcal: Fully Vaccinated", type: "routine", desc: "Patient has completed modern PCV20/PCV21 protection. No further pneumococcal doses needed.", pearl: "Complete." });
+    }
+  }
+
+  // HPV
+  if (age === "19-26") {
+    items.push({ name: "HPV (Human Papillomavirus)", type: "routine", desc: "Catch-up vaccination for all adults through age 26 if not fully vaccinated.", pearl: "3-dose series (0, 1–2m, 6m)." });
+  } else if (age === "27-49") {
+    items.push({ name: "HPV (Shared Clinical Decision)", type: "risk", desc: "Shared clinical decision-making for adults age 27–45 who are not adequately vaccinated.", pearl: "Less benefit at population level, but individual benefit if new sexual partners." });
+  }
+
+  let html = "";
+  items.forEach(it => {
+    html += `
+      <div class="vaccine-item ${it.type}">
+        <div class="vaccine-title">
+          <span>${it.name}</span>
+          <span class="badge ${it.type === 'routine' ? 'badge-routine' : 'badge-risk'}">${it.type.toUpperCase()}</span>
+        </div>
+        <div class="vaccine-desc">${it.desc}</div>
+        ${it.pearl ? `<div class="clinical-pearl">★ <strong>Clinical Pearl:</strong> ${it.pearl}</div>` : ''}
+      </div>
+    `;
+  });
+
+  document.getElementById("adultOutput").innerHTML = html;
+}
+
+function renderAdultRisk() {
+  const preg = document.getElementById("riskPregnancy").checked;
+  const asplenia = document.getElementById("riskAsplenia").checked;
+  const immuno = document.getElementById("riskImmuno").checked;
+  const ckd = document.getElementById("riskCkd").checked;
+  const dm = document.getElementById("riskDiabetes").checked;
+  const heartLung = document.getElementById("riskHeartLung").checked;
+  const hcw = document.getElementById("riskHCW").checked;
+  const msm = document.getElementById("riskMSM").checked;
+
+  let items = [];
+
+  if (preg) {
+    items.push({ name: "Tdap (Every Pregnancy)", type: "routine", desc: "Give 1 dose of Tdap during 27–36 weeks gestation in EACH pregnancy.", pearl: "Transfers maternal pertussis antibodies to newborn." });
+    items.push({ name: "RSV Vaccine (Abrysvo Only)", type: "routine", desc: "Administer Abrysvo during 32–36 weeks gestation (Sept–Jan in most of US).", pearl: "Protects infant from severe RSV bronchilitis. Do NOT give Arexvy in pregnancy." });
+    items.push({ name: "Inactivated Influenza & COVID-19", type: "routine", desc: "Safe in any trimester." });
+    items.push({ name: "CONTRAINDICATED: Live Vaccines", type: "contra", desc: "MMR, Varicella, and LAIV (nasal flu) are strictly CONTRAINDICATED in pregnancy.", pearl: "Screen before administering live vaccines." });
+  }
+
+  if (asplenia || immuno) {
+    items.push({ name: "MenACWY (Meningococcal ACWY)", type: "routine", desc: "2-dose primary series separated by 8 weeks, then booster every 5 years for life.", pearl: "High risk of fulminant encasulated bacterial sepsis." });
+    items.push({ name: "MenB (Meningococcal B)", type: "routine", desc: "Bexsero (2 doses at 0, 1m) or Trumenba (3 doses at 0, 1–2m, 6m). Booster 1 year later, then Q2–3Y.", pearl: "Mandatory for functional/anatomic asplenia and complement deficiency." });
+    items.push({ name: "Hib (Haemophilus influenzae type b)", type: "routine", desc: "1 dose if never received." });
+    items.push({ name: "Pneumococcal (PCV20 / PCV21)", type: "routine", desc: "1 dose PCV20 or PCV21 required for asplenia/immunocompromised regardless of age (<65).", pearl: "Indicated before elective splenectomy (≥14 days prior)." });
+    items.push({ name: "Shingrix (RZV) for Immunocompromised", type: "routine", desc: "Indicated for adults age ≥19 who are or will be immunocompromised.", pearl: "Can shorten interval between doses to 1–2 months." });
+    if (immuno) {
+      items.push({ name: "CONTRAINDICATED: Live Vaccines", type: "contra", desc: "MMR, Varicella, Yellow Fever, LAIV flu contraindicated in severe immunosuppression.", pearl: "Avoid live virus replication." });
+    }
+  }
+
+  if (ckd || dm || heartLung) {
+    items.push({ name: "Hepatitis B (HepB)", type: "routine", desc: "Universal adult recommendation + high dose Heplisav-B or Engerix-B for ESRD/dialysis." });
+    items.push({ name: "Pneumococcal (PCV20 / PCV21)", type: "routine", desc: "Indicated for adults age 19–64 with diabetes, COPD, asthma, heart failure, or CKD.", pearl: "Protects against invasive pneumococcal disease." });
+  }
+
+  if (hcw) {
+    items.push({ name: "Hepatitis B Serology Check", type: "routine", desc: "Verify anti-HBs titer ≥10 mIU/mL. Re-vaccinate if non-responder." });
+    items.push({ name: "MMR & Varicella Immunity", type: "routine", desc: "Document 2 doses or positive antibody IgG titers." });
+  }
+
+  if (msm) {
+    items.push({ name: "Mpox (Jynneos)", type: "routine", desc: "2-dose subcutaneous series separated by 28 days for mPOX risk factors." });
+    items.push({ name: "Hepatitis A & B", type: "routine", desc: "Complete 2-dose HepA and 2–3 dose HepB series." });
+  }
+
+  let html = "";
+  if (items.length === 0) {
+    html = `<div style="text-align:center; color:var(--muted); padding:20px;">Select one or more medical risk conditions above to view specialized ACIP indications.</div>`;
+  } else {
+    items.forEach(it => {
+      html += `
+        <div class="vaccine-item ${it.type}">
+          <div class="vaccine-title">
+            <span>${it.name}</span>
+            <span class="badge ${it.type === 'routine' ? 'badge-routine' : it.type === 'risk' ? 'badge-risk' : 'badge-contra'}">${it.type.toUpperCase()}</span>
+          </div>
+          <div class="vaccine-desc">${it.desc}</div>
+          ${it.pearl ? `<div class="clinical-pearl">★ <strong>Clinical Pearl:</strong> ${it.pearl}</div>` : ''}
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("adultRiskOutput").innerHTML = html;
+}
+
+function renderCatchup() {
+  const v = document.getElementById("catchupVaccine").value;
+  const done = document.getElementById("dosesDone").value;
+
+  let rule = "";
+  let minInterval = "";
+  let action = "";
+
+  if (v === "dtap") {
+    minInterval = "4 Weeks between Dose 1 & Dose 2; 4 Weeks between Dose 2 & Dose 3; 6 Months between Dose 3 & Dose 4.";
+    action = "Give next DTaP/Tdap dose now. Do NOT restart series regardless of years elapsed.";
+  } else if (v === "mmr") {
+    minInterval = "4 Weeks (28 days) minimum between Dose 1 and Dose 2.";
+    action = "Give MMR Dose 2 now if ≥28 days have passed since Dose 1.";
+  } else if (v === "varicella") {
+    minInterval = "Age <13y: 3 Months minimum interval. Age ≥13y: 4 Weeks (28 days) minimum interval.";
+    action = "Give Varicella Dose 2 now if minimum interval met.";
+  } else if (v === "hepb") {
+    minInterval = "4 Weeks between Dose 1 & Dose 2. 8 Weeks between Dose 2 & Dose 3 (and ≥16 weeks after Dose 1).";
+    action = "If using Heplisav-B (2-dose series), give Dose 2 at least 4 weeks after Dose 1. Complete series.";
+  } else if (v === "hpv") {
+    minInterval = "If started <15y (2-dose schedule): Dose 2 given 6–12 months after Dose 1 (min 5 months).<br>If started ≥15y (3-dose schedule): Dose 2 at 1–2 months, Dose 3 at 6 months.";
+    action = "Resume series where left off. No need to restart.";
+  } else if (v === "shingrix") {
+    minInterval = "2 to 6 Months between Dose 1 and Dose 2.";
+    action = "If >6 months have elapsed since Dose 1, give Dose 2 as soon as possible. Do NOT restart the 2-dose series.";
+  }
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.05rem; color:#fff;">ACIP Catch-Up Rule</h3>
+      <p style="font-size:0.9rem; color:var(--accent); margin-top:4px;"><strong>Minimum Required Interval:</strong> ${minInterval}</p>
+      <div class="clinical-pearl" style="margin-top:10px;">
+        <strong>Recommended Action:</strong> ${action}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("catchupOutput").innerHTML = html;
+}
+
+// Initial render
+renderPediatric();
+</script>
+</body>
+</html>
