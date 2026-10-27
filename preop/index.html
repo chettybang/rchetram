@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Pre-Op Clearance & Medication Hold Advisor</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-sub: #111827;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #818cf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: 20px 16px; max-width: 920px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px;
+    color: var(--accent); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: #ffffff; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+
+  .tab-group {
+    display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border);
+    padding-bottom: 10px; overflow-x: auto;
+  }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted); font-size: 0.92rem; font-weight: 600;
+    padding: 8px 14px; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab-btn.active { background: var(--card-sub); color: var(--accent); border: 1px solid var(--border); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+  label {
+    display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  select, input[type="text"], input[type="number"] {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #0f172a; color: var(--text); font-size: 1rem; margin-bottom: 12px;
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  .checkbox-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 10px 0;
+  }
+  .checkbox-card {
+    display: flex; align-items: flex-start; gap: 10px; background: var(--card-sub);
+    border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.88rem; transition: border-color 0.15s;
+  }
+  .checkbox-card:hover { border-color: var(--accent); }
+  .checkbox-card input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  }
+  .badge-hold { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+  .badge-continue { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+  .badge-modify { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+  .badge-info { background: rgba(129, 140, 248, 0.15); color: var(--info); border: 1px solid var(--info); }
+
+  .med-item {
+    background: var(--card-sub); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 14px; margin-bottom: 12px;
+  }
+  .med-item.hold { border-left-color: var(--danger); }
+  .med-item.continue { border-left-color: var(--success); }
+  .med-item.modify { border-left-color: var(--warning); }
+
+  .med-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .med-desc { font-size: 0.88rem; color: #cbd5e1; margin-top: 4px; }
+  .clinical-pearl { background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--accent); padding: 8px 10px; font-size: 0.82rem; color: #cbd5e1; margin-top: 8px; border-radius: 0 6px 6px 0; }
+
+  .summary-box {
+    background: var(--card-sub); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 14px;
+  }
+
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 12px;
+  }
+  .metric-card {
+    background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 8px; text-align: center;
+  }
+  .metric-card .val { font-size: 1.35rem; font-weight: 700; color: var(--accent); }
+  .metric-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+  .copy-box {
+    background: rgba(15,23,42,0.9); border: 1px dashed var(--accent); border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; position: relative;
+  }
+  .btn-copy {
+    position: absolute; top: 8px; right: 8px; background: #334155; color: var(--text);
+    border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #0f172a; }
+
+  .note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 4px; color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+  }
+  .link-btn:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Home</a>
+  <h1>Pre-Op Clearance & Medication Hold Advisor</h1>
+  <p class="subtitle">Evidence-based perioperative medication hold timelines, RCRI cardiac risk triage, and pre-op lab testing guidelines.</p>
+
+  <div class="card">
+    <div class="tab-group">
+      <button class="tab-btn active" onclick="switchTab('holds', this)">1. Medication Hold Schedule Generator</button>
+      <button class="tab-btn" onclick="switchTab('rcri', this)">2. RCRI Cardiac Risk Triage</button>
+      <button class="tab-btn" onclick="switchTab('labs', this)">3. Pre-Op Testing & Lab Orders</button>
+      <button class="tab-btn" onclick="switchTab('note', this)">4. EHR Note & Patient Instructions</button>
+    </div>
+
+    <!-- TAB 1: MEDICATION HOLDS -->
+    <div id="tab-holds">
+      <div class="grid-2">
+        <div>
+          <label for="bleedRisk">Surgical Bleeding & Anesthesia Risk</label>
+          <select id="bleedRisk" onchange="renderHolds()">
+            <option value="low" selected>Low Bleeding Risk (Minor ortho, cataract, dental, skin, diagnostic endo)</option>
+            <option value="high">Moderate / High Bleeding Risk or Neuraxial Anesthesia (Major ortho, abdominal, neuro, vascular)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="crcl">Renal Function (CrCl / eGFR)</label>
+          <select id="crcl" onchange="renderHolds()">
+            <option value="normal" selected>Normal / Mild (CrCl ≥ 50 mL/min)</option>
+            <option value="mod">Moderate Impairment (CrCl 30–49 mL/min)</option>
+            <option value="sev">Severe Impairment (CrCl < 30 mL/min)</option>
+          </select>
+        </div>
+      </div>
+
+      <label style="margin-top:10px;">Select Patient's Home Medication Classes</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-card"><input type="checkbox" id="medGlp1Weekly" onchange="renderHolds()" checked> Weekly GLP-1 / GIP (Semaglutide/Ozempic/Wegovy, Tirzepatide/Zepbound/Mounjaro, Dulaglutide)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medSglt2" onchange="renderHolds()" checked> SGLT2 Inhibitors (Jardiance, Farxiga, Invokana, Steglatro)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medAceArb" onchange="renderHolds()" checked> ACE Inhibitor or ARB (Lisinopril, Losartan, Valsartan, Enalapril)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medBetaBlocker" onchange="renderHolds()" checked> Beta Blockers (Metoprolol, Atenolol, Carvedilol, Bisoprolol)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medDoac" onchange="renderHolds()"> DOACs (Eliquis, Xarelto, Pradaxa, Savaysa)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medWarfarin" onchange="renderHolds()"> Warfarin (Coumadin)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medAntiplatelet" onchange="renderHolds()"> P2Y12 Antiplatelet (Plavix/Clopidogrel, Effient/Prasugrel, Brilinta/Ticagrelor)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medAspirin" onchange="renderHolds()"> Aspirin (81mg or 325mg daily)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medMetformin" onchange="renderHolds()" checked> Metformin / Oral Hypoglycemics</label>
+        <label class="checkbox-card"><input type="checkbox" id="medInsulin" onchange="renderHolds()"> Long-Acting / Basal Insulin (Lantus, Basaglar, Tresiba, NPH)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medDiuretics" onchange="renderHolds()"> Diuretics (Lasix/Furosemide, HCTZ, Chlorthalidone, Spironolactone)</label>
+        <label class="checkbox-card"><input type="checkbox" id="medStatin" onchange="renderHolds()"> Statins (Atorvastatin, Rosuvastatin, Simvastatin)</label>
+      </div>
+
+      <div id="holdsOutput" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- TAB 2: RCRI CARDIAC RISK -->
+    <div id="tab-rcri" style="display:none;">
+      <p style="font-size:0.9rem; color:var(--muted); margin-bottom:12px;">Revised Cardiac Risk Index (Lee Criteria) for predicting perioperative Major Adverse Cardiac Events (MACE).</p>
+      
+      <label>Select Patient RCRI Predictors (1 Point Each):</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-card"><input type="checkbox" id="rcriHighRiskSurg" onchange="renderRcri()"> High-Risk Surgery (Intraperitoneal, intrathoracic, or suprainguinal vascular surgery)</label>
+        <label class="checkbox-card"><input type="checkbox" id="rcriIhd" onchange="renderRcri()"> History of Ischemic Heart Disease (MI, positive stress test, angina, prior PCI/CABG)</label>
+        <label class="checkbox-card"><input type="checkbox" id="rcriChf" onchange="renderRcri()"> History of Congestive Heart Failure (Pulmonary edema, PND, EF ≤40%)</label>
+        <label class="checkbox-card"><input type="checkbox" id="rcriCvd" onchange="renderRcri()"> History of Cerebrovascular Disease (TIA or Stroke history)</label>
+        <label class="checkbox-card"><input type="checkbox" id="rcriInsulin" onchange="renderRcri()"> Insulin-Treated Diabetes Mellitus</label>
+        <label class="checkbox-card"><input type="checkbox" id="rcriCr" onchange="renderRcri()"> Pre-Op Serum Creatinine > 2.0 mg/dL (177 µmol/L)</label>
+      </div>
+
+      <div id="rcriOutput"></div>
+    </div>
+
+    <!-- TAB 3: PRE-OP LABS & TESTING -->
+    <div id="tab-labs" style="display:none;">
+      <p style="font-size:0.9rem; color:var(--muted); margin-bottom:12px;">Choosing Wisely & ASA Guidelines: Routine screening labs in healthy patients undergoing low-risk surgery are NOT indicated.</p>
+      
+      <label>Select Clinical Risk Factors / Indications:</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-card"><input type="checkbox" id="indBleed" onchange="renderLabs()"> Anticipated Significant Blood Loss / Anemia / Hematologic Disease</label>
+        <label class="checkbox-card"><input type="checkbox" id="indRenal" onchange="renderLabs()"> CKD, Diabetes, Hypertension, or ACEi/ARB/Diuretic Therapy</label>
+        <label class="checkbox-card"><input type="checkbox" id="indCoag" onchange="renderLabs()"> Anticoagulant Therapy, Liver Disease, or Bleeding Disorder History</label>
+        <label class="checkbox-card"><input type="checkbox" id="indCad" onchange="renderLabs()"> Known CAD, Arrhythmia, Structural Heart Disease, or Age ≥65 with Risk Factors</label>
+        <label class="checkbox-card"><input type="checkbox" id="indPulm" onchange="renderLabs()"> Acute Respiratory Symptoms or Severe Unstable COPD/Asthma</label>
+        <label class="checkbox-card"><input type="checkbox" id="indDm" onchange="renderLabs()"> Diabetes Mellitus (Check glycemic control)</label>
+      </div>
+
+      <div id="labsOutput"></div>
+    </div>
+
+    <!-- TAB 4: EHR NOTE & PATIENT INSTRUCTIONS -->
+    <div id="tab-note" style="display:none;">
+      <div class="grid-2">
+        <div>
+          <label for="patientName">Patient Name / Initials (Optional)</label>
+          <input type="text" id="patientName" placeholder="e.g. J.D." oninput="renderNote()">
+        </div>
+        <div>
+          <label for="surgDate">Scheduled Surgery Date</label>
+          <input type="text" id="surgDate" placeholder="e.g. Next Tuesday (10/14)" oninput="renderNote()">
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h3 style="font-size:1.05rem; color:#fff;">Generated Documentation & Patient Instruction Summary</h3>
+        
+        <div class="copy-box">
+          <button class="btn-copy" onclick="copyText('patientCalendar')">Copy Patient Instructions</button>
+          <strong>Patient Instruction Handout (Clearance & Hold Timeline):</strong><br>
+          <div id="patientCalendar" style="white-space:pre-wrap; margin-top:6px;"></div>
+        </div>
+
+        <div class="copy-box" style="margin-top:12px;">
+          <button class="btn-copy" onclick="copyText('ehrClearanceNote')">Copy EHR Progress Note</button>
+          <strong>EHR Perioperative Clearance Progress Note:</strong><br>
+          <div id="ehrClearanceNote" style="white-space:pre-wrap; margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">ASA & ACC/AHA Perioperative Consensus Pearls</h3>
+    <p class="note">
+      • <strong>GLP-1 Aspiration Warning (ASA 2023):</strong> Hold weekly GLP-1/GIP agonists for <strong>7 days</strong> prior to elective procedures to prevent delayed gastric emptying and aspiration under anesthesia.<br>
+      • <strong>SGLT2 Euglycemic DKA Alert (FDA):</strong> Hold Empagliflozin/Dapagliflozin/Canagliflozin <strong>3 days</strong> (Ertugliflozin <strong>4 days</strong>) prior to surgery.<br>
+      • <strong>Never Stop Beta-Blockers:</strong> Abrupt cessation of chronic beta-blockers increases perioperative ischemia and mortality. Continue on morning of surgery with a small sip of water.
+    </p>
+  </div>
+
+<script>
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['holds', 'rcri', 'labs', 'note'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tab) ? 'block' : 'none';
+  });
+
+  if (tab === 'holds') renderHolds();
+  else if (tab === 'rcri') renderRcri();
+  else if (tab === 'labs') renderLabs();
+  else if (tab === 'note') renderNote();
+}
+
+function renderHolds() {
+  const bleedRisk = document.getElementById("bleedRisk").value;
+  const crcl = document.getElementById("crcl").value;
+
+  let items = [];
+
+  // GLP-1
+  if (document.getElementById("medGlp1Weekly").checked) {
+    items.push({
+      name: "Weekly GLP-1 / GIP Agonist (Semaglutide/Ozempic/Wegovy, Tirzepatide/Mounjaro/Zepbound, Dulaglutide)",
+      badge: "HOLD 7 DAYS PRIOR",
+      type: "hold",
+      desc: "Hold for <strong>1 week (7 days)</strong> prior to elective surgery regardless of indication (Diabetes or Weight Loss).",
+      pearl: "ASA 2023 Consensus Statement: Delayed gastric emptying increases pulmonary aspiration risk under sedation/anesthesia even with standard NPO fasting."
+    });
+  }
+
+  // SGLT2
+  if (document.getElementById("medSglt2").checked) {
+    items.push({
+      name: "SGLT2 Inhibitors (Jardiance, Farxiga, Invokana, Steglatro)",
+      badge: "HOLD 3–4 DAYS PRIOR",
+      type: "hold",
+      desc: "Hold <strong>3 days prior</strong> for Empagliflozin, Dapagliflozin, and Canagliflozin. Hold <strong>4 days prior</strong> for Ertugliflozin.",
+      pearl: "FDA Safety Warning: Surgical stress + SGLT2 inhibition can trigger life-threatening Euglycemic Diabetic Ketoacidosis (eDKA) with normal blood glucose levels."
+    });
+  }
+
+  // ACEi / ARB
+  if (document.getElementById("medAceArb").checked) {
+    items.push({
+      name: "ACE Inhibitors & ARBs (Lisinopril, Losartan, Valsartan, Enalapril)",
+      badge: "HOLD 24 HOURS PRIOR",
+      type: "hold",
+      desc: "Hold on the morning of surgery (or 24 hours prior to procedure).",
+      pearl: "Continuation increases risk of refractory intraoperative hypotension following anesthesia induction. Restart post-op once normovolemic."
+    });
+  }
+
+  // Beta Blocker
+  if (document.getElementById("medBetaBlocker").checked) {
+    items.push({
+      name: "Beta-Blockers (Metoprolol, Atenolol, Carvedilol, Bisoprolol)",
+      badge: "CONTINUE ON MORNING OF SURGERY",
+      type: "continue",
+      desc: "<strong>DO NOT HOLD.</strong> Administer chronic beta-blocker on morning of surgery with a small sip of water.",
+      pearl: "Abrupt withdrawal causes rebound tachycardia, hypertension, and perioperative myocardial ischemia."
+    });
+  }
+
+  // DOACs
+  if (document.getElementById("medDoac").checked) {
+    let holdTime = "";
+    if (bleedRisk === "high" || crcl === "sev") {
+      holdTime = "Hold 48 to 72 hours (2–3 days) prior to surgery";
+    } else if (crcl === "mod") {
+      holdTime = "Hold 36 to 48 hours prior to surgery";
+    } else {
+      holdTime = "Hold 24 to 48 hours (1–2 days) prior to surgery";
+    }
+    items.push({
+      name: "DOACs (Eliquis/Apixaban, Xarelto/Rivaroxaban, Pradaxa/Dabigatran)",
+      badge: holdTime.toUpperCase(),
+      type: "hold",
+      desc: `<strong>${holdTime}.</strong> No routine heparin bridging required for DOACs.`,
+      pearl: "For neuraxial anesthesia (spinal/epidural) or high bleeding risk surgery, ensure at least 48–72h hold time. Restart 24–48h post-op once hemostasis is secured."
+    });
+  }
+
+  // Warfarin
+  if (document.getElementById("medWarfarin").checked) {
+    items.push({
+      name: "Warfarin (Coumadin)",
+      badge: "HOLD 5 DAYS PRIOR & CHECK INR",
+      type: "hold",
+      desc: "Hold <strong>5 days prior</strong> to surgery. Check INR on day before or morning of surgery (Target INR < 1.5).",
+      pearl: "Assess need for LMWH (Lovenox) bridging based on CHADS2-VASc score (Bridge if CHADS2 ≥ 5, mechanical mitral valve, or recent VTE <3 months)."
+    });
+  }
+
+  // Antiplatelets
+  if (document.getElementById("medAntiplatelet").checked) {
+    items.push({
+      name: "P2Y12 Antiplatelets (Plavix/Clopidogrel, Effient/Prasugrel, Brilinta/Ticagrelor)",
+      badge: "HOLD 5–7 DAYS PRIOR",
+      type: "hold",
+      desc: "Hold <strong>Clopidogrel (Plavix) 5 days</strong>, <strong>Ticagrelor (Brilinta) 3–5 days</strong>, and <strong>Prasugrel (Effient) 7 days</strong> prior.",
+      pearl: "Confirm timing of prior Coronary Stents! Delay elective surgery if Bare Metal Stent placed <1 month ago or Drug-Eluting Stent (DES) placed <6 months ago."
+    });
+  }
+
+  // Aspirin
+  if (document.getElementById("medAspirin").checked) {
+    items.push({
+      name: "Aspirin (81mg or 325mg)",
+      badge: "CONTINUE FOR SECONDARY PREVENTION",
+      type: "continue",
+      desc: "Continue Aspirin 81mg through surgery for secondary prevention (known CAD/stents/stroke), UNLESS undergoing high-risk neurosurgical, intracranial, or posterior eye procedures.",
+      pearl: "Primary prevention Aspirin can be held 7 days prior; secondary prevention Aspirin is safely continued for most general surgeries."
+    });
+  }
+
+  // Metformin
+  if (document.getElementById("medMetformin").checked) {
+    items.push({
+      name: "Metformin & Oral Antidiabetics",
+      badge: "HOLD DAY OF SURGERY",
+      type: "hold",
+      desc: "Hold on the morning of surgery. Hold Sulfonylureas (Glipizide/Glimepiride) on morning of surgery.",
+      pearl: "Prevents intraoperative hypoglycemia while NPO and reduces risk of lactic acidosis if renal perfusion changes."
+    });
+  }
+
+  // Basal Insulin
+  if (document.getElementById("medInsulin").checked) {
+    items.push({
+      name: "Basal / Long-Acting Insulin (Lantus, Basaglar, Tresiba, NPH)",
+      badge: "REDUCE DOSE BY 20–50%",
+      type: "modify",
+      desc: "Give <strong>75–80%</strong> of normal dose on evening prior, and <strong>50–75%</strong> of normal dose on morning of surgery. Hold all short-acting/prandial insulin while NPO.",
+      pearl: "Maintains baseline basal insulin to prevent ketoacidosis while accounting for NPO fasting state."
+    });
+  }
+
+  // Diuretics
+  if (document.getElementById("medDiuretics").checked) {
+    items.push({
+      name: "Diuretics (Furosemide/Lasix, HCTZ, Chlorthalidone, Spironolactone)",
+      badge: "HOLD DAY OF SURGERY",
+      type: "hold",
+      desc: "Hold on morning of surgery.",
+      pearl: "Prevents intraoperative hypovolemia, hypotension, and electrolyte disturbances under general anesthesia."
+    });
+  }
+
+  // Statins
+  if (document.getElementById("medStatin").checked) {
+    items.push({
+      name: "Statins (Atorvastatin, Rosuvastatin, Simvastatin)",
+      badge: "CONTINUE ON SCHEDULE",
+      type: "continue",
+      desc: "Continue chronic statin therapy throughout perioperative period.",
+      pearl: "Pleiotropic anti-inflammatory and plaque-stabilizing properties reduce perioperative cardiac events."
+    });
+  }
+
+  let html = "";
+  if (items.length === 0) {
+    html = `<div style="text-align:center; color:var(--muted); padding:20px;">Select one or more patient home medications above to generate exact perioperative hold schedules.</div>`;
+  } else {
+    items.forEach(it => {
+      html += `
+        <div class="med-item ${it.type}">
+          <div class="med-title">
+            <span>${it.name}</span>
+            <span class="badge badge-${it.type}">${it.badge}</span>
+          </div>
+          <div class="med-desc">${it.desc}</div>
+          <div class="clinical-pearl">★ <strong>Clinical Guideline Pearl:</strong> ${it.pearl}</div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("holdsOutput").innerHTML = html;
+}
+
+function renderRcri() {
+  const surg = document.getElementById("rcriHighRiskSurg").checked;
+  const ihd = document.getElementById("rcriIhd").checked;
+  const chf = document.getElementById("rcriChf").checked;
+  const cvd = document.getElementById("rcriCvd").checked;
+  const insulin = document.getElementById("rcriInsulin").checked;
+  const cr = document.getElementById("rcriCr").checked;
+
+  let score = (surg ? 1 : 0) + (ihd ? 1 : 0) + (chf ? 1 : 0) + (cvd ? 1 : 0) + (insulin ? 1 : 0) + (cr ? 1 : 0);
+
+  let maceRisk = "";
+  let rec = "";
+  let badgeClass = "badge-continue";
+
+  if (score === 0) {
+    maceRisk = "0.4% (Class I - Low Cardiac Risk)";
+    rec = "Proceed to surgery without further cardiac testing.";
+  } else if (score === 1) {
+    maceRisk = "0.9% (Class II - Moderate Risk)";
+    rec = "Proceed to surgery if functional capacity ≥ 4 METs (e.g. climb 2 flights of stairs without symptoms).";
+    badgeClass = "badge-modify";
+  } else if (score === 2) {
+    maceRisk = "6.6% (Class III - High Risk)";
+    rec = "Evaluate functional capacity. Consider pre-op pharmacological stress test if poor functional capacity (<4 METs) and testing will change management.";
+    badgeClass = "badge-hold";
+  } else {
+    maceRisk = "> 11.0% (Class IV - Very High Risk)";
+    rec = "High MACE risk. Cardiology consultation & pharmacological stress imaging recommended if poor/unknown functional capacity.";
+    badgeClass = "badge-hold";
+  }
+
+  let html = `
+    <div class="summary-box">
+      <h3 style="font-size:1.1rem; color:#fff;">Revised Cardiac Risk Index (RCRI) Score: <span style="color:var(--accent);">${score} / 6 Points</span></h3>
+      
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="val">${maceRisk.split(" ")[0]}</div>
+          <div class="lbl">Predicted 30-Day MACE Risk</div>
+        </div>
+        <div class="metric-card">
+          <div class="val" style="font-size:1.05rem;"><span class="badge ${badgeClass}">${maceRisk.split("-")[1] || 'Low Risk'}</span></div>
+          <div class="lbl">ACC/AHA Risk Class</div>
+        </div>
+      </div>
+
+      <div class="clinical-pearl" style="margin-top:14px;">
+        ★ <strong>ACC/AHA Guideline Recommendation:</strong> ${rec}
+      </div>
+
+      <p class="note" style="margin-top:10px;">
+        • <strong>Functional Capacity Assessment (METs):</strong> Can patient walk up a hill or climb 2 flights of stairs carrying groceries? (≥4 METs = Good functional capacity; proceed to surgery without cardiac stress testing).
+      </p>
+    </div>
+  `;
+
+  document.getElementById("rcriOutput").innerHTML = html;
+}
+
+function renderLabs() {
+  const bleed = document.getElementById("indBleed").checked;
+  const renal = document.getElementById("indRenal").checked;
+  const coag = document.getElementById("indCoag").checked;
+  const cad = document.getElementById("indCad").checked;
+  const pulm = document.getElementById("indPulm").checked;
+  const dm = document.getElementById("indDm").checked;
+
+  let orders = [];
+
+  if (bleed) orders.push("<strong>Complete Blood Count (CBC):</strong> Indicated for anticipated major blood loss or underlying anemia.");
+  if (renal) orders.push("<strong>Basic Metabolic Panel (BMP / Cr / K+):</strong> Indicated for CKD, Diabetes, HTN, or ACEi/ARB/Diuretic therapy.");
+  if (coag) orders.push("<strong>Coagulation Panel (PT/INR, aPTT):</strong> Indicated for Warfarin, liver disease, or bleeding history. (Not routine for DOACs).");
+  if (cad) orders.push("<strong>12-Lead ECG:</strong> Indicated for known CAD, arrhythmia, structural heart disease, or age ≥65 with systemic cardiac risk.");
+  if (pulm) orders.push("<strong>Chest X-Ray (CXR):</strong> Indicated for acute respiratory symptoms or severe uncontrolled COPD/asthma.");
+  if (dm) orders.push("<strong>Hemoglobin A1c:</strong> Indicated within last 90 days for Diabetes (Target A1c < 8.0% to minimize wound infection risk).");
+
+  let html = "";
+  if (orders.length === 0) {
+    html = `
+      <div class="summary-box">
+        <h3 style="font-size:1.05rem; color:var(--success);">Choosing Wisely Guidance: No Routine Pre-Op Labs Indicated</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin-top:4px;">
+          For asymptomatic patients undergoing low-risk procedures without systemic disease, routine pre-operative bloodwork or ECG does not alter outcomes and is not recommended.
+        </p>
+      </div>
+    `;
+  } else {
+    html = `
+      <div class="summary-box">
+        <h3 style="font-size:1.05rem; color:#fff;">Indication-Based Pre-Operative Orders</h3>
+        <ul style="padding-left:18px; font-size:0.9rem; color:#cbd5e1; margin-top:8px; line-height:1.6;">
+          ${orders.map(o => `<li>${o}</li>`).join("")}
+        </ul>
+      </div>
+    `;
+  }
+
+  document.getElementById("labsOutput").innerHTML = html;
+}
+
+function renderNote() {
+  const name = document.getElementById("patientName").value || "Patient";
+  const date = document.getElementById("surgDate").value || "[Date]";
+  
+  const scoreDiv = document.getElementById("rcriOutput").innerText;
+  const scoreMatch = scoreDiv.match(/Score: (\d \/ \d Points)/);
+  const scoreStr = scoreMatch ? scoreMatch[1] : "Calculated";
+
+  let patientText = `PERIOPERATIVE MEDICATION INSTRUCTIONS FOR ${name.toUpperCase()}\nSurgery Date: ${date}\n\n`;
+  patientText += `1. MEDICATION HOLD TIMELINE:\n`;
+
+  if (document.getElementById("medGlp1Weekly").checked) {
+    patientText += `• Weekly GLP-1 (Ozempic / Wegovy / Mounjaro / Zepbound): HOLD 7 DAYS PRIOR to surgery date.\n`;
+  }
+  if (document.getElementById("medSglt2").checked) {
+    patientText += `• SGLT2 Inhibitor (Jardiance / Farxiga / Invokana): HOLD 3 DAYS PRIOR to surgery date.\n`;
+  }
+  if (document.getElementById("medAceArb").checked) {
+    patientText += `• Blood Pressure Med (Lisinopril / Losartan / Valsartan): HOLD ON MORNING OF SURGERY.\n`;
+  }
+  if (document.getElementById("medBetaBlocker").checked) {
+    patientText += `• Heart Med (Metoprolol / Atenolol / Carvedilol): TAKE ON MORNING OF SURGERY with a small sip of water.\n`;
+  }
+  if (document.getElementById("medMetformin").checked) {
+    patientText += `• Diabetes Med (Metformin / Glipizide): HOLD ON MORNING OF SURGERY.\n`;
+  }
+  if (document.getElementById("medInsulin").checked) {
+    patientText += `• Basal Insulin: Take 75% of normal dose evening prior and 50% on morning of surgery. Hold mealtime insulin while fasting.\n`;
+  }
+
+  patientText += `\n2. NPO INSTRUCTIONS:\n• No solid food for 8 hours prior to procedure.\n• Clear liquids (water, clear broth) permitted up to 2 hours before arrival unless instructed otherwise by anesthesia.`;
+
+  let ehrNote = `PERIOPERATIVE MEDICAL CLEARANCE PROGRESS NOTE\nPatient: ${name}\nSurgery Date: ${date}\n\n`;
+  ehrNote += `ASSESSMENT & PLAN:\n`;
+  ehrNote += `1. Cardiac Risk Stratification: RCRI Score ${scoreStr}. Overall MACE risk evaluated. Functional capacity acceptable (≥4 METs).\n`;
+  ehrNote += `2. Perioperative Medication Plan:\n`;
+  if (document.getElementById("medBetaBlocker").checked) ehrNote += `- Continue Beta-Blockers morning of surgery.\n`;
+  if (document.getElementById("medAceArb").checked) ehrNote += `- Hold ACEi/ARB 24 hours prior to procedure.\n`;
+  if (document.getElementById("medGlp1Weekly").checked) ehrNote += `- Hold weekly GLP-1/GIP agonist 7 days prior per ASA 2023 guidelines.\n`;
+  if (document.getElementById("medSglt2").checked) ehrNote += `- Hold SGLT2 inhibitor 3–4 days prior per FDA eDKA warning.\n`;
+  ehrNote += `3. NPO & Fasting: Patient instructed on standard NPO guidelines. Patient cleared for elective procedure from medical standpoint.`;
+
+  document.getElementById("patientCalendar").textContent = patientText;
+  document.getElementById("ehrClearanceNote").textContent = ehrNote;
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+}
+
+// Initial renders
+renderHolds();
+renderRcri();
+renderLabs();
+renderNote();
+</script>
+</body>
+</html>
