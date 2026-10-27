@@ -2,6 +2,7 @@
 <html lang="en">
 <head> 
 <link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-size='70' fill='%2338bdf8'>⚕</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
@@ -49,12 +50,13 @@
     margin-bottom: 36px; 
   }
 
-  .caduceus { 
-    font-size: 2.5rem; 
-    margin-bottom: 6px; 
+  .caduceus-icon { 
+    width: 52px;
+    height: 52px;
+    margin-bottom: 8px; 
     color: var(--accent);
     display: inline-block;
-    filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.3));
+    filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.4));
   }
 
   header h1 { 
@@ -118,8 +120,14 @@
     line-height: 1.45; 
   }
 
-  .icon { 
-    font-size: 1.25rem; 
+  .card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: var(--accent);
+    flex-shrink: 0;
   }
 
   footer { 
@@ -141,74 +149,76 @@
 <body>
   <div class="container">
     <header>
-      <div class="caduceus">⚕</div>
+      <svg class="caduceus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M8 5c2-1 6-1 8 0s2 3 0 4-6 1-8 0-2-3 0-4ZM8 11c2-1 6-1 8 0s2 3 0 4-6 1-8 0-2-3 0-4ZM10 2h4"/>
+      </svg>
       <h1>Ryan Chetram, MD</h1>
       <p class="subtitle">Family Medicine Clinical Tools</p>
     </header>
 
     <div class="app-grid">
       <a class="app-card" href="/prices/">
-        <h2><span class="icon">⚕</span> Prescription Prices</h2>
+        <h2><span class="card-icon">⚕</span> Prescription Prices</h2>
         <p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, Walmart $4 list, and SingleCare.</p>
       </a>
 
       <a class="app-card" href="/antidepressants/">
-        <h2><span class="icon">⚕</span> Antidepressant Converter</h2>
+        <h2><span class="card-icon">⚕</span> Antidepressant Converter</h2>
         <p>Approximate dose equivalencies for SSRIs, SNRIs, Bupropion, and Mirtazapine based on fluoxetine units.</p>
       </a>
 
       <a class="app-card" href="/stimulants/">
-        <h2><span class="icon">⚕</span> ADHD Stimulant Converter</h2>
+        <h2><span class="card-icon">⚕</span> ADHD Stimulant Converter</h2>
         <p>Approximate dose equivalencies for common methylphenidate and amphetamine stimulants.</p>
       </a>
 
       <a class="app-card" href="/peds-antibiotics/">
-        <h2><span class="icon">⚕</span> Pediatric Antibiotic Dosing</h2>
+        <h2><span class="card-icon">⚕</span> Pediatric Antibiotic Dosing</h2>
         <p>Weight-based mg/kg liquid suspension dosing, concentration matcher, and auto-rounded sig builder.</p>
       </a>
 
       <a class="app-card" href="/obesity/">
-        <h2><span class="icon">⚕</span> Obesity Pharmacotherapy</h2>
+        <h2><span class="card-icon">⚕</span> Obesity Pharmacotherapy</h2>
         <p>AACE/AGA decision support engine, GLP-1/GIP trial evidence & complete non-GLP-1 oral alternatives.</p>
       </a>
 
       <a class="app-card" href="/insulin/">
-        <h2><span class="icon">⚕</span> Insulin Dosing & Sliding Scale</h2>
+        <h2><span class="card-icon">⚕</span> Insulin Dosing & Sliding Scale</h2>
         <p>Calculate TDD, split basal/prandial regimens, convert insulin products, and build EHR correction scales.</p>
       </a>
 
       <a class="app-card" href="/contraceptive/">
-        <h2><span class="icon">⚕</span> OCP Switch & Missed Pill Engine</h2>
+        <h2><span class="card-icon">⚕</span> OCP Switch & Missed Pill Engine</h2>
         <p>Match oral contraceptives by component generations and apply CDC SPR guidance for missed pills.</p>
       </a>
 
       <a class="app-card" href="/steroids/">
-        <h2><span class="icon">⚕</span> Steroid Equivalence & Taper</h2>
+        <h2><span class="card-icon">⚕</span> Steroid Equivalence & Taper</h2>
         <p>Convert systemic corticosteroids and generate instant patient instruction schedules with EHR sigs.</p>
       </a>
 
       <a class="app-card" href="/thyroid/">
-        <h2><span class="icon">⚕</span> Levothyroxine Dosing & Color Matcher</h2>
+        <h2><span class="card-icon">⚕</span> Levothyroxine Dosing & Color Matcher</h2>
         <p>1.6 mcg/kg full replacement calculation, snap to 12 commercial tablet colors, and weekly fine-tuning.</p>
       </a>
 
       <a class="app-card" href="/inhalers/">
-        <h2><span class="icon">⚕</span> Inhaler Equivalence & GINA Matrix</h2>
+        <h2><span class="card-icon">⚕</span> Inhaler Equivalence & GINA Matrix</h2>
         <p>Cross-reference ICS potencies, dual/triple combination therapies, GINA SMART regimens, and device techniques.</p>
       </a>
 
       <a class="app-card" href="/medicaid/">
-        <h2><span class="icon">⚕</span> Medicaid Preferred List</h2>
+        <h2><span class="card-icon">⚕</span> Medicaid Preferred List</h2>
         <p>Check Louisiana & Texas Medicaid preferred drug list (PDL) status and suggested alternatives.</p>
       </a>
 
       <a class="app-card" href="/mme/">
-        <h2><span class="icon">⚕</span> MME Converter</h2>
+        <h2><span class="card-icon">⚕</span> MME Converter</h2>
         <p>Calculate morphine milligram equivalents for common opioids, routes, and cross-tolerance switches.</p>
       </a>
 
       <a class="app-card" href="/phosphate/">
-        <h2><span class="icon">⚕</span> Phosphate Deficit Calculator</h2>
+        <h2><span class="card-icon">⚕</span> Phosphate Deficit Calculator</h2>
         <p>Quantitative elemental replacement engine with mmol, mg, mEq, and co-administered cation breakdowns.</p>
       </a>
     </div>
