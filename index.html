@@ -2,7 +2,7 @@
 <html lang="en">
 <head> 
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-size='70' fill='%2338bdf8'>⚕</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><g stroke='%2338bdf8' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M50 16 v68'/><circle cx='50' cy='15' r='4' fill='%2338bdf8'/><path d='M50 26 C36 14, 18 22, 22 34 C28 34, 40 28, 50 32 C60 28, 72 34, 78 34 C82 22, 64 14, 50 26 Z' fill='%2338bdf8' fill-opacity='0.25'/><path d='M50 36 C34 40, 34 50, 50 54 C66 58, 66 68, 50 72'/><path d='M50 36 C66 40, 66 50, 50 54 C34 58, 34 68, 50 72'/></g></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
@@ -51,12 +51,12 @@
   }
 
   .caduceus-icon { 
-    width: 52px;
-    height: 52px;
+    width: 58px;
+    height: 58px;
     margin-bottom: 8px; 
     color: var(--accent);
     display: inline-block;
-    filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.4));
+    filter: drop-shadow(0 2px 10px rgba(56, 189, 248, 0.45));
   }
 
   header h1 { 
@@ -149,8 +149,12 @@
 <body>
   <div class="container">
     <header>
-      <svg class="caduceus-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2v20M8 5c2-1 6-1 8 0s2 3 0 4-6 1-8 0-2-3 0-4ZM8 11c2-1 6-1 8 0s2 3 0 4-6 1-8 0-2-3 0-4ZM10 2h4"/>
+      <svg class="caduceus-icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M50 16 v68"/>
+        <circle cx="50" cy="15" r="4" fill="currentColor"/>
+        <path d="M50 26 C36 14, 18 22, 22 34 C28 34, 40 28, 50 32 C60 28, 72 34, 78 34 C82 22, 64 14, 50 26 Z" fill="currentColor" fill-opacity="0.25"/>
+        <path d="M50 36 C34 40, 34 50, 50 54 C66 58, 66 68, 50 72"/>
+        <path d="M50 36 C66 40, 66 50, 50 54 C34 58, 34 68, 50 72"/>
       </svg>
       <h1>Ryan Chetram, MD</h1>
       <p class="subtitle">Family Medicine Clinical Tools</p>
@@ -180,6 +184,21 @@
       <a class="app-card" href="/obesity/">
         <h2><span class="card-icon">⚕</span> Obesity Pharmacotherapy</h2>
         <p>AACE/AGA decision support engine, GLP-1/GIP trial evidence & complete non-GLP-1 oral alternatives.</p>
+      </a>
+
+      <a class="app-card" href="/preop/">
+        <h2><span class="card-icon">⚕</span> Pre-Op Clearance & Hold Advisor</h2>
+        <p>ASA 2023 GLP-1 7-day hold rules, SGLT2/DOAC timelines, RCRI MACE triage, and indication-based pre-op labs.</p>
+      </a>
+
+      <a class="app-card" href="/vaccines/">
+        <h2><span class="card-icon">⚕</span> Vaccine Schedule & Catch-Up Checker</h2>
+        <p>CDC ACIP immunization schedules, risk-based indications, minimum-interval catch-up rules, and pneumococcal algorithms.</p>
+      </a>
+
+      <a class="app-card" href="/antibiotics/">
+        <h2><span class="card-icon">⚕</span> Adult Outpatient Antibiotics</h2>
+        <p>IDSA guideline-directed empirical antimicrobial therapy, evidence-based durations, PCN allergy alternatives, and renal doses.</p>
       </a>
 
       <a class="app-card" href="/insulin/">
