@@ -1,578 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><g stroke='%2338bdf8' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M50 16 v68'/><circle cx='50' cy='15' r='4' fill='%2338bdf8'/><path d='M50 26 C36 14, 18 22, 22 34 C28 34, 40 28, 50 32 C60 28, 72 34, 78 34 C82 22, 64 14, 50 26 Z' fill='%2338bdf8' fill-opacity='0.25'/><path d='M50 36 C34 40, 34 50, 50 54 C66 58, 66 68, 50 72'/><path d='M50 36 C66 40, 66 50, 50 54 C34 58, 34 68, 50 72'/></g></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 32 C36 16 16 22 20 38 C28 38 40 32 50 36 C60 32 72 38 80 38 C84 22 64 16 50 32 Z' fill='%2338bdf8' fill-opacity='0.3' stroke='%2338bdf8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/><path d='M50 18 L50 82' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round'/><circle cx='50' cy='16' r='4.5' fill='%2338bdf8'/><path d='M50 36 C34 42 34 52 50 58 C66 64 66 74 50 80' stroke='%2338bdf8' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M50 36 C66 42 66 52 50 58 C34 64 34 74 50 80' stroke='%2338bdf8' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
-<title>Ryan Chetram, MD — Clinical Suite</title>
+<title>ChetMed — Clinical Suite</title>
 <style>
-  :root {
-    --bg: #0f172a;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --card-hover-bg: rgba(30, 41, 59, 0.95);
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --accent-glow: rgba(56, 189, 248, 0.15);
-    --border: rgba(51, 65, 85, 0.7);
-    --border-hover: rgba(56, 189, 248, 0.45);
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    --shadow-hover: 0 10px 30px rgba(56, 189, 248, 0.2);
-    
-    /* Category Accent Badges */
-    --badge-pharm: rgba(56, 189, 248, 0.15);
-    --badge-pharm-text: #38bdf8;
-    --badge-clear: rgba(251, 191, 36, 0.15);
-    --badge-clear-text: #fbbf24;
-    --badge-peds: rgba(236, 72, 153, 0.15);
-    --badge-peds-text: #f472b6;
-    --badge-calc: rgba(52, 211, 153, 0.15);
-    --badge-calc-text: #34d399;
-  }
-  
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: var(--bg);
-    background-image: 
-      radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.98) 60%),
-      radial-gradient(circle at 80% 80%, rgba(129, 140, 248, 0.06) 0%, transparent 50%);
-    background-attachment: fixed;
-    color: var(--text);
-    line-height: 1.5;
-    min-height: 100vh;
-    padding: 36px 16px 60px 16px;
-  }
-
-  .container { 
-    max-width: 1080px; 
-    margin: 0 auto; 
-  }
-
-  header { 
-    text-align: center; 
-    margin-bottom: 28px; 
-    position: relative;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 12px;
-    letter-spacing: 0.03em;
-  }
-
-  .hero-badge .dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #34d399;
-    box-shadow: 0 0 8px #34d399;
-  }
-
-  .caduceus-icon { 
-    width: 62px;
-    height: 62px;
-    margin-bottom: 6px; 
-    color: var(--accent);
-    display: inline-block;
-    filter: drop-shadow(0 4px 16px rgba(56, 189, 248, 0.4));
-  }
-
-  header h1 { 
-    font-size: 2.2rem; 
-    font-weight: 800; 
-    color: #ffffff; 
-    letter-spacing: -0.025em;
-    margin-bottom: 4px; 
-  }
-
-  header .subtitle { 
-    color: var(--muted); 
-    font-size: 1.05rem; 
-    font-weight: 500;
-  }
-
-  /* Search & Filter Bar */
-  .filter-controls {
-    margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .search-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 540px;
-  }
-
-  .search-input {
-    width: 100%;
-    padding: 12px 16px 12px 42px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: rgba(15, 23, 42, 0.8);
-    color: var(--text);
-    font-size: 0.95rem;
-    backdrop-filter: blur(12px);
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-    background: rgba(15, 23, 42, 0.95);
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    color: var(--muted);
-    pointer-events: none;
-  }
-
-  .category-tabs {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .tab-chip {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    user-select: none;
-  }
-
-  .tab-chip:hover {
-    color: var(--text);
-    border-color: rgba(255,255,255,0.2);
-    background: rgba(30, 41, 59, 0.9);
-  }
-
-  .tab-chip.active {
-    background: var(--accent);
-    color: #0f172a;
-    border-color: var(--accent);
-    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
-  }
-
-  /* Responsive Grid Layout */
-  .app-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
-  .app-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    text-decoration: none;
-    color: inherit;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: var(--shadow);
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .app-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-
-  .app-card:hover { 
-    background: var(--card-hover-bg);
-    border-color: var(--border-hover); 
-    box-shadow: var(--shadow-hover); 
-    transform: translateY(-3px);
-  }
-
-  .app-card:hover::before {
-    opacity: 1;
-  }
-
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-  .app-card h2 { 
-    font-size: 1.05rem; 
-    font-weight: 700; 
-    line-height: 1.35;
-    color: #ffffff; 
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
-
-  .card-tag {
-    display: inline-block;
-    padding: 2px 7px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-  }
-
-  .tag-pharm { background: var(--badge-pharm); color: var(--badge-pharm-text); border: 1px solid rgba(56, 189, 248, 0.3); }
-  .tag-clear { background: var(--badge-clear); color: var(--badge-clear-text); border: 1px solid rgba(251, 191, 36, 0.3); }
-  .tag-peds { background: var(--badge-peds); color: var(--badge-peds-text); border: 1px solid rgba(236, 72, 153, 0.3); }
-  .tag-calc { background: var(--badge-calc); color: var(--badge-calc-text); border: 1px solid rgba(52, 211, 153, 0.3); }
-
-  .app-card p { 
-    color: var(--muted); 
-    font-size: 0.86rem; 
-    line-height: 1.45; 
-    margin-top: 4px;
-  }
-
-  .no-results {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-    font-size: 0.95rem;
-    background: var(--card-bg);
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    display: none;
-  }
-
-  footer { 
-    text-align: center; 
-    margin-top: 48px; 
-    font-size: 0.85rem; 
-    color: var(--muted); 
-    font-weight: 500;
-  }
-
-  /* Responsive Breakpoints */
-  @media (max-width: 960px) {
-    .app-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  }
-
-  @media (max-width: 620px) {
-    .app-grid { grid-template-columns: 1fr; gap: 12px; }
-    body { padding: 24px 12px 40px 12px; }
-    header h1 { font-size: 1.75rem; }
-  }
+:root {
+--bg: #0f172a;
+--card-bg: rgba(30, 41, 59, 0.7);
+--card-hover-bg: rgba(30, 41, 59, 0.95);
+--text: #f8fafc;
+--muted: #94a3b8;
+--accent: #38bdf8;
+--accent-glow: rgba(56, 189, 248, 0.15);
+--border: rgba(51, 65, 85, 0.7);
+--border-hover: rgba(56, 189, 248, 0.45);
+--shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+--shadow-hover: 0 10px 30px rgba(56, 189, 248, 0.2);
+/* Category Accent Badges */
+--badge-pharm: rgba(56, 189, 248, 0.15);
+--badge-pharm-text: #38bdf8;
+--badge-clear: rgba(251, 191, 36, 0.15);
+--badge-clear-text: #fbbf24;
+--badge-peds: rgba(236, 72, 153, 0.15);
+--badge-peds-text: #f472b6;
+--badge-calc: rgba(52, 211, 153, 0.15);
+--badge-calc-text: #34d399;
+}
+￼ { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+background-color: var(--bg);
+background-image:
+radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.98) 60%),
+radial-gradient(circle at 80% 80%, rgba(129, 140, 248, 0.06) 0%, transparent 50%);
+background-attachment: fixed;
+color: var(--text);
+line-height: 1.5;
+min-height: 100vh;
+padding: 36px 16px 60px 16px;
+}
+.container {
+max-width: 1080px;
+margin: 0 auto;
+}
+header {
+text-align: center;
+margin-bottom: 28px;
+position: relative;
+}
+.hero-badge {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+background: rgba(56, 189, 248, 0.08);
+border: 1px solid rgba(56, 189, 248, 0.25);
+padding: 4px 12px;
+border-radius: 20px;
+font-size: 0.78rem;
+font-weight: 600;
+color: var(--accent);
+margin-bottom: 12px;
+letter-spacing: 0.03em;
+}
+.hero-badge .dot {
+width: 7px;
+height: 7px;
+border-radius: 50%;
+background: #34d399;
+box-shadow: 0 0 8px #34d399;
+}
+.caduceus-icon {
+width: 68px;
+height: 68px;
+margin-bottom: 4px;
+color: var(--accent);
+display: inline-block;
+filter: drop-shadow(0 4px 16px rgba(56, 189, 248, 0.4));
+}
+header h1 {
+font-size: 2.4rem;
+font-weight: 800;
+color: #ffffff;
+letter-spacing: -0.025em;
+margin-bottom: 2px;
+}
+header .subtitle {
+color: var(--muted);
+font-size: 1.05rem;
+font-weight: 500;
+}
+/* Search & Filter Bar */
+.filter-controls {
+margin-bottom: 24px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+align-items: center;
+}
+.search-wrapper {
+position: relative;
+width: 100%;
+max-width: 540px;
+}
+.search-input {
+width: 100%;
+padding: 12px 16px 12px 42px;
+border-radius: 12px;
+border: 1px solid var(--border);
+background: rgba(15, 23, 42, 0.8);
+color: var(--text);
+font-size: 0.95rem;
+backdrop-filter: blur(12px);
+transition: all 0.2s ease;
+box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+.search-input:focus {
+outline: none;
+border-color: var(--accent);
+box-shadow: 0 0 0 3px var(--accent-glow);
+background: rgba(15, 23, 42, 0.95);
+}
+.search-icon {
+position: absolute;
+left: 14px;
+top: 50%;
+transform: translateY(-50%);
+width: 18px;
+height: 18px;
+color: var(--muted);
+pointer-events: none;
+}
+.category-tabs {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+justify-content: center;
+}
+.tab-chip {
+background: rgba(30, 41, 59, 0.6);
+border: 1px solid var(--border);
+color: var(--muted);
+padding: 6px 14px;
+border-radius: 20px;
+font-size: 0.82rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.15s ease;
+user-select: none;
+}
+.tab-chip:hover {
+color: var(--text);
+border-color: rgba(255,255,255,0.2);
+background: rgba(30, 41, 59, 0.9);
+}
+.tab-chip.active {
+background: var(--accent);
+color: #0f172a;
+border-color: var(--accent);
+box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+}
+/* Responsive Grid Layout */
+.app-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 16px;
+margin-bottom: 28px;
+}
+.app-card {
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+background: var(--card-bg);
+border: 1px solid var(--border);
+border-radius: 16px;
+padding: 20px;
+text-decoration: none;
+color: inherit;
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+box-shadow: var(--shadow);
+transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+position: relative;
+overflow: hidden;
+}
+.app-card::before {
+content: '';
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 3px;
+background: linear-gradient(90deg, transparent, var(--accent), transparent);
+opacity: 0;
+transition: opacity 0.25s ease;
+}
+.app-card:hover {
+background: var(--card-hover-bg);
+border-color: var(--border-hover);
+box-shadow: var(--shadow-hover);
+transform: translateY(-3px);
+}
+.app-card:hover::before {
+opacity: 1;
+}
+.card-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 10px;
+margin-bottom: 8px;
+}
+.app-card h2 {
+font-size: 1.05rem;
+font-weight: 700;
+line-height: 1.35;
+color: #ffffff;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.card-icon {
+font-size: 1.1rem;
+flex-shrink: 0;
+}
+.card-tag {
+display: inline-block;
+padding: 2px 7px;
+border-radius: 6px;
+font-size: 0.7rem;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.04em;
+flex-shrink: 0;
+}
+.tag-pharm { background: var(--badge-pharm); color: var(--badge-pharm-text); border: 1px solid rgba(56, 189, 248, 0.3); }
+.tag-clear { background: var(--badge-clear); color: var(--badge-clear-text); border: 1px solid rgba(251, 191, 36, 0.3); }
+.tag-peds { background: var(--badge-peds); color: var(--badge-peds-text); border: 1px solid rgba(236, 72, 153, 0.3); }
+.tag-calc { background: var(--badge-calc); color: var(--badge-calc-text); border: 1px solid rgba(52, 211, 153, 0.3); }
+.app-card p {
+color: var(--muted);
+font-size: 0.86rem;
+line-height: 1.45;
+margin-top: 4px;
+}
+.no-results {
+grid-column: 1 / -1;
+text-align: center;
+padding: 40px 20px;
+color: var(--muted);
+font-size: 0.95rem;
+background: var(--card-bg);
+border: 1px dashed var(--border);
+border-radius: 16px;
+display: none;
+}
+footer {
+text-align: center;
+margin-top: 48px;
+font-size: 0.85rem;
+color: var(--muted);
+font-weight: 500;
+}
+/* Responsive Breakpoints */
+@media (max-width: 960px) {
+.app-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+}
+@media (max-width: 620px) {
+.app-grid { grid-template-columns: 1fr; gap: 12px; }
+body { padding: 24px 12px 40px 12px; }
+header h1 { font-size: 1.85rem; }
+}
 </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="hero-badge">
-        <span class="dot"></span> PWA Offline Engine Active
-      </div>
-      <br>
-      <svg class="caduceus-icon" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M50 16 v68"/>
-        <circle cx="50" cy="15" r="4" fill="currentColor"/>
-        <path d="M50 26 C36 14, 18 22, 22 34 C28 34, 40 28, 50 32 C60 28, 72 34, 78 34 C82 22, 64 14, 50 26 Z" fill="currentColor" fill-opacity="0.25"/>
-        <path d="M50 36 C34 40, 34 50, 50 54 C66 58, 66 68, 50 72"/>
-        <path d="M50 36 C66 40, 66 50, 50 54 C34 58, 34 68, 50 72"/>
-      </svg>
-      <h1>Ryan Chetram, MD</h1>
-      <p class="subtitle">Family Medicine Clinical Decision Suite</p>
-    </header>
+<div class="container">
+<header>
+<div class="hero-badge">
+<span class="dot"></span> PWA Offline Engine Active
+</div>
 
-    <div class="filter-controls">
-      <div class="search-wrapper">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search clinical tools, drugs, or keywords..." oninput="filterCards()">
-      </div>
 
-      <div class="category-tabs">
-        <button class="tab-chip active" onclick="setCategory('all', this)">All Tools</button>
-        <button class="tab-chip" onclick="setCategory('pharm', this)">Pharmacology & Dosing</button>
-        <button class="tab-chip" onclick="setCategory('clear', this)">Risk & Clearance</button>
-        <button class="tab-chip" onclick="setCategory('peds', this)">Pediatrics & Women's</button>
-        <button class="tab-chip" onclick="setCategory('calc', this)">Calculators</button>
-      </div>
-    </div>
-
-    <div class="app-grid" id="appGrid">
-      
-      <!-- 1. PRESCRIPTION PRICES -->
-      <a class="app-card" href="/prices/" data-cat="pharm" data-kw="prices cost drug savings generic cash pharmacy">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">💊</span> Prescription Prices</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, Walmart $4 list, and SingleCare.</p>
-        </div>
-      </a>
-
-      <!-- 2. ANTIDEPRESSANTS -->
-      <a class="app-card" href="/antidepressants/" data-cat="pharm" data-kw="antidepressant ssri snri conversion fluoxetine equivalent dose">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🧠</span> Antidepressant Converter</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Approximate dose equivalencies for SSRIs, SNRIs, Bupropion, and Mirtazapine based on fluoxetine units.</p>
-        </div>
-      </a>
-
-      <!-- 3. STIMULANTS -->
-      <a class="app-card" href="/stimulants/" data-cat="pharm" data-kw="adhd stimulant methylphenidate amphetamine conversion dose vyvanse adderall">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">⚡</span> ADHD Stimulant Converter</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Approximate dose equivalencies for methylphenidate and amphetamine ADHD formulations.</p>
-        </div>
-      </a>
-
-      <!-- 4. PEDIATRIC ANTIBIOTICS -->
-      <a class="app-card" href="/peds-antibiotics/" data-cat="peds" data-kw="pediatric peds antibiotic amoxicillin suspension weight dose otitis">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🧸</span> Pediatric Antibiotic Dosing</h2>
-            <span class="card-tag tag-peds">PEDS</span>
-          </div>
-          <p>Weight-based mg/kg liquid suspension dosing, concentration matcher, and auto-rounded sig builder.</p>
-        </div>
-      </a>
-
-      <!-- 5. OBESITY PHARMACOTHERAPY -->
-      <a class="app-card" href="/obesity/" data-cat="pharm" data-kw="obesity glp1 tirzepatide semaglutide weight loss qsymia contrave">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">⚖️</span> Obesity Pharmacotherapy</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>AACE/AGA decision support engine, GLP-1/GIP trial evidence & complete non-GLP-1 oral alternatives.</p>
-        </div>
-      </a>
-
-      <!-- 6. INSULIN DOSING -->
-      <a class="app-card" href="/insulin/" data-cat="pharm" data-kw="insulin tdd sliding scale basal prandial diabetes glargine lispro">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🩸</span> Insulin Dosing & Sliding Scale</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Calculate TDD, split basal/prandial regimens, convert insulin products, and build EHR correction scales.</p>
-        </div>
-      </a>
-
-      <!-- 7. ADULT ANTIBIOTICS -->
-      <a class="app-card" href="/antibiotics/" data-cat="pharm" data-kw="antibiotic adult infection idsa UTI pneumonia cellulitis penicillin allergy">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🛡️</span> Adult Outpatient Antibiotics</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>IDSA guideline-directed empirical antimicrobial therapy, durations, PCN allergy options, and renal doses.</p>
-        </div>
-      </a>
-
-      <!-- 8. PRE-OP CLEARANCE -->
-      <a class="app-card" href="/preop/" data-cat="clear" data-kw="preop clearance hold surgery glp1 sglt2 rcri cardiac mace labs">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">📋</span> Pre-Op Clearance & Hold Advisor</h2>
-            <span class="card-tag tag-clear">CLEARANCE</span>
-          </div>
-          <p>ASA 2023 GLP-1 7-day hold rules, SGLT2/DOAC timelines, RCRI MACE triage, and indication pre-op labs.</p>
-        </div>
-      </a>
-
-      <!-- 9. VACCINES -->
-      <a class="app-card" href="/vaccines/" data-cat="peds" data-kw="vaccine cdc acip schedule catchup pediatric adult pneumococcal rsv">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">💉</span> Vaccine Schedule & Catch-Up</h2>
-            <span class="card-tag tag-peds">IMMUNIZATION</span>
-          </div>
-          <p>CDC ACIP schedules, medical risk indications, minimum-interval catch-up rules, and pneumococcal algorithms.</p>
-        </div>
-      </a>
-
-      <!-- 10. CONTRACEPTIVE ADVISOR -->
-      <a class="app-card" href="/contraceptive/" data-cat="peds" data-kw="ocp contraceptive missed pill birth control estrogen progestin cdc spr">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🌸</span> OCP Switch & Missed Pill Engine</h2>
-            <span class="card-tag tag-peds">WOMEN'S</span>
-          </div>
-          <p>Match oral contraceptives by component generations and apply CDC SPR guidance for missed pills.</p>
-        </div>
-      </a>
-
-      <!-- 11. STEROIDS -->
-      <a class="app-card" href="/steroids/" data-cat="pharm" data-kw="steroid prednisone dexamethasone taper equivalence medrol dosepack">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">📉</span> Steroid Equivalence & Taper</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Convert systemic corticosteroids and generate instant patient instruction schedules with EHR sigs.</p>
-        </div>
-      </a>
-
-      <!-- 12. THYROID -->
-      <a class="app-card" href="/thyroid/" data-cat="pharm" data-kw="thyroid levothyroxine synthroid dose tablet color tsh hypothyroidism">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🦋</span> Levothyroxine Dosing & Colors</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>1.6 mcg/kg full replacement calculation, snap to 12 commercial tablet colors, and weekly fine-tuning.</p>
-        </div>
-      </a>
-
-      <!-- 13. INHALERS -->
-      <a class="app-card" href="/inhalers/" data-cat="pharm" data-kw="inhaler ics laba lama gina copd asthma symbicort trelegy">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🫁</span> Inhaler Equivalence & GINA Matrix</h2>
-            <span class="card-tag tag-pharm">PHARM</span>
-          </div>
-          <p>Cross-reference ICS potencies, dual/triple combination therapies, GINA SMART regimens, and device techniques.</p>
-        </div>
-      </a>
-
-      <!-- 14. MEDICAID -->
-      <a class="app-card" href="/medicaid/" data-cat="clear" data-kw="medicaid pdl preferred drug list louisiana texas formulary pa">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🏛️</span> Medicaid Preferred List</h2>
-            <span class="card-tag tag-clear">FORMULARY</span>
-          </div>
-          <p>Check Louisiana & Texas Medicaid preferred drug list (PDL) status and suggested alternatives.</p>
-        </div>
-      </a>
-
-      <!-- 15. MME CONVERTER -->
-      <a class="app-card" href="/mme/" data-cat="calc" data-kw="mme opioid morphine equivalent conversion pain fentanyl oxycodone">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🚨</span> MME Calculator</h2>
-            <span class="card-tag tag-calc">CALCULATOR</span>
-          </div>
-          <p>Calculate morphine milligram equivalents for common opioids, routes, and cross-tolerance switches.</p>
-        </div>
-      </a>
-
-      <!-- 16. PHOSPHATE -->
-      <a class="app-card" href="/phosphate/" data-cat="calc" data-kw="phosphate phosphorus deficit mmol meq replacement oral iv">
-        <div>
-          <div class="card-header">
-            <h2><span class="card-icon">🧪</span> Phosphate Deficit Calculator</h2>
-            <span class="card-tag tag-calc">CALCULATOR</span>
-          </div>
-          <p>Quantitative elemental replacement engine with mmol, mg, mEq, and co-administered cation breakdowns.</p>
-        </div>
-      </a>
-
-      <div class="no-results" id="noResults">
-        No clinical tools matched your search or category filter.
-      </div>
-    </div>
-
-    <footer>
-      Clinical tools for reference. Always individualize care.
-    </footer>
-  </div>
-
-  <script>
-    let activeCategory = 'all';
-
-    function setCategory(cat, btn) {
-      activeCategory = cat;
-      document.querySelectorAll('.tab-chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filterCards();
-    }
-
-    function filterCards() {
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const cards = document.querySelectorAll('.app-card');
-      let visibleCount = 0;
-
-      cards.forEach(card => {
-        const cat = card.getAttribute('data-cat');
-        const kw = card.getAttribute('data-kw') + ' ' + card.innerText.toLowerCase();
-
-        const matchesCat = (activeCategory === 'all' || cat === activeCategory);
-        const matchesQuery = (query === '' || kw.includes(query));
-
-        if (matchesCat && matchesQuery) {
-          card.style.display = 'flex';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
-    }
-
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('PWA Service Worker registered:', reg.scope))
-          .catch(err => console.error('PWA Service Worker registration failed:', err));
-      });
-    }
-  </script>
+<svg class="caduceus-icon" viewBox="0 0 100 100" fill="none">
+<path d="M50 32 C36 16 16 22 20 38 C28 38 40 32 50 36 C60 32 72 38 80 38 C84 22 64 16 50 32 Z" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M50 18 L50 82" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+<circle cx="50" cy="16" r="4.5" fill="currentColor"/>
+<path d="M50 36 C34 42 34 52 50 58 C66 64 66 74 50 80" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M50 36 C66 42 66 52 50 58 C34 64 34 74 50 80" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+<h1>ChetMed</h1>
+<p class="subtitle">Ryan Chetram, MD — Family Medicine Clinical Decision Suite</p>
+</header>
+<div class="filter-controls">
+<div class="search-wrapper">
+<svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="11" cy="11" r="8"></circle>
+<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
+<input type="text" id="searchInput" class="search-input" placeholder="Search clinical tools, drugs, or keywords..." oninput="filterCards()">
+</div>
+<div class="category-tabs">
+<button class="tab-chip active" onclick="setCategory('all', this)">All Tools</button>
+<button class="tab-chip" onclick="setCategory('pharm', this)">Pharmacology & Dosing</button>
+<button class="tab-chip" onclick="setCategory('clear', this)">Risk & Clearance</button>
+<button class="tab-chip" onclick="setCategory('peds', this)">Pediatrics & Women's</button>
+<button class="tab-chip" onclick="setCategory('calc', this)">Calculators</button>
+</div>
+</div>
+<div class="app-grid" id="appGrid">
+<!-- 1. PRESCRIPTION PRICES -->
+<a class="app-card" href="/prices/" data-cat="pharm" data-kw="prices cost drug savings generic cash pharmacy">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">💊</span> Prescription Prices</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, Walmart $4 list, and SingleCare.</p>
+</div>
+</a>
+<!-- 2. ANTIDEPRESSANTS -->
+<a class="app-card" href="/antidepressants/" data-cat="pharm" data-kw="antidepressant ssri snri conversion fluoxetine equivalent dose">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🧠</span> Antidepressant Converter</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Approximate dose equivalencies for SSRIs, SNRIs, Bupropion, and Mirtazapine based on fluoxetine units.</p>
+</div>
+</a>
+<!-- 3. STIMULANTS -->
+<a class="app-card" href="/stimulants/" data-cat="pharm" data-kw="adhd stimulant methylphenidate amphetamine conversion dose vyvanse adderall">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">⚡</span> ADHD Stimulant Converter</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Approximate dose equivalencies for methylphenidate and amphetamine ADHD formulations.</p>
+</div>
+</a>
+<!-- 4. PEDIATRIC ANTIBIOTICS -->
+<a class="app-card" href="/peds-antibiotics/" data-cat="peds" data-kw="pediatric peds antibiotic amoxicillin suspension weight dose otitis">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🧸</span> Pediatric Antibiotic Dosing</h2>
+<span class="card-tag tag-peds">PEDS</span>
+</div>
+<p>Weight-based mg/kg liquid suspension dosing, concentration matcher, and auto-rounded sig builder.</p>
+</div>
+</a>
+<!-- 5. OBESITY PHARMACOTHERAPY -->
+<a class="app-card" href="/obesity/" data-cat="pharm" data-kw="obesity glp1 tirzepatide semaglutide weight loss qsymia contrave">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">⚖️</span> Obesity Pharmacotherapy</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>AACE/AGA decision support engine, GLP-1/GIP trial evidence & complete non-GLP-1 oral alternatives.</p>
+</div>
+</a>
+<!-- 6. INSULIN DOSING -->
+<a class="app-card" href="/insulin/" data-cat="pharm" data-kw="insulin tdd sliding scale basal prandial diabetes glargine lispro">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🩸</span> Insulin Dosing & Sliding Scale</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Calculate TDD, split basal/prandial regimens, convert insulin products, and build EHR correction scales.</p>
+</div>
+</a>
+<!-- 7. ADULT ANTIBIOTICS -->
+<a class="app-card" href="/antibiotics/" data-cat="pharm" data-kw="antibiotic adult infection idsa UTI pneumonia cellulitis penicillin allergy">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🛡️</span> Adult Outpatient Antibiotics</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>IDSA guideline-directed empirical antimicrobial therapy, durations, PCN allergy options, and renal doses.</p>
+</div>
+</a>
+<!-- 8. PRE-OP CLEARANCE -->
+<a class="app-card" href="/preop/" data-cat="clear" data-kw="preop clearance hold surgery glp1 sglt2 rcri cardiac mace labs">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">📋</span> Pre-Op Clearance & Hold Advisor</h2>
+<span class="card-tag tag-clear">CLEARANCE</span>
+</div>
+<p>ASA 2023 GLP-1 7-day hold rules, SGLT2/DOAC timelines, RCRI MACE triage, and indication pre-op labs.</p>
+</div>
+</a>
+<!-- 9. VACCINES -->
+<a class="app-card" href="/vaccines/" data-cat="peds" data-kw="vaccine cdc acip schedule catchup pediatric adult pneumococcal rsv">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">💉</span> Vaccine Schedule & Catch-Up</h2>
+<span class="card-tag tag-peds">IMMUNIZATION</span>
+</div>
+<p>CDC ACIP schedules, medical risk indications, minimum-interval catch-up rules, and pneumococcal algorithms.</p>
+</div>
+</a>
+<!-- 10. CONTRACEPTIVE ADVISOR -->
+<a class="app-card" href="/contraceptive/" data-cat="peds" data-kw="ocp contraceptive missed pill birth control estrogen progestin cdc spr">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🌸</span> OCP Switch & Missed Pill Engine</h2>
+<span class="card-tag tag-peds">WOMEN'S</span>
+</div>
+<p>Match oral contraceptives by component generations and apply CDC SPR guidance for missed pills.</p>
+</div>
+</a>
+<!-- 11. STEROIDS -->
+<a class="app-card" href="/steroids/" data-cat="pharm" data-kw="steroid prednisone dexamethasone taper equivalence medrol dosepack">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">📉</span> Steroid Equivalence & Taper</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Convert systemic corticosteroids and generate instant patient instruction schedules with EHR sigs.</p>
+</div>
+</a>
+<!-- 12. THYROID -->
+<a class="app-card" href="/thyroid/" data-cat="pharm" data-kw="thyroid levothyroxine synthroid dose tablet color tsh hypothyroidism">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🦋</span> Levothyroxine Dosing & Colors</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>1.6 mcg/kg full replacement calculation, snap to 12 commercial tablet colors, and weekly fine-tuning.</p>
+</div>
+</a>
+<!-- 13. INHALERS -->
+<a class="app-card" href="/inhalers/" data-cat="pharm" data-kw="inhaler ics laba lama gina copd asthma symbicort trelegy">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🫁</span> Inhaler Equivalence & GINA Matrix</h2>
+<span class="card-tag tag-pharm">PHARM</span>
+</div>
+<p>Cross-reference ICS potencies, dual/triple combination therapies, GINA SMART regimens, and device techniques.</p>
+</div>
+</a>
+<!-- 14. MEDICAID -->
+<a class="app-card" href="/medicaid/" data-cat="clear" data-kw="medicaid pdl preferred drug list louisiana texas formulary pa">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🏛️</span> Medicaid Preferred List</h2>
+<span class="card-tag tag-clear">FORMULARY</span>
+</div>
+<p>Check Louisiana & Texas Medicaid preferred drug list (PDL) status and suggested alternatives.</p>
+</div>
+</a>
+<!-- 15. MME CONVERTER -->
+<a class="app-card" href="/mme/" data-cat="calc" data-kw="mme opioid morphine equivalent conversion pain fentanyl oxycodone">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🚨</span> MME Calculator</h2>
+<span class="card-tag tag-calc">CALCULATOR</span>
+</div>
+<p>Calculate morphine milligram equivalents for common opioids, routes, and cross-tolerance switches.</p>
+</div>
+</a>
+<!-- 16. PHOSPHATE -->
+<a class="app-card" href="/phosphate/" data-cat="calc" data-kw="phosphate phosphorus deficit mmol meq replacement oral iv">
+<div>
+<div class="card-header">
+<h2><span class="card-icon">🧪</span> Phosphate Deficit Calculator</h2>
+<span class="card-tag tag-calc">CALCULATOR</span>
+</div>
+<p>Quantitative elemental replacement engine with mmol, mg, mEq, and co-administered cation breakdowns.</p>
+</div>
+</a>
+<div class="no-results" id="noResults">
+No clinical tools matched your search or category filter.
+</div>
+</div>
+<footer>
+ChetMed Clinical Tools for reference. Always individualize care.
+</footer>
+</div>
+<script>
+let activeCategory = 'all';
+function setCategory(cat, btn) {
+activeCategory = cat;
+document.querySelectorAll('.tab-chip').forEach(b => b.classList.remove('active'));
+btn.classList.add('active');
+filterCards();
+}
+function filterCards() {
+const query = document.getElementById('searchInput').value.toLowerCase().trim();
+const cards = document.querySelectorAll('.app-card');
+let visibleCount = 0;
+cards.forEach(card => {
+const cat = card.getAttribute('data-cat');
+const kw = card.getAttribute('data-kw') + ' ' + card.innerText.toLowerCase();
+const matchesCat = (activeCategory === 'all' || cat === activeCategory);
+const matchesQuery = (query === '' || kw.includes(query));
+if (matchesCat && matchesQuery) {
+card.style.display = 'flex';
+visibleCount++;
+} else {
+card.style.display = 'none';
+}
+});
+document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('/sw.js')
+.then(reg => console.log('PWA Service Worker registered:', reg.scope))
+.catch(err => console.error('PWA Service Worker registration failed:', err));
+});
+}
+</script>
 </body>
 </html>
