@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Antibiotic Selection & Dosing Engine</title>
+<style>
+:root {
+--bg: #0f172a;
+--card: #1e293b;
+--card-sub: #111827;
+--border: #334155;
+--text: #f8fafc;
+--muted: #94a3b8;
+--accent: #38bdf8;
+--accent-hover: #0284c7;
+--success: #34d399;
+--warning: #fbbf24;
+--danger: #f87171;
+--info: #818cf8;
+--peds-pink: #f472b6;
+--inpatient-purple: #c084fc;
+}
+￼ { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+background: var(--bg);
+color: var(--text);
+line-height: 1.5;
+padding: 20px 16px;
+max-width: 960px;
+margin: 0 auto;
+}
+.back-link {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+margin-bottom: 16px;
+color: var(--accent);
+text-decoration: none;
+font-size: 0.95rem;
+font-weight: 500;
+}
+.back-link:hover { text-decoration: underline; }
+header {
+margin-bottom: 20px;
+}
+h1 { font-size: 1.65rem; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; }
+.subtitle { color: var(--muted); font-size: 0.92rem; margin-top: 2px; }
+.card {
+background: var(--card);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 20px;
+margin-bottom: 20px;
+box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+/* Mode Selectors / Master Toggles */
+.master-toggle-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+gap: 14px;
+margin-bottom: 18px;
+}
+.toggle-group {
+background: var(--card-sub);
+border: 1px solid var(--border);
+border-radius: 10px;
+padding: 6px;
+display: flex;
+gap: 4px;
+}
+.toggle-btn {
+flex: 1;
+padding: 10px 12px;
+border: none;
+border-radius: 8px;
+background: transparent;
+color: var(--muted);
+font-weight: 700;
+font-size: 0.88rem;
+cursor: pointer;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 6px;
+}
+.toggle-btn:hover { color: var(--text); }
+.toggle-btn.active-outpatient {
+background: var(--accent);
+color: #0f172a;
+box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+}
+.toggle-btn.active-inpatient {
+background: var(--inpatient-purple);
+color: #0f172a;
+box-shadow: 0 2px 8px rgba(192, 132, 252, 0.3);
+}
+.toggle-btn.active-adult {
+background: #3b82f6;
+color: #ffffff;
+}
+.toggle-btn.active-peds {
+background: var(--peds-pink);
+color: #0f172a;
+box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+}
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+label.field-label {
+display: block;
+font-size: 0.8rem;
+font-weight: 600;
+color: var(--muted);
+margin-bottom: 6px;
+text-transform: uppercase;
+letter-spacing: 0.04em;
+}
+select, input[type="number"] {
+width: 100%;
+padding: 10px 12px;
+border-radius: 8px;
+border: 1px solid var(--border);
+background: #0f172a;
+color: var(--text);
+font-size: 0.98rem;
+margin-bottom: 12px;
+}
+select:focus, input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+/* Stepper input for Pediatric Weight */
+.stepper-container { display: flex; flex-direction: column; }
+.stepper-input { display: flex; align-items: center; width: 100%; }
+.stepper-input input {
+width: 100%; flex: 1; min-width: 0; text-align: center; border-radius: 0;
+margin-bottom: 0; border-left: none; border-right: none; font-weight: 700; font-size: 1.05rem;
+}
+.btn-step {
+background: #334155; color: var(--text); border: 1px solid var(--border);
+padding: 10px 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+user-select: none; transition: background 0.15s; flex-shrink: 0;
+}
+.btn-step:hover { background: var(--accent); color: #0f172a; }
+.btn-step.step-left { border-radius: 8px 0 0 8px; }
+.btn-step.step-right { border-radius: 0 8px 8px 0; }
+/* Risk Factors Checkboxes */
+.checkbox-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+gap: 10px;
+margin: 10px 0 14px 0;
+}
+.checkbox-card {
+display: flex;
+align-items: flex-start;
+gap: 10px;
+background: var(--card-sub);
+border: 1px solid var(--border);
+padding: 10px 12px;
+border-radius: 8px;
+cursor: pointer;
+font-size: 0.88rem;
+transition: border-color 0.15s;
+}
+.checkbox-card:hover { border-color: var(--accent); }
+.checkbox-card input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+/* Output Cards */
+.summary-box {
+background: var(--card-sub);
+border: 1px solid var(--border);
+border-left: 5px solid var(--accent);
+border-radius: 10px;
+padding: 18px;
+margin-top: 16px;
+}
+.badge {
+display: inline-block;
+padding: 3px 8px;
+border-radius: 6px;
+font-size: 0.75rem;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.03em;
+}
+.badge-first { background: rgba(52, 211, 153, 0.15); color: var(--success); border: 1px solid var(--success); }
+.badge-alt { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+.badge-inpatient { background: rgba(192, 132, 252, 0.15); color: var(--inpatient-purple); border: 1px solid var(--inpatient-purple); }
+.badge-peds { background: rgba(244, 114, 182, 0.15); color: var(--peds-pink); border: 1px solid var(--peds-pink); }
+.badge-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+.regimen-card {
+background: rgba(15, 23, 42, 0.85);
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 14px;
+margin-bottom: 12px;
+}
+.regimen-card.first { border-left: 4px solid var(--success); }
+.regimen-card.alt { border-left: 4px solid var(--warning); }
+.regimen-card.mrsa-pseudomonas { border-left: 4px solid var(--inpatient-purple); }
+.duration-tag {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+background: rgba(56, 189, 248, 0.12);
+color: var(--accent);
+border: 1px solid var(--accent);
+padding: 4px 10px;
+border-radius: 6px;
+font-weight: 700;
+font-size: 0.85rem;
+margin-top: 6px;
+}
+.clinical-pearl {
+background: rgba(56, 189, 248, 0.08);
+border-left: 3px solid var(--accent);
+padding: 8px 12px;
+font-size: 0.85rem;
+color: #e2e8f0;
+margin-top: 10px;
+border-radius: 0 6px 6px 0;
+}
+.citation-box {
+background: rgba(129, 140, 248, 0.08);
+border-left: 3px solid var(--info);
+padding: 8px 12px;
+font-size: 0.82rem;
+color: #c7d2fe;
+margin-top: 10px;
+border-radius: 0 6px 6px 0;
+}
+.warning-banner {
+background: rgba(248, 113, 113, 0.12);
+border-left: 4px solid var(--danger);
+padding: 10px 12px;
+color: #fca5a5;
+border-radius: 6px;
+font-size: 0.85rem;
+margin-top: 10px;
+}
+.copy-box {
+background: rgba(15, 23, 42, 0.95);
+border: 1px dashed var(--accent);
+border-radius: 8px;
+padding: 12px;
+margin-top: 12px;
+font-family: monospace;
+font-size: 0.85rem;
+color: #e2e8f0;
+position: relative;
+}
+.btn-copy {
+position: absolute;
+top: 8px;
+right: 8px;
+background: #334155;
+color: var(--text);
+border: 1px solid var(--border);
+padding: 4px 8px;
+border-radius: 4px;
+font-size: 0.75rem;
+cursor: pointer;
+}
+.btn-copy:hover { background: var(--accent); color: #0f172a; }
+.note { font-size: 0.82rem; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+@media (max-width: 600px) {
+body { padding: 12px 8px; }
+.card { padding: 14px; }
+.master-toggle-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a href="/" class="back-link">← Back to Home</a>
+<header>
+<h1>Antibiotic Selection & Dosing Engine</h1>
+<p class="subtitle">Unified Outpatient & Inpatient empirical decision support across Adult and Pediatric populations.</p>
+</header>
+<div class="card">
+<label class="field-label">1. Clinical Setting & Patient Population</label>
+<div class="master-toggle-grid">
+<!-- Setting Toggle -->
+<div class="toggle-group">
+<button id="btnOutpatient" class="toggle-btn active-outpatient" onclick="setSetting('outpatient')">
+<span>🏠 Outpatient Clinic</span>
+</button>
+<button id="btnInpatient" class="toggle-btn" onclick="setSetting('inpatient')">
+<span>🏥 Inpatient / ER</span>
+</button>
+</div>
+<!-- Population Toggle -->
+<div class="toggle-group">
+<button id="btnAdult" class="toggle-btn active-adult" onclick="setPopulation('adult')">
+<span>👤 Adult (≥18y)</span>
+</button>
+<button id="btnPeds" class="toggle-btn" onclick="setPopulation('peds')">
+<span>🧸 Pediatric (<18y)</span>
+</button>
+</div>
+</div>
+<!-- Pediatric Weight Input Section (Visible only in Peds mode) -->
+<div id="pedsWeightSection" style="display:none; background:rgba(244, 114, 182, 0.08); border:1px solid rgba(244, 114, 182, 0.3); padding:12px; border-radius:8px; margin-bottom:14px;">
+<div class="grid-3">
+<div>
+<label class="field-label" style="color:var(--peds-pink);">Weight Unit</label>
+<select id="pedsUnitToggle" onchange="convertPedsWeight()">
+<option value="lbs" selected>Pounds (lbs)</option>
+<option value="kg">Kilograms (kg)</option>
+</select>
+</div>
+<div class="stepper-container">
+<label class="field-label" id="pedsWeightLbl" style="color:var(--peds-pink);">Pediatric Weight (lbs)</label>
+<div class="stepper-input">
+<button type="button" class="btn-step step-left" onclick="stepPedsWeight(-1)">−</button>
+<input type="number" id="pedsWeightInput" value="30" step="0.5" oninput="evaluateEngine()">
+<button type="button" class="btn-step step-right" onclick="stepPedsWeight(1)">+</button>
+</div>
+</div>
+<div>
+<label class="field-label" style="color:var(--peds-pink);">Calculated Metric</label>
+<input type="text" id="pedsKgDisplay" value="13.6 kg" disabled style="font-weight:700; color:var(--peds-pink); text-align:center;">
+</div>
+</div>
+</div>
+<label class="field-label">2. Infection Category & Presentation</label>
+<div class="grid-2">
+<div>
+<label style="font-size:0.78rem; color:var(--muted);">Infection Category</label>
+<select id="categorySelect" onchange="populateDiagnoses()">
+<option value="resp" selected>Respiratory Tract Infections</option>
+<option value="uti">Urinary Tract Infections (UTI)</option>
+<option value="ssti">Skin & Soft Tissue Infections (SSTI)</option>
+<option value="gi">Gastrointestinal / Intra-Abdominal</option>
+<option value="sepsis">CNS, Bacteremia & Sepsis</option>
+</select>
+</div>
+<div>
+<label style="font-size:0.78rem; color:var(--muted);">Clinical Diagnosis</label>
+<select id="diagnosisSelect" onchange="evaluateEngine()"></select>
+</div>
+</div>
+<!-- Inpatient Risk Factor Screening (Visible in Inpatient Mode) -->
+<div id="inpatientRiskSection" style="display:none; margin-top:10px;">
+<label class="field-label" style="color:var(--inpatient-purple);">3. Inpatient Resistant Pathogen Screening</label>
+<div class="checkbox-grid">
+<label class="checkbox-card">
+<input type="checkbox" id="riskMrsa" onchange="evaluateEngine()">
+<span><strong>MRSA Risk:</strong> Prior MRSA nasal swab/culture, recent hospitalization, hemodialysis, or severe septic shock</span>
+</label>
+<label class="checkbox-card">
+<input type="checkbox" id="riskPseudomonas" onchange="evaluateEngine()">
+<span><strong>Pseudomonas Risk:</strong> Structural lung disease (Bronchiectasis/CF), IV antibiotics in last 90 days, or ICU shock</span>
+</label>
+</div>
+</div>
+<div class="field-label" style="margin-top:10px;">Safety, Allergy & Renal Profile</div>
+<div class="grid-3">
+<div>
+<label style="font-size:0.78rem; color:var(--muted);">Beta-Lactam / Penicillin Allergy</label>
+<select id="allergySelect" onchange="evaluateEngine()">
+<option value="none" selected>No Known Beta-Lactam Allergy</option>
+<option value="mild">Mild / Non-Anaphylactic (Mild Rash)</option>
+<option value="severe">Severe / IgE-Mediated (Anaphylaxis/Angioedema)</option>
+</select>
+</div>
+<div>
+<label style="font-size:0.78rem; color:var(--muted);">Renal Function (CrCl / eGFR)</label>
+<select id="renalSelect" onchange="evaluateEngine()">
+<option value="normal" selected>Normal (CrCl > 50 mL/min)</option>
+<option value="mod">Moderate Impairment (CrCl 30–50 mL/min)</option>
+<option value="sev">Severe Impairment (CrCl 15–29 mL/min)</option>
+<option value="esrd">ESRD / Dialysis (CrCl < 15 mL/min)</option>
+</select>
+</div>
+<div>
+<label style="font-size:0.78rem; color:var(--muted);">Pregnancy Status</label>
+<select id="pregSelect" onchange="evaluateEngine()">
+<option value="no" selected>Not Pregnant</option>
+<option value="yes">Pregnant</option>
+</select>
+</div>
+</div>
+</div>
+<div id="engineOutput"></div>
+<div class="card">
+<h3 style="font-size:0.95rem; color:var(--accent); margin-bottom:6px;">IDSA & AAP Antimicrobial Stewardship Standards</h3>
+<p class="note">
+• <strong>Outpatient Short-Course Principles:</strong> Guidelines prioritize shorter duration courses (e.g., 3 days for cystitis, 5 days for CAP/cellulitis) to reduce <em>C. difficile</em> and resistance rates.
+
+• <strong>Inpatient De-Escalation:</strong> Re-evaluate empirical inpatient broad-spectrum coverage (MRSA/Pseudomonas) at 48–72 hours based on blood/sputum/urine cultures and rapid MRSA PCR nasal swabs.
+
+• <strong>Pediatric Dosing Safeguard:</strong> All pediatric liquid suspensions are capped at maximum adult single dosages.
+</p>
+</div>
+<script>
+let currentSetting = 'outpatient'; // 'outpatient' or 'inpatient'
+let currentPopulation = 'adult';    // 'adult' or 'peds'
+const DIAGNOSES_DATABASE = {
+outpatient: {
+adult: {
+resp: [
+{ id: "cap_healthy", name: "Community-Acquired Pneumonia (Healthy Outpatient)" },
+{ id: "cap_comorbid", name: "CAP with Comorbidities (COPD, Diabetes, CKD)" },
+{ id: "sinusitis", name: "Acute Bacterial Rhinosinusitis (ABRS)" },
+{ id: "copd_flare", name: "Acute COPD Exacerbation (Purulent Sputum)" },
+{ id: "strep_pharyngitis", name: "Group A Streptococcal Pharyngitis" }
+],
+uti: [
+{ id: "cystitis_uncomp", name: "Uncomplicated Acute Cystitis (Female)" },
+{ id: "pyelo_outpatient", name: "Uncomplicated Acute Pyelonephritis" },
+{ id: "prostatitis", name: "Male UTI / Acute Bacterial Prostatitis" }
+],
+ssti: [
+{ id: "cellulitis_nonpurulent", name: "Non-Purulent Cellulitis (Streptococcal)" },
+{ id: "cellulitis_purulent", name: "Purulent Cellulitis / Abscess (MRSA Focus)" },
+{ id: "bite_wound", name: "Animal / Human Bite Wounds" }
+],
+gi: [
+{ id: "diverticulitis_outpatient", name: "Uncomplicated Acute Diverticulitis" },
+{ id: "travelers_diarrhea", name: "Severe Bacterial Gastroenteritis / Traveler's Diarrhea" }
+],
+sepsis: [
+{ id: "chlamydia_gono", name: "Gonorrhea & Chlamydia Empirical Dual Therapy" },
+{ id: "pid_outpatient", name: "Pelvic Inflammatory Disease (PID) Outpatient" }
+]
+},
+peds: {
+resp: [
+{ id: "aom_peds", name: "Acute Otitis Media (AOM)" },
+{ id: "cap_peds", name: "Pediatric CAP (Bacterial / S. pneumoniae)" },
+{ id: "croup_peds", name: "Croup (Laryngotracheobronchitis - Viral)" },
+{ id: "strep_peds", name: "Group A Strep Pharyngitis (>3 years)" }
+],
+uti: [
+{ id: "uti_peds", name: "Pediatric Febrile UTI / Pyelonephritis" }
+],
+ssti: [
+{ id: "impetigo_peds", name: "Impetigo (Bullous / Non-bullous)" },
+{ id: "cellulitis_peds", name: "Pediatric Non-Purulent Cellulitis" }
+],
+gi: [
+{ id: "acute_diarrhea_peds", name: "Pediatric Infectious Diarrhea" }
+],
+sepsis: [
+{ id: "lyme_peds", name: "Erythema Migrans / Early Lyme Disease" }
+]
+}
+},
+inpatient: {
+adult: {
+resp: [
+{ id: "cap_inpatient_floor", name: "CAP — Inpatient Non-ICU Floor" },
+{ id: "cap_inpatient_icu", name: "CAP — Severe ICU Admission" },
+{ id: "hap_vap", name: "Hospital-Acquired / Ventilator-Associated Pneumonia (HAP/VAP)" }
+],
+uti: [
+{ id: "urosepsis", name: "Inpatient Pyelonephritis / Complicated Urosepsis" },
+{ id: "cauti", name: "Catheter-Associated UTI (CAUTI)" }
+],
+ssti: [
+{ id: "cellulitis_inpatient", name: "Inpatient Severe Cellulitis / Erysipelas" },
+{ id: "necrotizing_ssti", name: "Necrotizing Soft Tissue Infection (Surgical Emergency)" },
+{ id: "diabetic_foot_severe", name: "Complicated Diabetic Foot Infection (Moderate/Severe)" }
+],
+gi: [
+{ id: "peritonitis_secondary", name: "Secondary Peritonitis / Complicated Intra-Abdominal" },
+{ id: "cholangitis", name: "Acute Cholecystitis / Ascending Cholangitis" },
+{ id: "cdiff_severe", name: "Clostridioides difficile Colitis (Inpatient)" }
+],
+sepsis: [
+{ id: "sepsis_unknown", name: "Sepsis / Septic Shock — Unknown Source" },
+{ id: "meningitis_adult", name: "Acute Community Bacterial Meningitis" },
+{ id: "febrile_neutropenia", name: "Febrile Neutropenia (High-Risk Oncology)" }
+]
+},
+peds: {
+resp: [
+{ id: "cap_peds_inpatient", name: "Pediatric Inpatient Pneumonia (Floor)" },
+{ id: "empyema_peds", name: "Complicated Pneumonia / Parapneumonic Effusion" }
+],
+uti: [
+{ id: "pyelo_peds_inpatient", name: "Pediatric Inpatient Pyelonephritis / Urosepsis" }
+],
+ssti: [
+{ id: "periorbital_cellulitis", name: "Periorbital / Orbital Cellulitis" }
+],
+gi: [
+{ id: "appendicitis_perforated", name: "Complicated Appendicitis / Intra-Abdominal" }
+],
+sepsis: [
+{ id: "peds_sepsis", name: "Pediatric Sepsis / Septic Shock" },
+{ id: "peds_meningitis", name: "Pediatric Bacterial Meningitis (>1 month)" }
+]
+}
+}
+};
+function setSetting(setting) {
+currentSetting = setting;
+document.getElementById("btnOutpatient").className = setting === 'outpatient' ? 'toggle-btn active-outpatient' : 'toggle-btn';
+document.getElementById("btnInpatient").className = setting === 'inpatient' ? 'toggle-btn active-inpatient' : 'toggle-btn';
+document.getElementById("inpatientRiskSection").style.display = setting === 'inpatient' ? 'block' : 'none';
+populateDiagnoses();
+}
+function setPopulation(pop) {
+currentPopulation = pop;
+document.getElementById("btnAdult").className = pop === 'adult' ? 'toggle-btn active-adult' : 'toggle-btn';
+document.getElementById("btnPeds").className = pop === 'peds' ? 'toggle-btn active-peds' : 'toggle-btn';
+document.getElementById("pedsWeightSection").style.display = pop === 'peds' ? 'block' : 'none';
+populateDiagnoses();
+}
+function stepPedsWeight(delta) {
+const input = document.getElementById("pedsWeightInput");
+let val = parseFloat(input.value) || 0;
+val = Math.max(1, val + delta);
+input.value = val;
+convertPedsWeight();
+}
+function convertPedsWeight() {
+const unit = document.getElementById("pedsUnitToggle").value;
+const input = document.getElementById("pedsWeightInput");
+const lbl = document.getElementById("pedsWeightLbl");
+let val = parseFloat(input.value) || 0;
+let kg = val;
+if (unit === "lbs") {
+lbl.textContent = "Pediatric Weight (lbs)";
+kg = val / 2.20462;
+} else {
+lbl.textContent = "Pediatric Weight (kg)";
+kg = val;
+}
+document.getElementById("pedsKgDisplay").value = kg.toFixed(1) + " kg";
+evaluateEngine();
+}
+function populateDiagnoses() {
+const cat = document.getElementById("categorySelect").value;
+const diagSelect = document.getElementById("diagnosisSelect");
+diagSelect.innerHTML = "";
+const list = DIAGNOSES_DATABASE[currentSetting][currentPopulation][cat] || [];
+list.forEach(item => {
+diagSelect.add(new Option(item.name, item.id));
+});
+evaluateEngine();
+}
+function evaluateEngine() {
+const dx = document.getElementById("diagnosisSelect").value;
+const allergy = document.getElementById("allergySelect").value;
+const renal = document.getElementById("renalSelect").value;
+const preg = document.getElementById("pregSelect").value === "yes";
+const riskMrsa = document.getElementById("riskMrsa").checked;
+const riskPseudomonas = document.getElementById("riskPseudomonas").checked;
+// Peds weight in Kg
+const pedsUnit = document.getElementById("pedsUnitToggle").value;
+let pedsWtVal = parseFloat(document.getElementById("pedsWeightInput").value) || 0;
+const pedsKg = pedsUnit === "lbs" ? pedsWtVal / 2.20462 : pedsWtVal;
+let title = "Antimicrobial Recommendation";
+let firstLine = {};
+let altLine = {};
+let mrsaPseudoAddon = "";
+let duration = "";
+let pearl = "";
+let citation = "";
+let warning = "";
+// ----------------------------------------------------------------------
+// OUTPATIENT ADULT EVALUATION
+// ----------------------------------------------------------------------
+if (currentSetting === 'outpatient' && currentPopulation === 'adult') {
+if (dx === "cap_healthy") {
+title = "Outpatient CAP (Healthy Adult)";
+duration = "5 Days";
+citation = "IDSA/ATS 2019 Community-Acquired Pneumonia Guidelines.";
+if (allergy === "severe") {
+firstLine = { drug: "Doxycycline 100 mg PO BID OR Levofloxacin 750 mg PO QD", sig: "Doxycycline 100 mg PO BID x 5 days" };
+} else {
+firstLine = { drug: "Amoxicillin 1000 mg PO TID (High-Dose) OR Doxycycline 100 mg PO BID", sig: "Amoxicillin 1000 mg PO TID x 5 days" };
+}
+pearl = "High-dose Amoxicillin overcomes penicillin-resistant pneumococcus.";
+} else if (dx === "cystitis_uncomp") {
+title = "Uncomplicated Acute Cystitis";
+duration = "3–5 Days";
+citation = "IDSA/ESCMID Uncomplicated Cystitis Guidelines.";
+if (renal === "sev" || renal === "esrd") {
+firstLine = { drug: "TMP-SMX DS 1 tab PO BID x 3 days", sig: "TMP-SMX DS 1 tab PO BID x 3 days" };
+warning = "Nitrofurantoin is CONTRAINDICATED / Ineffective when CrCl < 30 mL/min.";
+} else {
+firstLine = { drug: "Nitrofurantoin (Macrobid) 100 mg PO BID x 5 days", sig: "Nitrofurantoin monohydrate/macrocrystals 100 mg PO BID x 5 days" };
+altLine = { drug: "TMP-SMX DS 1 tab PO BID x 3 days OR Fosfomycin 3g PO single dose", sig: "TMP-SMX DS 1 tab PO BID x 3 days" };
+}
+pearl = "Avoid Fluoroquinolones for uncomplicated cystitis due to FDA black box warnings.";
+} else if (dx === "cellulitis_nonpurulent") {
+title = "Non-Purulent Cellulitis";
+duration = "5 Days";
+citation = "IDSA 2014 SSTI Practice Guidelines.";
+if (allergy === "severe") {
+firstLine = { drug: "Clindamycin 300–450 mg PO TID", sig: "Clindamycin 300 mg PO TID x 5 days" };
+} else {
+firstLine = { drug: "Cephalexin (Keflex) 500 mg PO QID", sig: "Cephalexin 500 mg PO QID x 5 days" };
+}
+pearl = "MRSA coverage is NOT required for typical non-purulent cellulitis.";
+} else if (dx === "cellulitis_purulent") {
+title = "Purulent Cellulitis / Abscess (MRSA Focus)";
+duration = "5–7 Days";
+citation = "IDSA 2014 SSTI Guidelines.";
+firstLine = { drug: "TMP-SMX DS 1–2 tabs PO BID OR Doxycycline 100 mg PO BID", sig: "TMP-SMX DS 2 tabs PO BID x 5-7 days" };
+pearl = "Primary treatment of cutaneous abscess is Incision & Drainage (I&D).";
+} else {
+title = "Outpatient Empiric Regimen";
+duration = "5–7 Days";
+citation = "IDSA Practice Guidelines.";
+firstLine = { drug: "Augmentin 875/125 mg PO BID OR Ciprofloxacin 500 mg PO BID", sig: "Amoxicillin-clavulanate 875/125 mg PO BID x 7 days" };
+}
+}
+// ----------------------------------------------------------------------
+// OUTPATIENT PEDIATRIC EVALUATION
+// ----------------------------------------------------------------------
+else if (currentSetting === 'outpatient' && currentPopulation === 'peds') {
+if (dx === "aom_peds") {
+title = "Pediatric Acute Otitis Media (AOM)";
+duration = "10 Days (<2y) or 5–7 Days (≥2y)";
+citation = "AAP 2013 Diagnosis and Management of Acute Otitis Media.";
+const amoxDose = Math.min(1000, Math.round((pedsKg * 90) / 2));
+const amoxMl = (amoxDose / 400) * 5;
+firstLine = {
+drug: ⁠Amoxicillin High-Dose (90 mg/kg/day divided BID): ${amoxDose} mg PO BID⁠,
+sig: ⁠Amoxicillin 400mg/5mL suspension: Give ${amoxMl.toFixed(1)} mL PO BID x 10 days.⁠
+};
+pearl = "High-dose Amoxicillin targets resistant Streptococcus pneumoniae in middle ear fluid.";
+} else if (dx === "cap_peds") {
+title = "Pediatric Outpatient CAP";
+duration = "5–7 Days";
+citation = "IDSA/PIDS Pediatric CAP Guidelines.";
+const amoxDose = Math.min(1000, Math.round((pedsKg * 90) / 2));
+firstLine = {
+drug: ⁠Amoxicillin High-Dose (90 mg/kg/day divided BID): ${amoxDose} mg PO BID⁠,
+sig: ⁠Amoxicillin 400mg/5mL: Give ${((amoxDose/400)*5).toFixed(1)} mL PO BID x 5-7 days.⁠
+};
+pearl = "First-line for preschooled & school-aged children with typical bacterial pneumonia.";
+} else if (dx === "croup_peds") {
+title = "Croup (Laryngotracheobronchitis)";
+duration = "Single Dose";
+citation = "AAP Clinical Practice Guidelines.";
+const dexDose = Math.min(16, (pedsKg * 0.6).toFixed(1));
+firstLine = {
+drug: ⁠Dexamethasone 0.6 mg/kg PO/IM single dose: ${dexDose} mg x 1 dose⁠,
+sig: ⁠Dexamethasone 0.6 mg/kg single dose (${dexDose} mg PO x 1 dose). Antibiotics NOT indicated for viral croup.⁠
+};
+pearl = "Croup is viral (Parainfluenza). Single-dose Dexamethasone reduces edema and ER visits.";
+} else {
+title = "Pediatric Empiric Regimen";
+duration = "7 Days";
+citation = "AAP Red Book.";
+firstLine = { drug: ⁠Amoxicillin-Clavulanate 45 mg/kg/day divided BID⁠, sig: ⁠Augmentin 400mg/5mL: Give ${((pedsKg*22.5/400)*5).toFixed(1)} mL PO BID x 7 days.⁠ };
+}
+}
+// ----------------------------------------------------------------------
+// INPATIENT ADULT EVALUATION
+// ----------------------------------------------------------------------
+else if (currentSetting === 'inpatient' && currentPopulation === 'adult') {
+if (dx === "cap_inpatient_floor") {
+title = "Inpatient CAP — Non-ICU Ward Floor";
+duration = "5 Days";
+citation = "IDSA/ATS 2019 CAP Guidelines.";
+if (allergy === "severe") {
+firstLine = { drug: "Levofloxacin 750 mg IV/PO QD OR Moxifloxacin 400 mg IV/PO QD", sig: "Levofloxacin 750 mg IV QD x 5 days" };
+} else {
+firstLine = { drug: "Ceftriaxone 1g–2g IV QD + Azithromycin 500 mg IV/PO QD", sig: "Ceftriaxone 1g IV QD AND Azithromycin 500 mg PO QD x 5 days" };
+}
+pearl = "Beta-lactam + Macrolide reduces inpatient mortality compared to monotherapy.";
+} else if (dx === "cap_inpatient_icu" || dx === "hap_vap") {
+title = dx === "hap_vap" ? "Hospital-Acquired / VAP Pneumonia" : "Severe ICU CAP";
+duration = "7 Days";
+citation = "IDSA/ATS HAP/VAP & Severe CAP Guidelines.";
+let baseDrug = allergy === "severe" ? "Aztreonam 2g IV Q8H + Levofloxacin 750mg IV QD" : "Cefepime 2g IV Q8H OR Piperacillin-Tazobactam (Zosyn) 4.5g IV Q6H";
+firstLine = { drug: baseDrug, sig: ⁠${baseDrug} x 7 days⁠ };
+if (riskMrsa) {
+mrsaPseudoAddon += "• <strong>MRSA Coverage Added:</strong> Add Vancomycin 15–20 mg/kg IV Q8–12H (or Linezolid 600 mg IV Q12H).
+";
+}
+if (riskPseudomonas) {
+mrsaPseudoAddon += "• <strong>Pseudomonas Double-Coverage Added:</strong> Add Tobramycin 5–7 mg/kg IV QD OR Ciprofloxacin 400 mg IV Q8H.
+";
+}
+pearl = "Obtain sputum culture & MRSA nasal PCR for rapid de-escalation at 48 hours.";
+} else if (dx === "sepsis_unknown") {
+title = "Sepsis / Septic Shock — Unknown Source";
+duration = "Re-evaluate at 48–72 Hours";
+citation = "Surviving Sepsis Campaign 2021 International Guidelines.";
+if (allergy === "severe") {
+firstLine = { drug: "Vancomycin 15–20 mg/kg IV + Aztreonam 2g IV Q8H + Gentamicin 5 mg/kg IV QD", sig: "Vancomycin 15 mg/kg IV Q12H AND Aztreonam 2g IV Q8H" };
+} else {
+firstLine = { drug: "Piperacillin-Tazobactam (Zosyn) 4.5g IV Q6H + Vancomycin 15–20 mg/kg IV Q8–12H", sig: "Zosyn 4.5g IV Q6H AND Vancomycin 15 mg/kg IV Q12H" };
+}
+pearl = "Administer broad-spectrum IV antimicrobials within 1 hour of sepsis recognition.";
+} else if (dx === "meningitis_adult") {
+title = "Acute Community Bacterial Meningitis";
+duration = "10–14 Days";
+citation = "IDSA Bacterial Meningitis Practice Guidelines.";
+firstLine = { drug: "Ceftriaxone 2g IV Q12H + Vancomycin 15–20 mg/kg IV Q8–12H + Dexamethasone 10 mg IV Q6H", sig: "Ceftriaxone 2g IV Q12H AND Vancomycin 15 mg/kg IV Q8H AND Dexamethasone 10 mg IV Q6H x 4 days" };
+if (preg || dx.includes("elderly")) {
+mrsaPseudoAddon += "• <strong>Listeria Monocytogenes Coverage:</strong> Add Ampicillin 2g IV Q4H for age >50, pregnant, or immunocompromised.
+";
+}
+pearl = "Give Dexamethasone prior to or with 1st dose of IV antibiotics to reduce neurological sequelae.";
+} else {
+title = "Inpatient Empirical Coverage";
+duration = "7 Days";
+citation = "IDSA Inpatient Guidelines.";
+firstLine = { drug: "Ceftriaxone 2g IV QD + Metronidazole 500 mg IV Q8H", sig: "Ceftriaxone 2g IV QD AND Metronidazole 500 mg IV Q8H x 7 days" };
+}
+}
+// ----------------------------------------------------------------------
+// INPATIENT PEDIATRIC EVALUATION
+// ----------------------------------------------------------------------
+else if (currentSetting === 'inpatient' && currentPopulation === 'peds') {
+if (dx === "peds_sepsis") {
+title = "Pediatric Sepsis / Septic Shock";
+duration = "Re-assess at 48 Hours";
+citation = "Surviving Sepsis Campaign International Pediatric Guidelines 2020.";
+const ceftDose = Math.min(2000, Math.round(pedsKg * 50));
+const vancDose = Math.min(1500, Math.round(pedsKg * 15));
+firstLine = {
+drug: ⁠Ceftriaxone (50 mg/kg IV Q12H): ${ceftDose} mg IV Q12H + Vancomycin (15 mg/kg IV Q6H): ${vancDose} mg IV Q6H⁠,
+sig: ⁠Ceftriaxone ${ceftDose} mg IV Q12H AND Vancomycin ${vancDose} mg IV Q6H.⁠
+};
+pearl = "Empirical coverage targeting S. pneumoniae, N. meningitidis, and MRSA.";
+} else if (dx === "peds_meningitis") {
+title = "Pediatric Bacterial Meningitis (>1 Month)";
+duration = "10–14 Days";
+citation = "IDSA Pediatric Bacterial Meningitis Guidelines.";
+const ceftDose = Math.min(2000, Math.round(pedsKg * 100)); // 80-100 mg/kg
+const vancDose = Math.min(1500, Math.round(pedsKg * 15));
+firstLine = {
+drug: ⁠Ceftriaxone 100 mg/kg/day IV divided Q12H (${ceftDose} mg Q12H) + Vancomycin 60 mg/kg/day divided Q6H (${vancDose} mg Q6H)⁠,
+sig: ⁠Ceftriaxone ${ceftDose} mg IV Q12H AND Vancomycin ${vancDose} mg IV Q6H.⁠
+};
+pearl = "High-dose Ceftriaxone required for adequate blood-brain barrier penetration.";
+} else {
+title = "Pediatric Inpatient Coverage";
+duration = "7 Days";
+citation = "AAP Red Book.";
+const ceftDose = Math.min(2000, Math.round(pedsKg * 50));
+firstLine = { drug: ⁠Ceftriaxone 50 mg/kg IV QD (${ceftDose} mg IV QD)⁠, sig: ⁠Ceftriaxone ${ceftDose} mg IV QD.⁠ };
+}
+}
+// Display Output Card
+let html = `
+<div class="summary-box">
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+<h3 style="font-size:1.15rem; color:#fff;">￼
+￼
+￼{currentSetting.toUpperCase()}</span>
+<span class="badge ${currentPopulation === 'peds' ? 'badge-peds' : 'badge-first'}">${currentPopulation.toUpperCase()}</span>
+</div>
+</div>
+<div class="duration-tag">
+<span>⏱️ Recommended Duration: ${duration}</span>
+</div>
+<div style="margin-top:14px;">
+<div class="regimen-card first">
+<div class="badge badge-first">Empirical First-Line Regimen</div>
+<div style="font-size:1.05rem; font-weight:700; color:#fff; margin-top:4px;">${firstLine.drug}</div>
+</div>
+${altLine.drug ? ⁠<div class="regimen-card alt"> <div class="badge badge-alt">Alternative Regimen</div> <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-top:4px;">${altLine.drug}</div> </div>⁠ : ''}
+${mrsaPseudoAddon ? ⁠<div class="regimen-card mrsa-pseudomonas"> <div class="badge badge-inpatient">Resistant Pathogen Coverage Add-Ons</div> <div style="font-size:0.9rem; color:#f8fafc; margin-top:6px;">${mrsaPseudoAddon}</div> </div>⁠ : ''}
+</div>
+${warning ? ⁠<div class="warning-banner">⚠️ <strong>Safety Warning:</strong> ${warning}</div>⁠ : ''}
+<div class="clinical-pearl">
+★ <strong>Clinical Guideline Pearl:</strong> ${pearl}
+</div>
+<div class="citation-box">
+📚 <strong>Evidence & Guideline Source:</strong> ${citation}
+</div>
+<div class="copy-box">
+<button class="btn-copy" onclick="navigator.clipboard.writeText('￼
+￼
+￼{firstLine.sig}</code>
+</div>
+</div>
+`;
+document.getElementById("engineOutput").innerHTML = html;
+}
+// Initial Setup
+populateDiagnoses();
+</script>
+</body>
+</html>
