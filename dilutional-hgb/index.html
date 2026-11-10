@@ -3,81 +3,245 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
   <title>Dilutional Hemoglobin Calculator | ChetMed</title>
-  <meta name="description" content="Estimate anticipated hemoglobin drop and intravascular retention following crystalloid fluid resuscitation.">
-  <link rel="stylesheet" href="css/styles.css"> <!-- Replace with your site stylesheet -->
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #34d399;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    header a {
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    header span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .calculator-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+    .results-panel {
+      margin-top: 20px;
+      padding: 16px;
+      background: #0f172a;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      display: none;
+    }
+    .results-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+    .interp-box {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: none;
+      margin-top: 8px;
+    }
+  </style>
 </head>
-<body style="background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; padding: 24px 16px;">
+<body>
+  <div class="container">
+    <header>
+      <a href="/">← Back to Tools</a>
+      <span>rchetram.com</span>
+    </header>
 
-  <header style="max-width: 650px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: space-between;">
-    <a href="/" style="text-decoration: none; color: #2563eb; font-weight: 600; font-size: 0.95rem;">← Back to Tools</a>
-    <span style="font-size: 0.85rem; color: #64748b; font-weight: 500;">rchetram.com</span>
-  </header>
+    <main>
+      <div class="calculator-card">
+        <h1>🩸 Dilutional Hemoglobin Drop Calculator</h1>
+        <p class="subtitle">Estimates expected dilutional drop in hemoglobin following crystalloid fluid administration.</p>
 
-  <main>
-    <!-- Dilutional Hemoglobin Component -->
-    <div class="calculator-card" style="max-width: 650px; margin: 0 auto; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-      <h1 style="margin-top: 0; font-size: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-        🩸 Dilutional Hemoglobin Drop Calculator
-      </h1>
-      <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
-        Estimates expected dilutional drop in hemoglobin following crystalloid fluid administration.
-      </p>
+        <form id="dilutionCalcForm" onsubmit="event.preventDefault(); calculateDilution();" style="display: grid; gap: 16px;">
+          <div class="grid-2">
+            <div>
+              <label for="patientSex">Sex</label>
+              <select id="patientSex" onchange="calculateDilution()">
+                <option value="male">Male (70 mL/kg)</option>
+                <option value="female">Female (65 mL/kg)</option>
+              </select>
+            </div>
+            <div>
+              <label for="patientWeight">Weight (kg)</label>
+              <input type="number" id="patientWeight" placeholder="e.g. 80" step="0.1" oninput="calculateDilution()">
+            </div>
+          </div>
 
-      <form id="dilutionCalcForm" style="display: grid; gap: 16px;">
-        <!-- Step 1 Inputs -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="grid-2">
+            <div>
+              <label for="baselineHb">Baseline Hb (g/dL)</label>
+              <input type="number" id="baselineHb" placeholder="e.g. 12.0" step="0.1" oninput="calculateDilution()">
+            </div>
+            <div>
+              <label for="fluidInfused">Crystalloid Infused (mL)</label>
+              <input type="number" id="fluidInfused" placeholder="e.g. 2000" step="50" oninput="calculateDilution()">
+            </div>
+          </div>
+
           <div>
-            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Sex</label>
-            <select id="patientSex" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" onchange="calculateDilution()">
-              <option value="male">Male (70 mL/kg)</option>
-              <option value="female">Female (65 mL/kg)</option>
+            <label for="retentionStatus">Clinical Status / Retention (ΔV)</label>
+            <select id="retentionStatus" onchange="toggleCustomRetention(); calculateDilution();">
+              <option value="0.25">Well / Non-acutely ill (~25% retained)</option>
+              <option value="0.05">Acutely ill / Septic (~5% retained)</option>
+              <option value="custom">Custom Percentage</option>
             </select>
           </div>
-          <div>
-            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Weight (kg)</label>
-            <input type="number" id="patientWeight" placeholder="e.g. 80" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+
+          <div id="customRetentionContainer" style="display: none;">
+            <label for="customRetentionPct">Custom Intravascular Retention (%)</label>
+            <input type="number" id="customRetentionPct" placeholder="e.g. 15" min="1" max="100" oninput="calculateDilution()">
           </div>
-        </div>
 
-        <!-- Baseline Hb & Fluid Volume -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div>
-            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Baseline Hb (g/dL)</label>
-            <input type="number" id="baselineHb" placeholder="e.g. 12.0" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+          <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
+            <label for="measuredHb">Measured Post-Fluid Hb (g/dL) <span style="font-weight: normal; color: var(--text-muted);">(Optional)</span></label>
+            <input type="number" id="measuredHb" placeholder="e.g. 11.0" step="0.1" oninput="calculateDilution()">
           </div>
-          <div>
-            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Crystalloid Infused (mL)</label>
-            <input type="number" id="fluidInfused" placeholder="e.g. 2000" step="50" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+        </form>
+
+        <div id="calcResults" class="results-panel">
+          <div class="results-title">Calculated Estimates:</div>
+          <div class="results-grid">
+            <div><strong>EBV:</strong> <span id="outEBV">--</span> mL</div>
+            <div><strong>Retention (ΔV):</strong> <span id="outDV">--</span> mL</div>
+            <div><strong>Expected Hb:</strong> <span id="outHbExp" style="color: var(--accent); font-weight: bold;">--</span> g/dL</div>
+            <div><strong>Expected Drop:</strong> <span id="outHbDrop" style="color: var(--danger); font-weight: bold;">--</span> g/dL</div>
           </div>
-        </div>
 
-        <!-- Retention Selection -->
-        <div>
-          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Clinical Status / Intravascular Retention (ΔV)</label>
-          <select id="retentionStatus" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" onchange="toggleCustomRetention(); calculateDilution();">
-            <option value="0.25">Well / Non-acutely ill (~25% retained)</option>
-            <option value="0.05">Acutely ill / Septic (~5% retained)</option>
-            <option value="custom">Custom Percentage</option>
-          </select>
+          <div id="interpretationBox" class="interp-box"></div>
         </div>
+      </div>
+    </main>
+  </div>
 
-        <div id="customRetentionContainer" style="display: none;">
-          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Custom Intravascular Retention (%)</label>
-          <input type="number" id="customRetentionPct" placeholder="e.g. 15" min="1" max="100" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
-        </div>
+  <script>
+    function toggleCustomRetention() {
+      const status = document.getElementById('retentionStatus').value;
+      const customContainer = document.getElementById('customRetentionContainer');
+      customContainer.style.display = (status === 'custom') ? 'block' : 'none';
+    }
 
-        <!-- Optional Measured Hb -->
-        <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 4px;">
-          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Measured Post-Fluid Hb (g/dL) <span style="font-weight: normal; color: #94a3b8;">(Optional)</span></label>
-          <input type="number" id="measuredHb" placeholder="e.g. 11.0" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
-        </div>
-      </form>
+    function calculateDilution() {
+      const sex = document.getElementById('patientSex').value;
+      const weight = parseFloat(document.getElementById('patientWeight').value);
+      const baselineHb = parseFloat(document.getElementById('baselineHb').value);
+      const fluid = parseFloat(document.getElementById('fluidInfused').value);
+      const measuredHb = parseFloat(document.getElementById('measuredHb').value);
+      const retentionSelect = document.getElementById('retentionStatus').value;
 
-      <!-- Output Results Panel -->
-      <div id="calcResults" style="margin-top: 20px; padding: 16px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: none;">
-        <h2 style="margin-top: 0; font-size: 1rem; color: #0f172a;">Calculated Estimates:</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem; margin-bottom: 12px;">
-          <div><strong>Estimated Blood Vol (EBV):</strong> <span id="outEBV">--</span> mL</div>
-          <div><strong>Intravascular Retention (ΔV):</strong> <span id="outDV">--</span> mL</div>
-          <div><strong>Expected Hb (Hb<sub>expected</sub>):</strong> <span id="outHbExp"
+      const resultsDiv = document.getElementById('calcResults');
+
+      if (!weight || !baselineHb || !fluid || weight <= 0 || baselineHb <= 0 || fluid <= 0) {
+        resultsDiv.style.display = 'none';
+        return;
+      }
+
+      const ebvFactor = (sex === 'male') ? 70 : 65;
+      const ebv = weight * ebvFactor;
+
+      let retentionFraction = 0.25;
+      if (retentionSelect === 'custom') {
+        const customPct = parseFloat(document.getElementById('customRetentionPct').value);
+        retentionFraction = customPct ? customPct / 100 : 0;
+      } else {
+        retentionFraction = parseFloat(retentionSelect);
+      }
+
+      const deltaV = fluid * retentionFraction;
+      const expectedHb = baselineHb * (ebv / (ebv + deltaV));
+      const hbDrop = baselineHb - expectedHb;
+
+      document.getElementById('outEBV').textContent = Math.round(ebv).toLocaleString();
+      document.getElementById('outDV').textContent = Math.round(deltaV).toLocaleString();
+      document.getElementById('outHbExp').textContent = expectedHb.toFixed(1);
+      document.getElementById('outHbDrop').textContent = hbDrop.toFixed(1);
+
+      const interpBox = document.getElementById('interpretationBox');
+      if
