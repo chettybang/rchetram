@@ -1,23 +1,40 @@
 {
-"name": "ChetMed",
-"short_name": "ChetMed",
-"description": "Offline-ready clinical tools and decision engines by Ryan Chetram, MD",
-"start_url": "/",
-"display": "standalone",
-"background_color": "#0f172a",
-"theme_color": "#0f172a",
-"icons": [
-{
-"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 12 L50 88' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/><circle cx='50' cy='11' r='4.5' fill='%2338bdf8'/><path d='M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' fill='none'/><circle cx='53' cy='15' r='2.5' fill='%2338bdf8'/></svg>",
-"sizes": "192x192",
-"type": "image/svg+xml",
-"purpose": "any"
-},
-{
-"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 12 L50 88' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/><circle cx='50' cy='11' r='4.5' fill='%2338bdf8'/><path d='M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' fill='none'/><circle cx='53' cy='15' r='2.5' fill='%2338bdf8'/></svg>",
-"sizes": "512x512",
-"type": "image/svg+xml",
-"purpose": "any"
-}
-]
+  "name": "ChetMed",
+  "short_name": "ChetMed",
+  "description": "Offline-ready clinical tools and decision engines by Ryan Chetram, MD",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 12 L50 88' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/><circle cx='50' cy='11' r='4.5' fill='%2338bdf8'/><path d='M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' fill='none'/><circle cx='53' cy='15' r='2.5' fill='%2338bdf8'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 12 L50 88' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/><circle cx='50' cy='11' r='4.5' fill='%2338bdf8'/><path d='M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' fill='none'/><circle cx='53' cy='15' r='2.5' fill='%2338bdf8'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dilutional Hgb Drop",
+      "short_name": "Dilutional Hgb",
+      "url": "/dilutional-hgb.html"
+    },
+    {
+      "name": "Antibiotic Guide",
+      "short_name": "Antibiotics",
+      "url": "/antibiotics-guide/"
+    },
+    {
+      "name": "Pre-Op Clearance Advisor",
+      "short_name": "Pre-Op",
+      "url": "/preop/"
+    }
+  ]
 }
