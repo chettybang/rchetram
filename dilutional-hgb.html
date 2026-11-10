@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dilutional Hemoglobin Calculator | ChetMed</title>
+  <meta name="description" content="Estimate anticipated hemoglobin drop and intravascular retention following crystalloid fluid resuscitation.">
+  <link rel="stylesheet" href="css/styles.css"> <!-- Replace with your site stylesheet -->
+</head>
+<body style="background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; padding: 24px 16px;">
+
+  <header style="max-width: 650px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: space-between;">
+    <a href="/" style="text-decoration: none; color: #2563eb; font-weight: 600; font-size: 0.95rem;">← Back to Tools</a>
+    <span style="font-size: 0.85rem; color: #64748b; font-weight: 500;">rchetram.com</span>
+  </header>
+
+  <main>
+    <!-- Dilutional Hemoglobin Component -->
+    <div class="calculator-card" style="max-width: 650px; margin: 0 auto; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+      <h1 style="margin-top: 0; font-size: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+        🩸 Dilutional Hemoglobin Drop Calculator
+      </h1>
+      <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
+        Estimates expected dilutional drop in hemoglobin following crystalloid fluid administration.
+      </p>
+
+      <form id="dilutionCalcForm" style="display: grid; gap: 16px;">
+        <!-- Step 1 Inputs -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Sex</label>
+            <select id="patientSex" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" onchange="calculateDilution()">
+              <option value="male">Male (70 mL/kg)</option>
+              <option value="female">Female (65 mL/kg)</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Weight (kg)</label>
+            <input type="number" id="patientWeight" placeholder="e.g. 80" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+          </div>
+        </div>
+
+        <!-- Baseline Hb & Fluid Volume -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Baseline Hb (g/dL)</label>
+            <input type="number" id="baselineHb" placeholder="e.g. 12.0" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+          </div>
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Crystalloid Infused (mL)</label>
+            <input type="number" id="fluidInfused" placeholder="e.g. 2000" step="50" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+          </div>
+        </div>
+
+        <!-- Retention Selection -->
+        <div>
+          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Clinical Status / Intravascular Retention (ΔV)</label>
+          <select id="retentionStatus" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" onchange="toggleCustomRetention(); calculateDilution();">
+            <option value="0.25">Well / Non-acutely ill (~25% retained)</option>
+            <option value="0.05">Acutely ill / Septic (~5% retained)</option>
+            <option value="custom">Custom Percentage</option>
+          </select>
+        </div>
+
+        <div id="customRetentionContainer" style="display: none;">
+          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Custom Intravascular Retention (%)</label>
+          <input type="number" id="customRetentionPct" placeholder="e.g. 15" min="1" max="100" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+        </div>
+
+        <!-- Optional Measured Hb -->
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 4px;">
+          <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #334155;">Measured Post-Fluid Hb (g/dL) <span style="font-weight: normal; color: #94a3b8;">(Optional)</span></label>
+          <input type="number" id="measuredHb" placeholder="e.g. 11.0" step="0.1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" oninput="calculateDilution()">
+        </div>
+      </form>
+
+      <!-- Output Results Panel -->
+      <div id="calcResults" style="margin-top: 20px; padding: 16px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: none;">
+        <h2 style="margin-top: 0; font-size: 1rem; color: #0f172a;">Calculated Estimates:</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem; margin-bottom: 12px;">
+          <div><strong>Estimated Blood Vol (EBV):</strong> <span id="outEBV">--</span> mL</div>
+          <div><strong>Intravascular Retention (ΔV):</strong> <span id="outDV">--</span> mL</div>
+          <div><strong>Expected Hb (Hb<sub>expected</sub>):</strong> <span id="outHbExp"
