@@ -1,10 +1,13 @@
-const CACHE_NAME = 'rchetram-clinical-v6';
+const CACHE_NAME = 'rchetram-clinical-v7';
 
-// Complete manifest of static assets across all 16 micro-apps
+// Complete manifest of static assets across all micro-apps
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/dilutional-hgb.html',
+  '/antibiotics-guide/',
+  '/antibiotics-guide/index.html',
   '/prices/',
   '/prices/index.html',
   '/antidepressants/',
@@ -17,8 +20,6 @@ const ASSETS_TO_CACHE = [
   '/obesity/index.html',
   '/insulin/',
   '/insulin/index.html',
-  '/antibiotics/',
-  '/antibiotics/index.html',
   '/preop/',
   '/preop/index.html',
   '/vaccines/',
@@ -82,7 +83,7 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse);
+              cache.put(event.request, responseToCache);
             });
           }
           return networkResponse;
