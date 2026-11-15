@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Fructosamine to Estimated A1C Calculator | ChetMed</title>
+  <meta name="description" content="Convert serum fructosamine (µmol/L) to estimated HbA1c (%, DCCT) and estimated average glucose (eAG).">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    header a {
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    header span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .calculator-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    .req {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+    .opt {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+      color: var(--text-main);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+    }
+    .output-section {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+    }
+    .output-heading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+    .readonly-box {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+      color: var(--accent);
+      font-size: 1.2rem;
+      font-weight: 800;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .readonly-unit {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .btn-calc {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #0f172a;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .btn-calc:hover {
+      background: var(--accent-hover);
+      color: #ffffff;
+    }
+    .btn-calc:active {
+      transform: scale(0.99);
+    }
+    .details-panel {
+      margin-top: 18px;
+      padding: 16px;
+      background: #0f172a;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      display: none;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 0.88rem;
+      margin-bottom: 12px;
+    }
+    .interp-box {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+    .pearl-note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    @media (max-width: 500px) {
+      .details-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/chetmed/">← Back to ChetMed</a>
+      <span>rchetram.com</span>
+    </header>
+
+    <main>
+      <div class="calculator-card">
+        <h1>🧬 Fructosamine to Estimated A1C</h1>
+        <p class="subtitle">Converts serum fructosamine (µmol/L) into estimated HbA1c (%, DCCT) reflecting 2–3 weeks of average glycemia.</p>
+
+        <form id="fructosamineForm" onsubmit="event.preventDefault(); calculateFructosamine();">
+          <div class="form-group">
+            <label for="fructosamineInput">Fructosamine Level (µmol/L)<span class="req">*</span></label>
+            <input type="number" id="fructosamineInput" placeholder="e.g. 244" step="1" min="50" max="1500" oninput="calculateFructosamine()" required>
+          </div>
+
+          <div class="form-group">
+            <label for="albuminInput">Serum Albumin (g/dL) <span class="opt">(Optional — corrects for hypoalbuminemia)</span></label>
+            <input type="number" id="albuminInput" placeholder="Leave blank if normal (e.g. 4.0)" step="0.1" min="0.5" max="6.5" oninput="calculateFructosamine()">
+          </div>
+
+          <div class="output-section">
+            <div class="output-heading">Estimated A1C output</div>
+            <label for="a1cOutputBox">HbA1c (%, DCCT)</label>
+            <div id="a1cOutputBox" class="readonly-box">
+              <span id="outA1c">--</span>
+              <span class="readonly-unit">% DCCT</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-calc">Calculate</button>
+        </form>
+
+        <div id="detailsPanel" class="details-panel">
+          <div class="details-grid">
+            <div><strong>Effective Fructosamine:</strong> <span id="outEffFruct">--</span> µmol/L</div>
+            <div><strong>Est. Avg Glucose (eAG):</strong> <span id="outEag" style="color: var(--accent); font-weight: 700;">--</span> mg/dL</div>
+          </div>
+          <div id="interpretationBox" class="interp-box"></div>
+        </div>
+
+        <p class="pearl-note">
+          <strong>Formula:</strong> HbA1c (%) = (0.017 × Fructosamine) + 1.61 (Cohen et al.). Useful when HbA1c is unreliable (hemoglobinopathies, hemolytic anemia, CKD/ESRD, or recent transfusion). Normal fructosamine reference range: ~200–285 µmol/L.
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function calculateFructosamine() {
+      const rawFruct = parseFloat(document.getElementById('fructosamineInput').value);
+      const albumin = parseFloat(document.getElementById('albuminInput').value);
+      const outA1c = document.getElementById('outA1c');
+      const detailsPanel = document.getElementById('detailsPanel');
+
+      if (isNaN(rawFruct) || rawFruct <= 0) {
+        outA1c.textContent = '--';
+        detailsPanel.style.display = 'none';
+        return;
+      }
+
+      // Optional albumin correction: Corrected = Measured * (4.0 / Albumin)
+      const effectiveFruct = (!isNaN(albumin) && albumin > 0)
+        ? rawFruct * (4.0 / albumin)
+        : rawFruct;
+
+      // Cohen et al. equation: HbA1c (%) = 0.017 * Fructosamine + 1.61
+      const estA1c = (0.017 * effectiveFruct) + 1.61;
+      // ADAG Estimated Average Glucose (mg/dL)
+      const eag = Math.round((28.7 * estA1c) - 46.7);
+
+      outA1c.textContent = estA1c.toFixed(2);
+      document.getElementById('outEffFruct').textContent = Math.round(effectiveFruct).toLocaleString();
+      document.getElementById('outEag').textContent = eag > 0 ? eag.toLocaleString() : '--';
+
+      const interpBox = document.getElementById('interpretationBox');
+      const roundedA1c = parseFloat(estA1c.toFixed(2));
+
+      if (roundedA1c < 5.7) {
+        interpBox.style.backgroundColor = 'rgba(52, 211, 153, 0.12)';
+        interpBox.style.color = '#34d399';
+        interpBox.style.border = '1px solid rgba(52, 211, 153, 0.3)';
+        interpBox.innerHTML = `<strong>Normoglycemic Range (&lt;5.7%):</strong> Corresponds to non-diabetic short-term glycemia over the past 2–3 weeks.`;
+      } else if (roundedA1c < 6.5) {
+        interpBox.style.backgroundColor = 'rgba(251, 191, 36, 0.12)';
+        interpBox.style.color = '#fbbf24';
+        interpBox.style.border = '1px solid rgba(251, 191, 36, 0.3)';
+        interpBox.innerHTML = `<strong>Prediabetes / Tight Control Range (5.7%–6.4%):</strong> Corresponds to mildly elevated short-term glycemia (or well-controlled diabetes).`;
+      } else if (roundedA1c < 7.0) {
+        interpBox.style.backgroundColor = 'rgba(56, 189, 248, 0.12)';
+        interpBox.style.color = '#38bdf8';
+        interpBox.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+        interpBox.innerHTML = `<strong>Diabetes Range — At ADA Goal (6.5%–6.9%):</strong> Meets standard &lt;7.0% glycemic target for most non-pregnant adults.`;
+      } else {
+        interpBox.style.backgroundColor = 'rgba(248, 113, 113, 0.12)';
+        interpBox.style.color = '#f87171';
+        interpBox.style.border = '1px solid rgba(248, 113, 113, 0.3)';
+        interpBox.innerHTML = `<strong>Elevated Glycemia (≥7.0%):</strong> Short-term glycemic exposure over the past 2–3 weeks exceeds standard target.`;
+      }
+
+      detailsPanel.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
