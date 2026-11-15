@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>ChetMed — Family Medicine Clinical Decision Suite</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f172a'/><path d='M50 12 L50 88' stroke='%2338bdf8' stroke-width='5' stroke-linecap='round'/><circle cx='50' cy='11' r='4.5' fill='%2338bdf8'/><path d='M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15' stroke='%2338bdf8' stroke-width='4' stroke-linecap='round' fill='none'/><circle cx='53' cy='15' r='2.5' fill='%2338bdf8'/></svg>">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--card-border:#334155;--text-main:#f8fafc;--text-muted:#94a3b8;--accent:#38bdf8;--success:#34d399}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text-main);min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;align-items:center}
+  .container{width:100%;max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+  header{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:28px;width:100%}
+  .med-icon{width:64px;height:64px;margin-bottom:8px;color:var(--accent);display:block;filter:drop-shadow(0 4px 16px rgba(56,189,248,.4))}
+  header h1{font-size:2.5rem;font-weight:800;color:#fff;letter-spacing:-.025em;margin-bottom:4px}
+  header .subtitle{color:var(--text-muted);font-size:1.05rem;font-weight:500;max-width:520px;line-height:1.4}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);padding:5px 14px;border-radius:20px;font-size:.8rem;font-weight:600;color:var(--accent);margin-top:14px;letter-spacing:.03em}
+  .hero-badge .dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399}
+  .filter-controls{margin-bottom:28px;display:flex;flex-direction:column;gap:16px;align-items:center;width:100%}
+  .search-wrapper{position:relative;width:100%;max-width:540px}
+  .search-input{width:100%;padding:14px 16px 14px 44px;border-radius:12px;border:1px solid var(--card-border);background:var(--card);color:var(--text-main);font-size:1rem;outline:none;transition:all .2s ease;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+  .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--text-muted);pointer-events:none}
+  .category-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:720px}
+  .chip-btn{background:var(--card);border:1px solid var(--card-border);color:var(--text-muted);padding:8px 16px;border-radius:20px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+  .chip-btn:hover{color:var(--text-main);border-color:var(--accent)}
+  .chip-btn.active{background:var(--accent);color:#0f172a;border-color:var(--accent);box-shadow:0 2px 10px rgba(56,189,248,.3)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;width:100%}
+  .card-item{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:20px;text-decoration:none;color:inherit;display:flex;flex-direction:column;justify-content:space-between;transition:all .2s cubic-bezier(.16,1,.3,1)}
+  .card-item:hover{transform:translateY(-4px);border-color:rgba(56,189,248,.5);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;width:100%}
+  .card-title-group{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0}
+  .card-emoji{font-size:1.4rem;line-height:1.2;flex-shrink:0}
+  .card-title{font-size:1.1rem;font-weight:700;color:#fff;line-height:1.3}
+  .badge-tag{font-size:.7rem;font-weight:700;padding:4px 8px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0;margin-left:auto}
+  .tag-pharm{background:rgba(56,189,248,.12);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+  .tag-clearance{background:rgba(192,132,252,.12);color:#c084fc;border:1px solid rgba(192,132,252,.3)}
+  .tag-peds{background:rgba(244,114,182,.12);color:#f472b6;border:1px solid rgba(244,114,182,.3)}
+  .tag-calc{background:rgba(52,211,153,.12);color:var(--success);border:1px solid rgba(52,211,153,.3)}
+  .card-desc{font-size:.88rem;color:var(--text-muted);line-height:1.45}
+  .no-results{grid-column:1 / -1;text-align:center;padding:40px 20px;color:var(--text-muted);display:none}
+  footer{margin-top:48px;text-align:center;font-size:.82rem;color:var(--text-muted);padding-bottom:24px;width:100%}
+  @media(max-width:640px){header h1{font-size:2rem}header .subtitle{font-size:.95rem}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <svg class="med-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 12 L50 88" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="11" r="4.5" fill="currentColor"/><path d="M38 78 C 36 70, 64 66, 62 56 C 60 46, 36 42, 38 32 C 40 24, 60 22, 53 15" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="53" cy="15" r="2.5" fill="currentColor"/></svg>
+    <h1>ChetMed</h1>
+    <p class="subtitle">Ryan Chetram, MD — Family Medicine Clinical Decision Suite</p>
+    <div class="hero-badge"><span class="dot"></span> PWA Offline Engine Active</div>
+  </header>
+  <div class="filter-controls">
+    <div class="search-wrapper">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search clinical tools, drugs, or keywords...">
+    </div>
+    <div class="category-chips" id="categoryChips">
+      <button type="button" class="chip-btn active" data-cat="all">All Tools</button>
+      <button type="button" class="chip-btn" data-cat="pharm">Pharmacology &amp; Dosing</button>
+      <button type="button" class="chip-btn" data-cat="clearance">Risk &amp; Clearance</button>
+      <button type="button" class="chip-btn" data-cat="peds">Pediatrics &amp; Women's</button>
+      <button type="button" class="chip-btn" data-cat="calc">Calculators</button>
+    </div>
+  </div>
+  <div class="grid" id="toolsGrid">
+    <a href="/antibiotics-guide/" class="card-item" data-category="pharm clearance peds" data-keywords="antibiotics outpatient inpatient pediatric adult idsa sepsis pneumonia uti cellulitis"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">💉</span><div class="card-title">Antibiotic Selection Guide</div></div><span class="badge-tag tag-pharm">GUIDELINE</span></div><div class="card-desc">Unified Outpatient &amp; Inpatient empirical decision engine across adult &amp; pediatric populations.</div></div></a>
+    <a href="/dilutional-hgb/" class="card-item" data-category="calc pharm clearance" data-keywords="dilutional hemoglobin hgb drop blood volume ebv crystalloid fluid retention intravascular resuscitation anemia bleed hemolysis"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🩸</span><div class="card-title">Dilutional Hgb Drop</div></div><span class="badge-tag tag-calc">CALCULATOR</span></div><div class="card-desc">Estimate anticipated hemoglobin drop and intravascular retention (ΔV) following crystalloid resuscitation.</div></div></a>
+    <a href="/obesity/" class="card-item" data-category="pharm" data-keywords="obesity glp-1 tirzepatide semaglutide wegovy mounjaro zepbound weight loss bmi qsymia contrave"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">⚖️</span><div class="card-title">Obesity Pharmacotherapy</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">AACE/AGA weight management decision support, GLP-1/GIP criteria &amp; non-GLP-1 oral alternatives.</div></div></a>
+    <a href="/vaccines/" class="card-item" data-category="peds clearance" data-keywords="vaccine immunization cdc acip pediatric adult pcv20 pcv21 rsv shingrix tetanus catch-up"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🛡️</span><div class="card-title">Vaccine Schedule &amp; Catch-Up</div></div><span class="badge-tag tag-peds">PEDS / ADULT</span></div><div class="card-desc">CDC ACIP adult expansion (PCV50+ &amp; RSV 75+/50+ risk), routine pediatric milestones, and catch-up rules.</div></div></a>
+    <a href="/preop/" class="card-item" data-category="clearance" data-keywords="pre-op preop clearance rcri cardiac hold doac glp-1 sglt2 aspirin surgery lab orders"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">📋</span><div class="card-title">Pre-Op Clearance Advisor</div></div><span class="badge-tag tag-clearance">CLEARANCE</span></div><div class="card-desc">Perioperative medication hold schedule (GLP-1/SGLT2/DOAC), RCRI cardiac risk score, and pre-op lab orders.</div></div></a>
+    <a href="/insulin/" class="card-item" data-category="pharm calc" data-keywords="insulin tdd lantus glargine tresiba lispro nph sliding scale correction factor switch"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🩸</span><div class="card-title">Insulin Dosing &amp; Switch Engine</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Calculate TDD, split basal/prandial regimens, convert insulin products, and generate EHR correction scales.</div></div></a>
+    <a href="/steroids/" class="card-item" data-category="pharm" data-keywords="steroids prednisone dexamethasone medrol methylprednisolone hydrocortisone taper dosepak asthma copd"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🧪</span><div class="card-title">Steroid Equivalence &amp; Taper</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Corticosteroid potencies, equivalent dose conversion, and auto-generated step-down taper schedules.</div></div></a>
+    <a href="/peds-antibiotics/" class="card-item" data-category="peds calc" data-keywords="pediatric peds amoxicillin augmentin cefdinir otitis media strep mg/kg suspension dosing"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">👶</span><div class="card-title">Pediatric Antibiotic Calculator</div></div><span class="badge-tag tag-peds">PEDS</span></div><div class="card-desc">Weight-based mg/kg suspension calculator, concentration matcher, and oral syringe volume rounding.</div></div></a>
+    <a href="/thyroid/" class="card-item" data-category="pharm calc" data-keywords="levothyroxine synthroid thyroid tsh hypothyroid full replacement mcg pill color strength"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🦋</span><div class="card-title">Levothyroxine Dosing &amp; Strengths</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Calculate 1.6 mcg/kg replacement, match manufactured commercial pill colors, and adjust weekly regimens.</div></div></a>
+    <a href="/inhalers/" class="card-item" data-category="pharm clearance" data-keywords="inhaler ics laba lama trelegy breo symbicort advair gina gold asthma copd potency"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🫁</span><div class="card-title">Inhaler Matrix &amp; GINA/GOLD</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">GINA ICS potency classification, dual &amp; triple combination therapy mapping, and SMART reliever rules.</div></div></a>
+    <a href="/contraceptive/" class="card-item" data-category="peds pharm" data-keywords="contraceptive ocp birth control missed pill cdc spr estrogen progestin yaz sprintec lo loestrin"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🌸</span><div class="card-title">Oral Contraceptive Advisor</div></div><span class="badge-tag tag-peds">WOMEN'S</span></div><div class="card-desc">Match birth control pills by EE dose &amp; progestin generation; CDC Selected Practice Recommendations for missed pills.</div></div></a>
+    <a href="/prices/" class="card-item" data-category="pharm" data-keywords="prescription price cost plus drugs goodrx amazon pharmacy walmart singlecare coupon drug cost"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🏷️</span><div class="card-title">Prescription Prices</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Compare cash prices across Cost Plus Drugs, GoodRx, Amazon Pharmacy, Walmart $4 list, and SingleCare.</div></div></a>
+    <a href="/antidepressants/" class="card-item" data-category="pharm calc" data-keywords="antidepressant ssri snri fluoxetine sertraline duloxetine bupropion mirtazapine conversion dose equivalency"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🧠</span><div class="card-title">Antidepressant Converter</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Approximate dose equivalencies for SSRIs, SNRIs, Bupropion, and Mirtazapine based on fluoxetine units.</div></div></a>
+    <a href="/stimulants/" class="card-item" data-category="pharm calc" data-keywords="adhd stimulant adderall vyvanse ritalin concerta methylphenidate amphetamine conversion dose"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">⚡</span><div class="card-title">ADHD Stimulant Converter</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Approximate dose equivalencies for common ADHD stimulants (Methylphenidate vs Amphetamine derivatives).</div></div></a>
+    <a href="/mme/" class="card-item" data-category="calc pharm" data-keywords="mme morphine milligram equivalent opioid oxycodone hydrocodone fentanyl hydromorphone cdc guidelines"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">⚖️</span><div class="card-title">MME Converter</div></div><span class="badge-tag tag-calc">CALCULATOR</span></div><div class="card-desc">Calculate Morphine Milligram Equivalents for common opioids with daily CDC threshold warnings.</div></div></a>
+    <a href="/phosphate/" class="card-item" data-category="calc" data-keywords="phosphate deficit replacement mmol meq potassium phosphate sodium phosphate hypophosphatemia"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">🔬</span><div class="card-title">Phosphate Deficit Calculator</div></div><span class="badge-tag tag-calc">CALCULATOR</span></div><div class="card-desc">Estimate phosphate deficit and replacement requirements with complete mmol, mg, mEq, and cation breakdowns.</div></div></a>
+    <a href="/medicaid/" class="card-item" data-category="pharm" data-keywords="medicaid preferred drug list louisiana texas pa prior authorization alternatives"><div><div class="card-top"><div class="card-title-group"><span class="card-emoji">📜</span><div class="card-title">Medicaid Preferred List</div></div><span class="badge-tag tag-pharm">PHARM</span></div><div class="card-desc">Check Louisiana &amp; Texas Medicaid preferred status and suggested non-PA drug alternatives.</div></div></a>
+    <div class="no-results" id="noResults"><p style="font-size:1.1rem;font-weight:600;color:#fff">No clinical tools found</p><p style="font-size:.88rem;margin-top:4px">Try searching for a different keyword or selecting "All Tools".</p></div>
+  </div>
+  <footer><p>ChetMed — Clinical decision tools for point-of-care reference. Always individualize care.</p></footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  let currentCategory = 'all';
+  const searchInput = document.getElementById('searchInput');
+  const chipButtons = document.querySelectorAll('.chip-btn');
+  const cards = document.querySelectorAll('.card-item');
+  const noResults = document.getElementById('noResults');
+
+  function filterTools() {
+    const query = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+    cards.forEach(card => {
+      const categories = (card.getAttribute('data-category') || '').split(' ');
+      const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
+      const title = card.querySelector('.card-title').textContent.toLowerCase();
+      const desc = card.querySelector('.card-desc').textContent.toLowerCase();
+      const matchesCat = currentCategory === 'all' || categories.includes(currentCategory);
+      const matchesSearch = !query || keywords.includes(query) || title.includes(query) || desc.includes(query);
+      if (matchesCat && matchesSearch) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+
+  chipButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCategory = btn.getAttribute('data-cat');
+      chipButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterTools();
+    });
+  });
+
+  searchInput.addEventListener('input', filterTools);
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(console.error); });
+}
+</script>
+</body>
+</html>
