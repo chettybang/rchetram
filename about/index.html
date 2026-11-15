@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Ryan Chetram, MD — Curriculum Vitae</title>
+  <meta name="description" content="Curriculum Vitae of Ryan Chetram, MD — Board-Eligible Family Medicine Physician relocating to Houston, TX.">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --success: #34d399;
+      --warning: #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+      line-height: 1.55;
+    }
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* Top Action Bar */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .nav-btn.primary {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+    }
+    .nav-btn.primary:hover {
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    /* Header Card */
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .role-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+    .relocation-note {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--success);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+    }
+    .contact-row a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .contact-row a:hover {
+      text-decoration: underline;
+    }
+
+    /* Section Cards */
+    .cv-section {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .summary-text {
+      font-size: 0.94rem;
+      color: var(--text-main);
+    }
+
+    /* Pill Tags for Interests & Procedures */
+    .pill-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .interest-pill {
+      background: var(--accent-soft);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .proc-pill {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Experience / Education Entries */
+    .entry {
+      margin-bottom: 18px;
+    }
+    .entry:last-child {
+      margin-bottom: 0;
+    }
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .entry-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .entry-date {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .entry-sub {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    ul.cv-list {
+      padding-left: 18px;
+      font-size: 0.91rem;
+      color: var(--text-main);
+    }
+    ul.cv-list li {
+      margin-bottom: 7px;
+    }
+    ul.cv-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Two-Column Grid */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .mini-box {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .mini-box h3 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+    .mini-box.in-process h3 {
+      color: var(--warning);
+    }
+    .mini-box ul {
+      padding-left: 16px;
+      font-size: 0.88rem;
+      color: var(--text-main);
+    }
+    .mini-box li {
+      margin-bottom: 6px;
+    }
+    .mini-box li:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Memberships Grid */
+    .member-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .member-item {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 28px;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.7rem; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* Crisp White-Paper Executive Print Layout */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0;
+        font-size: 10pt;
+      }
+      .top-nav, footer, .digital-health-card { display: none !important; }
+      .hero-card, .cv-section, .mini-box, .member-item {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        padding: 12px 14px !important;
+        margin-bottom: 10px !important;
+        break-inside: avoid;
+      }
+      h1, .entry-title, .member-item { color: #0f172a !important; }
+      .role-title, .section-title, .entry-date, .contact-row a { color: #0369a1 !important; }
+      .relocation-note, .entry-sub, .contact-row, ul.cv-list, .summary-text, .mini-box li { color: #334155 !important; }
+      .status-pill, .mini-box h3 {
+        border-color: #059669 !important;
+        color: #059669 !important;
+        background: transparent !important;
+      }
+      .mini-box.in-process h3 { color: #b45309 !important; }
+      .interest-pill, .proc-pill {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        padding: 4px 10px !important;
+        font-size: 8.5pt !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="top-nav">
+      <a href="/" class="nav-btn">← rchetram.com</a>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="/chetmed/" class="nav-btn">🩺 ChetMed Clinical Suite</a>
+        <button type="button" class="nav-btn primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="hero-card">
+      <div class="hero-top">
+        <div>
+          <h1>Ryan Chetram, MD</h1>
+          <div class="role-title">Attending Family Medicine Physician | Available September 2027</div>
+          <div class="relocation-note">Currently Lake Charles, LA • Relocating Home to Houston, TX Post-Graduation From Residency (July 2027)</div>
+        </div>
+        <span class="status-pill">● Available September 2027</span>
+      </div>
+      <div class="contact-row">
+        <span>📞 <a href="tel:8325042377">(832) 504-2377</a></span>
+        <span>✉️ <a href="mailto:chetramryanmd@gmail.com">chetramryanmd@gmail.com</a></span>
+        <span>🌐 <a href="https://rchetram.com">rchetram.com</a></span>
+        <span>🩺 <a href="/chetmed/">rchetram.com/chetmed</a></span>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="cv-section">
+      <h2 class="section-title">Summary</h2>
+      <p class="summary-text">
+        Board-Eligible Family Medicine PGY-3 Resident with proven ability in management of a high-volume medically complex outpatient continuity panel spanning chronic disease, pediatrics, psychiatry, OB/GYN, &amp; geriatrics, with strong focus on evidence-based chronic disease management, preventive care, and a broad range of in-office procedural skills. Deeply committed to long-term patient relationships. Seeking a longitudinal primary care practice in the Houston area that includes chronic disease management, preventive care, common office procedures, behavioral health &amp; care of adolescent patients.
+      </p>
+    </section>
+
+    <!-- Clinical Interests -->
+    <section class="cv-section">
+      <h2 class="section-title">Clinical Interests</h2>
+      <div class="pill-wrap">
+        <span class="interest-pill">Preventive Medicine</span>
+        <span class="interest-pill">Chronic Disease Management</span>
+        <span class="interest-pill">Behavioral Health</span>
+        <span class="interest-pill">Urgent / Acute Care</span>
+        <span class="interest-pill">Adolescent Medicine</span>
+      </div>
+    </section>
+
+    <!-- Post-Graduate Training & Experience -->
+    <section class="cv-section">
+      <h2 class="section-title">Post-Graduate Training &amp; Experience</h2>
+      <div class="entry">
+        <div class="entry-header">
+          <div class="entry-title">LSUHSC Lake Charles Family Medicine Residency Program</div>
+          <div class="entry-date">July 2024 – Present (PGY-3)</div>
+        </div>
+        <div class="entry-sub">Lake Charles, LA</div>
+        <ul class="cv-list">
+          <li>Regularly see &amp; manage 16–20 high-complexity patients while delivering efficient, evidence-based primary care.</li>
+          <li>Maintain a full-spectrum outpatient continuity panel of approximately 250 patients spanning pediatrics, adult medicine, OB/GYN, psychiatry, and geriatrics, optimizing preventive care, chronic disease outcomes, and patient-centered continuity.</li>
+          <li>Demonstrate strong proficiency in outpatient procedural care, including joint injections, skin biopsies, &amp; POCUS.</li>
+          <li>Collaborate with interdisciplinary teams to improve patient flow, reduce delays, and enhance care delivery efficiency.</li>
+          <li>Teach and supervise junior residents and medical students in clinic and on inpatient services, providing bedside teaching on procedures, evidence-based management, and patient communication.</li>
+          <li>Led community outreach on prostate cancer and hypertension awareness in partnership with Lake Charles municipal government; grew the residency's digital community engagement via Instagram.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Digital Health & Clinical Informatics -->
+    <section class="cv-section digital-health-card">
+      <h2 class="section-title">Digital Health &amp; Point-of-Care Innovation</h2>
+      <div class="entry">
+        <div class="entry-header">
+          <div class="entry-title">ChetMed — Family Medicine Clinical Decision Suite</div>
+          <div class="entry-date"><a href="/chetmed/" style="color: var(--accent); text-decoration: none;">Launch Live Suite →</a></div>
+        </div>
+        <div class="entry-sub">Creator &amp; Developer • rchetram.com/chetmed</div>
+        <ul class="cv-list">
+          <li>Designed and deployed an offline-ready clinical decision support Progressive Web App featuring 18+ point-of-care calculators, IDSA empiric antibiotic guides, perioperative medication hold advisors, and weight-based pediatric dosing tools.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="cv-section">
+      <h2 class="section-title">Education</h2>
+      <div class="entry">
+        <div class="entry-header">
+          <div class="entry-title">Doctor of Medicine (MD)</div>
+          <div class="entry-date">2023</div>
+        </div>
+        <div class="entry-sub">Caribbean Medical University (CMU), Curaçao / Antigua</div>
+      </div>
+    </section>
+
+    <!-- Licensure & Certifications -->
+    <section class="cv-section">
+      <h2 class="section-title">Licensure &amp; Certifications</h2>
+      <div class="two-col">
+        <div class="mini-box">
+          <h3>Active</h3>
+          <ul>
+            <li>LSBME GETP License #341601</li>
+            <li>DEA Registration</li>
+            <li>ACLS (AHA, valid through 04/2027)</li>
+          </ul>
+        </div>
+        <div class="mini-box in-process">
+          <h3>In Process</h3>
+          <ul>
+            <li>Board Eligible (ABFM) — Exam anticipated in April 2027</li>
+            <li>Unrestricted Medical License: Texas &amp; Louisiana</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Selected Procedures -->
+    <section class="cv-section">
+      <h2 class="section-title">Selected Procedures With Proficiency</h2>
+      <div class="pill-wrap">
+        <span class="proc-pill">Joint Injections</span>
+        <span class="proc-pill">Skin Biopsies (Punch, Excision, Shave)</span>
+        <span class="proc-pill">Incision &amp; Drainage</span>
+        <span class="proc-pill">Cryotherapy</span>
+        <span class="proc-pill">Nexplanon Placement</span>
+        <span class="proc-pill">Pap Smear</span>
+        <span class="proc-pill">Colposcopy &amp; Endometrial Biopsy</span>
+        <span class="proc-pill">Laceration Repair</span>
+        <span class="proc-pill">Point-of-Care Ultrasound (POCUS)</span>
+        <span class="proc-pill">Cerumen Removal</span>
+        <span class="proc-pill">Chest X-Ray &amp; EKG Interpretation</span>
+      </div>
+    </section>
+
+    <!-- Clinical Skills -->
+    <section class="cv-section">
+      <h2 class="section-title">Clinical Skills</h2>
+      <ul class="cv-list">
+        <li>Patient-Centered Communication &amp; Longitudinal Relationship Building</li>
+        <li>Management of Behavioral Health &amp; Psychiatric Care</li>
+        <li>High-Acuity Multi-Patient Management</li>
+        <li>Epic EHR (including telehealth workflows &amp; billing)</li>
+        <li>Preventive Care Guidelines &amp; Chronic Disease Management</li>
+        <li>Multidisciplinary Team Leadership</li>
+        <li>Health Education &amp; Patient Counseling</li>
+      </ul>
+    </section>
+
+    <!-- Professional Memberships -->
+    <section class="cv-section">
+      <h2 class="section-title">Professional Memberships</h2>
+      <div class="member-grid">
+        <div class="member-item">American Academy of Family Physicians (AAFP)</div>
+        <div class="member-item">American Board of Family Medicine (ABFM)</div>
+        <div class="member-item">Louisiana Academy of Family Physicians (LAFP)</div>
+        <div class="member-item">Texas Academy of Family Physicians (TAFP)</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>References available upon request • Ryan Chetram, MD • rchetram.com</p>
+    </footer>
+  </div>
+</body>
+</html>
