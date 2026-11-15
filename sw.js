@@ -1,9 +1,11 @@
-const CACHE_NAME = 'rchetram-clinical-v10';
+const CACHE_NAME = 'rchetram-clinical-v11';
 
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/chetmed/',
+  '/chetmed/index.html',
   '/antibiotics-guide/',
   '/antibiotics-guide/index.html',
   '/antidepressants/',
@@ -40,7 +42,6 @@ const ASSETS_TO_CACHE = [
   '/vaccines/index.html'
 ];
 
-// Install Event: Cache all 17 clinical micro-apps resiliently
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -54,7 +55,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate Event: Purge outdated caches and take immediate control
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -69,7 +69,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Stale-While-Revalidate (bypassing live pricing APIs)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
