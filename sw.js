@@ -1,9 +1,11 @@
-const CACHE_NAME = 'rchetram-clinical-v12';
+const CACHE_NAME = 'rchetram-clinical-v13';
 
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/about/',
+  '/about/index.html',
   '/chetmed/',
   '/chetmed/index.html',
   '/antibiotics-guide/',
