@@ -1,13 +1,735 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMjYyODU0MjgzMDY4NTkwNTg2NiIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzNiNTg3ODIxZTZkNmQ0NDZfaW5kZXguaHRtbC0yNTMifSwiZXhwIjoxNzk0ODAwNTQ5LCJpYXQiOjE3OTQ3OTY5NDksImFsZyI6IlJTMjU2In0.fN3WL-xIjJCF0AeU9TenMriW3ekDAzz2eiD99iXyQeAyDlamW5Z_6RCIs2LE1VFPY8j-G64KwDJdiu5dhG35W_vnLIE_YAunhT0KFSIxGAZP3Q0ILivDznew7YyPtgjwMJ2oBtQW5rPtTmJbwaf1BkJZj0Nh2Hyp2Sgi92VETldvMx5SvaexkkhCKE1H4_JLkYEcHgYCaqqVMjGRrZYGqjcQJEjjc4twlgKxJVQbolB-gDDenYj-AlK7bGH3BYU9Q7ABWLSwTblwr4nL_E0r41EnBE0sJ-UWCKIjzOhAHA1CJxFxxh3x57FAtMOgJ19cTgKObwoQ0ZgOVaBj_w_ZUQ","c_3b587821e6d6d446_index.html-253")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2000s Movie Trivia - Premiere Edition</title>
+    <title>2000s MOVIE TRIVIA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Montserrat:wght@800;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&amp;family=Montserrat:wght@800;900&amp;family=Oswald:wght@700&amp;display=swap" rel="stylesheet">
     <style>
         :root {
             --gold-light: #fff3a1;
@@ -351,6 +1073,7 @@
             border-radius: 9999px;
         }
     </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-0{bottom:0px}.bottom-24{bottom:6rem}.left-0{left:0px}.right-0{right:0px}.z-0{z-index:0}.z-10{z-index:10}.z-20{z-index:20}.z-30{z-index:30}.z-50{z-index:50}.col-span-2{grid-column:span 2 / span 2}.mx-auto{margin-left:auto;margin-right:auto}.my-1{margin-top:0.25rem;margin-bottom:0.25rem}.my-2{margin-top:0.5rem;margin-bottom:0.5rem}.my-auto{margin-top:auto;margin-bottom:auto}.-mb-3{margin-bottom:-0.75rem}.-mt-0\.5{margin-top:-0.125rem}.-mt-6{margin-top:-1.5rem}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.ml-auto{margin-left:auto}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-14{height:3.5rem}.h-16{height:4rem}.h-24{height:6rem}.h-28{height:7rem}.h-4{height:1rem}.h-40{height:10rem}.h-5{height:1.25rem}.h-64{height:16rem}.h-8{height:2rem}.h-full{height:100%}.max-h-\[90vh\]{max-height:90vh}.min-h-\[155px\]{min-height:155px}.w-10{width:2.5rem}.w-28{width:7rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-40{width:10rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.max-w-\[330px\]{max-width:330px}.max-w-\[360px\]{max-width:360px}.max-w-\[380px\]{max-width:380px}.max-w-\[390px\]{max-width:390px}.max-w-lg{max-width:32rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-rotate-6{--tw-rotate:-6deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.rotate-3{--tw-rotate:3deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}.cursor-pointer{cursor:pointer}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.rounded-t-full{border-top-left-radius:9999px;border-top-right-radius:9999px}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-amber-400{--tw-border-opacity:1;border-color:rgb(251 191 36 / var(--tw-border-opacity, 1))}.border-amber-400\/35{border-color:rgb(251 191 36 / 0.35)}.border-amber-400\/40{border-color:rgb(251 191 36 / 0.4)}.border-amber-400\/50{border-color:rgb(251 191 36 / 0.5)}.border-amber-500\/60{border-color:rgb(245 158 11 / 0.6)}.border-amber-800{--tw-border-opacity:1;border-color:rgb(146 64 14 / var(--tw-border-opacity, 1))}.border-pink-400{--tw-border-opacity:1;border-color:rgb(244 114 182 / var(--tw-border-opacity, 1))}.border-sky-400{--tw-border-opacity:1;border-color:rgb(56 189 248 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-white\/80{border-color:rgb(255 255 255 / 0.8)}.border-slate-800\/60{border-color:rgb(30 41 59 / 0.6)}.bg-amber-200{--tw-bg-opacity:1;background-color:rgb(253 230 138 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-600\/30{background-color:rgb(217 119 6 / 0.3)}.bg-black\/25{background-color:rgb(0 0 0 / 0.25)}.bg-black\/30{background-color:rgb(0 0 0 / 0.3)}.bg-black\/85{background-color:rgb(0 0 0 / 0.85)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-pink-600\/30{background-color:rgb(219 39 119 / 0.3)}.bg-sky-600\/30{background-color:rgb(2 132 199 / 0.3)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/70{background-color:rgb(2 6 23 / 0.7)}.bg-slate-950\/80{background-color:rgb(2 6 23 / 0.8)}.bg-slate-950\/30{background-color:rgb(2 6 23 / 0.3)}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-amber-300{--tw-gradient-from:#fcd34d var(--tw-gradient-from-position);--tw-gradient-to:rgb(252 211 77 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-amber-500{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 158 11 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-amber-500{--tw-gradient-to:rgb(245 158 11 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #f59e0b var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-amber-700{--tw-gradient-to:#b45309 var(--tw-gradient-to-position)}.to-yellow-400{--tw-gradient-to:#facc15 var(--tw-gradient-to-position)}.fill-\[\#1e3a8a\]{fill:#1e3a8a}.object-cover{object-fit:cover}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-3\.5{padding:0.875rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-1{padding-bottom:0.25rem}.pb-6{padding-bottom:1.5rem}.pb-8{padding-bottom:2rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-\[\#0f2966\]{--tw-text-opacity:1;color:rgb(15 41 102 / var(--tw-text-opacity, 1))}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-amber-200\/75{color:rgb(253 230 138 / 0.75)}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-950{--tw-text-opacity:1;color:rgb(69 26 3 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-pink-200{--tw-text-opacity:1;color:rgb(251 207 232 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-sky-200{--tw-text-opacity:1;color:rgb(186 230 253 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-white\/95{color:rgb(255 255 255 / 0.95)}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.accent-amber-500{accent-color:#f59e0b}.accent-emerald-500{accent-color:#10b981}.opacity-0{opacity:0}.opacity-55{opacity:0.55}.opacity-85{opacity:0.85}.opacity-60{opacity:0.6}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.drop-shadow{--tw-drop-shadow:drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_0_15px_rgba\(251\2c 191\2c 36\2c 0\.9\)\]{--tw-drop-shadow:drop-shadow(0 0 15px rgba(251,191,36,0.9));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_10px_14px_rgba\(0\2c 0\2c 0\2c 0\.85\)\]{--tw-drop-shadow:drop-shadow(0 10px 14px rgba(0,0,0,0.85));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_1px_0_rgba\(255\2c 255\2c 255\2c 0\.85\)\]{--tw-drop-shadow:drop-shadow(0 1px 0 rgba(255,255,255,0.85));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_1px_1px_rgba\(255\2c 255\2c 255\2c 0\.8\)\]{--tw-drop-shadow:drop-shadow(0 1px 1px rgba(255,255,255,0.8));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_2px_4px_rgba\(0\2c 0\2c 0\2c 0\.9\)\]{--tw-drop-shadow:drop-shadow(0 2px 4px rgba(0,0,0,0.9));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_3px_5px_rgba\(0\2c 0\2c 0\2c 0\.85\)\]{--tw-drop-shadow:drop-shadow(0 3px 5px rgba(0,0,0,0.85));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_4px_8px_rgba\(0\2c 0\2c 0\2c 0\.5\)\]{--tw-drop-shadow:drop-shadow(0 4px 8px rgba(0,0,0,0.5));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_8px_10px_rgba\(0\2c 0\2c 0\2c 0\.8\)\]{--tw-drop-shadow:drop-shadow(0 8px 10px rgba(0,0,0,0.8));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-lg{--tw-drop-shadow:drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.file\:mr-2::file-selector-button{margin-right:0.5rem}.file\:rounded-lg::file-selector-button{border-radius:0.5rem}.file\:border-0::file-selector-button{border-width:0px}.file\:bg-amber-500::file-selector-button{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.file\:px-3::file-selector-button{padding-left:0.75rem;padding-right:0.75rem}.file\:py-1\.5::file-selector-button{padding-top:0.375rem;padding-bottom:0.375rem}.file\:font-bold::file-selector-button{font-weight:700}.file\:text-slate-950::file-selector-button{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.hover\:bg-amber-400:hover{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-600\/50:hover{background-color:rgb(217 119 6 / 0.5)}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.hover\:bg-pink-600\/50:hover{background-color:rgb(219 39 119 / 0.5)}.hover\:bg-sky-600\/50:hover{background-color:rgb(2 132 199 / 0.5)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.focus\:border-amber-400:focus{--tw-border-opacity:1;border-color:rgb(251 191 36 / var(--tw-border-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:mt-6{margin-top:1.5rem}.sm\:h-12{height:3rem}.sm\:h-32{height:8rem}.sm\:min-h-\[175px\]{min-height:175px}.sm\:w-12{width:3rem}.sm\:w-32{width:8rem}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:p-5{padding:1.25rem}.sm\:p-6{padding:1.5rem}.sm\:p-7{padding:1.75rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}.sm\:text-5xl{font-size:3rem;line-height:1}.sm\:text-6xl{font-size:3.75rem;line-height:1}.sm\:text-7xl{font-size:4.5rem;line-height:1}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}}</style><script>window.__EMBEDDED_TRIVIA_CONFIG__ = {"title1":"2000s","title2":"MOVIE","title3":"TRIVIA","subtitle":"✨ Premiere Night Special Edition ✨","questionLimit":3,"questions":[{"q":"Whats my name?","options":["Squirrel","Ostrich","Ryan","Paper"],"answer":2},{"q":"Whats your wife's name?","options":["Lasagna","Maninder","Pastry","Oreos"],"answer":1},{"q":"What are you guys having?","options":["Pickles","Boy","Girl","IDK"],"answer":3},{"q":"In Legally Blonde (2001), what is the name of Elle Woods' pet Chihuahua?","options":["Bruiser","Hercules","Tinkerbell","Paco"],"answer":0},{"q":"In The Dark Knight (2008), who portrayed the Joker?","options":["Joaquin Phoenix","Jared Leto","Heath Ledger","Jack Nicholson"],"answer":2},{"q":"In Finding Nemo (2003), what address is written on the diver's mask?","options":["42 Wallaby Way, Sydney","12 Ocean Blvd, Perth","88 Reef Road, Brisbane","10 Harbour St, Melbourne"],"answer":0},{"q":"In Elf (2003), what are the four main food groups according to Buddy?","options":["Candy, candy canes, candy corns, and syrup","Cookies, chocolate, fudge, and maple syrup","Sugar, spice, marshmallows, and cocoa","Pancakes, gumdrops, frosting, and honey"],"answer":0},{"q":"In Harry Potter and the Sorcerer's Stone (2001), what position does Harry play in Quidditch?","options":["Keeper","Beater","Chaser","Seeker"],"answer":3},{"q":"In The Devil Wears Prada (2006), what is the name of Meryl Streep's intimidating editor character?","options":["Miranda Priestly","Victoria Grayson","Evelyn Harper","Diana Trout"],"answer":0},{"q":"In Napoleon Dynamite (2004), what mythical creature does Napoleon draw for Trisha?","options":["A Griffon","A Liger","A Jackalope","A Pegasus"],"answer":1},{"q":"In The Lord of the Rings: The Fellowship of the Ring (2001), how many members are in the Fellowship?","options":["Seven","Eight","Nine","Twelve"],"answer":2},{"q":"In Superbad (2007), what fake single-name identity is printed on Fogell's ID?","options":["McLovin","McAwesome","The Legend","Bond"],"answer":0},{"q":"In Gladiator (2000), what famous line does Maximus shout to the arena crowd?","options":["Freedom!","Are you not entertained?","This is Sparta!","Strength and honor!"],"answer":1},{"q":"In Monsters, Inc. (2001), what is Boo's real first name?","options":["Lily","Mary","Molly","Daisy"],"answer":1},{"q":"In The Notebook (2004), how many letters did Noah write to Allie over a year?","options":["100","250","365","500"],"answer":2},{"q":"In Anchorman (2004), what is Ron Burgundy's catchphrase at the end of his broadcasts?","options":["Stay classy, San Diego","That's the way it is","Keep it real, America","Goodnight and good luck"],"answer":0},{"q":"In Kill Bill: Vol. 1 (2003), what color is The Bride's famous tracksuit?","options":["Bright Red","Neon Green","Yellow with black stripes","Electric Blue"],"answer":2},{"q":"In WALL-E (2008), what type of pet insect befriends WALL-E on Earth?","options":["A grasshopper","A cockroach","A ladybug","A firefly"],"answer":1},{"q":"In 13 Going on 30 (2004), what 1980s hit song gets the whole party dancing?","options":["Girls Just Want to Have Fun","Thriller","Like a Virgin","Wake Me Up Before You Go-Go"],"answer":1},{"q":"In Iron Man (2008), what are Tony Stark's iconic final words at the press conference?","options":["Avengers, assemble.","I am Iron Man.","Genius, billionaire, playboy.","The truth is out."],"answer":1}],"revealTheme":"gold","revealHeadline":"TWINS ON THE WAY!","revealEmoji":"💛","revealSubmessage":"Double the love, double the fun! Coming Soon!","revealPhotoDataUrl":"","musicEnabled":true};</script>
 </head>
 <body>
 
@@ -358,54 +1081,52 @@
     <!-- Ambient Night Sky Spotlights & Stars -->
     <div class="spotlight spotlight-left"></div>
     <div class="spotlight spotlight-right"></div>
-    <div id="stars-layer" class="absolute inset-0 pointer-events-none z-0"></div>
+    <div id="stars-layer" class="absolute inset-0 pointer-events-none z-0"><div class="star" style="width: 1.96077px; height: 1.96077px; top: 23.3081%; left: 21.5108%; --dur: 3.9s; animation-delay: 1s;"></div><div class="star" style="width: 2.47534px; height: 2.47534px; top: 16.4557%; left: 91.4064%; --dur: 2.4s; animation-delay: 0s;"></div><div class="star" style="width: 2.79212px; height: 2.79212px; top: 39.3897%; left: 93.8871%; --dur: 3.7s; animation-delay: 0.5s;"></div><div class="star" style="width: 3.17704px; height: 3.17704px; top: 4.28378%; left: 88.6178%; --dur: 2.4s; animation-delay: 1.9s;"></div><div class="star" style="width: 2.79318px; height: 2.79318px; top: 56.1598%; left: 32.4132%; --dur: 1.7s; animation-delay: 1.1s;"></div><div class="star" style="width: 2.14959px; height: 2.14959px; top: 35.1208%; left: 33.0757%; --dur: 3.8s; animation-delay: 0.9s;"></div><div class="star" style="width: 3.66256px; height: 3.66256px; top: 18.7168%; left: 75.8228%; --dur: 3.7s; animation-delay: 0.9s;"></div><div class="star" style="width: 3.05901px; height: 3.05901px; top: 54.7804%; left: 35.7404%; --dur: 1.9s; animation-delay: 1s;"></div><div class="star" style="width: 3.50963px; height: 3.50963px; top: 31.7468%; left: 48.6713%; --dur: 1.6s; animation-delay: 0.2s;"></div><div class="star" style="width: 1.5642px; height: 1.5642px; top: 0.325888%; left: 88.7009%; --dur: 2.3s; animation-delay: 0.6s;"></div><div class="star" style="width: 3.69816px; height: 3.69816px; top: 13.56%; left: 87.0749%; --dur: 2.7s; animation-delay: 0.4s;"></div><div class="star" style="width: 3.30011px; height: 3.30011px; top: 56.1684%; left: 34.5346%; --dur: 1.7s; animation-delay: 1.9s;"></div><div class="star" style="width: 1.7038px; height: 1.7038px; top: 27.4577%; left: 28.0714%; --dur: 3.9s; animation-delay: 1.9s;"></div><div class="star" style="width: 3.51042px; height: 3.51042px; top: 42.5243%; left: 86.0997%; --dur: 2.7s; animation-delay: 1s;"></div><div class="star" style="width: 2.43721px; height: 2.43721px; top: 17.7404%; left: 29.6606%; --dur: 3.7s; animation-delay: 0.7s;"></div><div class="star" style="width: 3.77792px; height: 3.77792px; top: 54.8869%; left: 97.2875%; --dur: 3.0s; animation-delay: 1.2s;"></div><div class="star" style="width: 2.4314px; height: 2.4314px; top: 56.8417%; left: 26.533%; --dur: 2.0s; animation-delay: 0.3s;"></div><div class="star" style="width: 2.0746px; height: 2.0746px; top: 54.3499%; left: 37.2339%; --dur: 3.6s; animation-delay: 1.2s;"></div><div class="star" style="width: 2.14214px; height: 2.14214px; top: 11.6084%; left: 20.0426%; --dur: 3.0s; animation-delay: 0.1s;"></div><div class="star" style="width: 3.39615px; height: 3.39615px; top: 17.5109%; left: 30.66%; --dur: 2.2s; animation-delay: 0.1s;"></div><div class="star" style="width: 1.91212px; height: 1.91212px; top: 0.16146%; left: 71.1655%; --dur: 1.8s; animation-delay: 1.5s;"></div><div class="star" style="width: 3.98947px; height: 3.98947px; top: 50.3642%; left: 68.8365%; --dur: 2.2s; animation-delay: 1.7s;"></div><div class="star" style="width: 2.86324px; height: 2.86324px; top: 48.9276%; left: 14.0928%; --dur: 3.2s; animation-delay: 0.9s;"></div><div class="star" style="width: 3.75008px; height: 3.75008px; top: 36.3246%; left: 23.4383%; --dur: 3.1s; animation-delay: 0.8s;"></div><div class="star" style="width: 2.94648px; height: 2.94648px; top: 20.4821%; left: 6.28732%; --dur: 2.5s; animation-delay: 1.4s;"></div><div class="star" style="width: 3.64227px; height: 3.64227px; top: 43.8688%; left: 96.7953%; --dur: 3.2s; animation-delay: 1s;"></div><div class="star" style="width: 3.41976px; height: 3.41976px; top: 4.4283%; left: 40.8165%; --dur: 3.4s; animation-delay: 1.4s;"></div><div class="star" style="width: 3.44376px; height: 3.44376px; top: 30.0622%; left: 79.272%; --dur: 1.5s; animation-delay: 0.7s;"></div><div class="star" style="width: 2.13286px; height: 2.13286px; top: 16.973%; left: 1.02878%; --dur: 3.7s; animation-delay: 0.1s;"></div><div class="star" style="width: 1.60557px; height: 1.60557px; top: 17.5569%; left: 48.6717%; --dur: 1.8s; animation-delay: 1.4s;"></div><div class="star" style="width: 1.56513px; height: 1.56513px; top: 22.6108%; left: 57.4647%; --dur: 2.0s; animation-delay: 2s;"></div><div class="star" style="width: 3.98671px; height: 3.98671px; top: 23.6648%; left: 99.41%; --dur: 2.1s; animation-delay: 0.6s;"></div><div class="star" style="width: 2.93988px; height: 2.93988px; top: 50.4364%; left: 8.11106%; --dur: 3.5s; animation-delay: 1.3s;"></div><div class="star" style="width: 2.26855px; height: 2.26855px; top: 26.2124%; left: 87.1035%; --dur: 2.8s; animation-delay: 0.2s;"></div><div class="star" style="width: 2.58148px; height: 2.58148px; top: 13.1479%; left: 86.3263%; --dur: 1.7s; animation-delay: 1.4s;"></div><div class="star" style="width: 1.50947px; height: 1.50947px; top: 0.909962%; left: 1.07471%; --dur: 1.8s; animation-delay: 1.9s;"></div></div>
 
     <!-- Hollywood Skyline & Palm Silhouettes SVG Backdrop -->
     <svg class="absolute bottom-24 left-0 w-full h-64 pointer-events-none z-1 opacity-55" viewBox="0 0 480 260" preserveAspectRatio="none">
         <!-- Distant Hills & City Skyline -->
-        <path d="M0,190 Q90,145 190,180 T380,165 L480,180 L480,260 L0,260 Z" fill="#07132e"/>
+        <path d="M0,190 Q90,145 190,180 T380,165 L480,180 L480,260 L0,260 Z" fill="#07132e"></path>
         <g fill="#09193b">
-            <rect x="35" y="135" width="26" height="90" rx="2"/>
-            <rect x="68" y="110" width="32" height="115" rx="2"/>
-            <rect x="110" y="145" width="24" height="80" rx="2"/>
-            <rect x="175" y="95" width="36" height="130" rx="2"/>
-            <polygon points="193,72 180,95 206,95"/>
-            <rect x="220" y="125" width="28" height="100" rx="2"/>
-            <rect x="295" y="105" width="34" height="120" rx="2"/>
-            <rect x="340" y="130" width="25" height="95" rx="2"/>
-            <rect x="385" y="88" width="30" height="137" rx="2"/>
-            <rect x="422" y="120" width="28" height="105" rx="2"/>
+            <rect x="35" y="135" width="26" height="90" rx="2"></rect>
+            <rect x="68" y="110" width="32" height="115" rx="2"></rect>
+            <rect x="110" y="145" width="24" height="80" rx="2"></rect>
+            <rect x="175" y="95" width="36" height="130" rx="2"></rect>
+            <polygon points="193,72 180,95 206,95"></polygon>
+            <rect x="220" y="125" width="28" height="100" rx="2"></rect>
+            <rect x="295" y="105" width="34" height="120" rx="2"></rect>
+            <rect x="340" y="130" width="25" height="95" rx="2"></rect>
+            <rect x="385" y="88" width="30" height="137" rx="2"></rect>
+            <rect x="422" y="120" width="28" height="105" rx="2"></rect>
         </g>
         <!-- Left Palm Tree Silhouette -->
         <g fill="#040a1a">
-            <path d="M22,250 Q35,160 18,75 L25,75 Q43,160 32,250 Z"/>
-            <path d="M21,78 Q-15,65 -28,92 Q-5,78 21,82 Z"/>
-            <path d="M21,76 Q-10,42 -32,55 Q-6,55 21,79 Z"/>
-            <path d="M22,75 Q18,35 -5,32 Q12,50 22,78 Z"/>
-            <path d="M23,76 Q52,42 74,56 Q48,55 23,79 Z"/>
-            <path d="M23,78 Q58,68 70,96 Q46,79 23,82 Z"/>
+            <path d="M22,250 Q35,160 18,75 L25,75 Q43,160 32,250 Z"></path>
+            <path d="M21,78 Q-15,65 -28,92 Q-5,78 21,82 Z"></path>
+            <path d="M21,76 Q-10,42 -32,55 Q-6,55 21,79 Z"></path>
+            <path d="M22,75 Q18,35 -5,32 Q12,50 22,78 Z"></path>
+            <path d="M23,76 Q52,42 74,56 Q48,55 23,79 Z"></path>
+            <path d="M23,78 Q58,68 70,96 Q46,79 23,82 Z"></path>
         </g>
         <!-- Right Palm Tree Silhouette -->
         <g fill="#040a1a">
-            <path d="M452,250 Q438,150 455,58 L448,58 Q430,150 442,250 Z"/>
-            <path d="M451,60 Q415,45 400,74 Q425,60 451,65 Z"/>
-            <path d="M451,58 Q420,24 396,38 Q424,38 451,62 Z"/>
-            <path d="M452,57 Q456,16 480,14 Q462,33 452,60 Z"/>
-            <path d="M453,58 Q484,26 505,40 Q478,39 453,62 Z"/>
-            <path d="M453,60 Q488,50 498,78 Q475,61 453,65 Z"/>
+            <path d="M452,250 Q438,150 455,58 L448,58 Q430,150 442,250 Z"></path>
+            <path d="M451,60 Q415,45 400,74 Q425,60 451,65 Z"></path>
+            <path d="M451,58 Q420,24 396,38 Q424,38 451,62 Z"></path>
+            <path d="M452,57 Q456,16 480,14 Q462,33 452,60 Z"></path>
+            <path d="M453,58 Q484,26 505,40 Q478,39 453,62 Z"></path>
+            <path d="M453,60 Q488,50 498,78 Q475,61 453,65 Z"></path>
         </g>
     </svg>
 
     <!-- Top Floating Utility Controls (Audio + Customize) -->
     <div class="relative z-30 flex justify-between items-center px-4 pt-3 pb-1">
-        <button id="btn-audio-toggle" onclick="toggleAudio()" title="Toggle Music & SFX"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
-            <span id="audio-icon">🔇</span>
-            <span id="audio-label">Sound Off</span>
+        <button id="btn-audio-toggle" onclick="toggleAudio()" title="Toggle Music &amp; SFX" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
+            <span id="audio-icon">🔊</span>
+            <span id="audio-label">Music On</span>
         </button>
 
-        <button id="btn-open-customize" onclick="openCustomizeModal()" title="Customize Quiz & Reveal"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
+        <button id="btn-open-customize" onclick="openCustomizeModal()" title="Customize Quiz &amp; Reveal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
             <span>⚙️</span>
             <span>Customize</span>
         </button>
@@ -414,12 +1135,10 @@
     <!-- =========================================================
          SCREEN 1: SPLASH SCREEN
     ========================================================= -->
-    <section id="screen-splash" class="screen-view active justify-between px-4 pb-6 pt-2">
+    <section id="screen-splash" class="screen-view justify-between px-4 pb-6 pt-2">
         <!-- Hero Hollywood Marquee Title Badge -->
         <div class="flex flex-col items-center text-center mt-4 sm:mt-6 relative z-20">
-            <div id="splash-line-1" class="marquee-line-1 text-6xl sm:text-7xl uppercase tracking-tight">
-                2000s
-            </div>
+            <div id="splash-line-1" class="marquee-line-1 text-6xl sm:text-7xl uppercase tracking-tight">2000s</div>
 
             <!-- Blue Filmstrip Ribbon with Spinning Reel -->
             <div class="filmstrip-banner w-full max-w-[360px] py-2.5 px-4 my-1 rounded-xl flex items-center justify-center gap-1.5">
@@ -428,30 +1147,26 @@
                 <svg class="w-10 h-10 sm:w-12 sm:h-12 spin-slow drop-shadow-[0_3px_5px_rgba(0,0,0,0.85)] shrink-0" viewBox="0 0 64 64">
                     <defs>
                         <radialGradient id="reelGrad" cx="35%" cy="35%" r="65%">
-                            <stop offset="0%" stop-color="#ffffff"/>
-                            <stop offset="55%" stop-color="#cbd5e1"/>
-                            <stop offset="100%" stop-color="#475569"/>
+                            <stop offset="0%" stop-color="#ffffff"></stop>
+                            <stop offset="55%" stop-color="#cbd5e1"></stop>
+                            <stop offset="100%" stop-color="#475569"></stop>
                         </radialGradient>
                     </defs>
-                    <circle cx="32" cy="32" r="29" fill="url(#reelGrad)" stroke="#1e293b" stroke-width="3"/>
-                    <circle cx="32" cy="32" r="6" fill="#0f172a"/>
-                    <circle cx="32" cy="15" r="5.5" fill="#0f172a"/>
-                    <circle cx="32" cy="49" r="5.5" fill="#0f172a"/>
-                    <circle cx="15" cy="32" r="5.5" fill="#0f172a"/>
-                    <circle cx="49" cy="32" r="5.5" fill="#0f172a"/>
-                    <circle cx="20" cy="20" r="4.5" fill="#0f172a"/>
-                    <circle cx="44" cy="44" r="4.5" fill="#0f172a"/>
+                    <circle cx="32" cy="32" r="29" fill="url(#reelGrad)" stroke="#1e293b" stroke-width="3"></circle>
+                    <circle cx="32" cy="32" r="6" fill="#0f172a"></circle>
+                    <circle cx="32" cy="15" r="5.5" fill="#0f172a"></circle>
+                    <circle cx="32" cy="49" r="5.5" fill="#0f172a"></circle>
+                    <circle cx="15" cy="32" r="5.5" fill="#0f172a"></circle>
+                    <circle cx="49" cy="32" r="5.5" fill="#0f172a"></circle>
+                    <circle cx="20" cy="20" r="4.5" fill="#0f172a"></circle>
+                    <circle cx="44" cy="44" r="4.5" fill="#0f172a"></circle>
                 </svg>
                 <span id="splash-line-2-right" class="marquee-line-2 text-4xl sm:text-5xl uppercase">VIE</span>
             </div>
 
-            <div id="splash-line-3" class="marquee-line-3 text-5xl sm:text-6xl uppercase mt-0.5">
-                TRIVIA
-            </div>
+            <div id="splash-line-3" class="marquee-line-3 text-5xl sm:text-6xl uppercase mt-0.5">TRIVIA</div>
 
-            <p id="splash-subtitle" class="mt-3 px-4 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-200 text-xs sm:text-sm font-semibold tracking-wide">
-                ✨ Premiere Night Special Edition ✨
-            </p>
+            <p id="splash-subtitle" class="mt-3 px-4 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-200 text-xs sm:text-sm font-semibold tracking-wide">✨ Premiere Night Special Edition ✨</p>
         </div>
 
         <!-- Center Stage Props & Primary PLAY Button -->
@@ -462,50 +1177,49 @@
                 <svg class="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_10px_14px_rgba(0,0,0,0.85)]" viewBox="0 0 120 120">
                     <!-- Popcorn Kernels -->
                     <g fill="#fef08a" stroke="#ca8a04" stroke-width="1.5">
-                        <circle cx="35" cy="44" r="11"/>
-                        <circle cx="52" cy="36" r="13"/>
-                        <circle cx="72" cy="38" r="12"/>
-                        <circle cx="86" cy="46" r="10"/>
-                        <circle cx="44" cy="48" r="11"/>
-                        <circle cx="64" cy="46" r="12"/>
-                        <circle cx="78" cy="50" r="10"/>
+                        <circle cx="35" cy="44" r="11"></circle>
+                        <circle cx="52" cy="36" r="13"></circle>
+                        <circle cx="72" cy="38" r="12"></circle>
+                        <circle cx="86" cy="46" r="10"></circle>
+                        <circle cx="44" cy="48" r="11"></circle>
+                        <circle cx="64" cy="46" r="12"></circle>
+                        <circle cx="78" cy="50" r="10"></circle>
                     </g>
                     <!-- Bucket -->
-                    <polygon points="24,50 96,50 85,112 35,112" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-                    <polygon points="24,50 38,50 44,112 35,112" fill="#dc2626"/>
-                    <polygon points="52,50 68,50 66,112 54,112" fill="#dc2626"/>
-                    <polygon points="82,50 96,50 85,112 76,112" fill="#dc2626"/>
-                    <rect x="21" y="47" width="78" height="7" rx="3" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+                    <polygon points="24,50 96,50 85,112 35,112" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"></polygon>
+                    <polygon points="24,50 38,50 44,112 35,112" fill="#dc2626"></polygon>
+                    <polygon points="52,50 68,50 66,112 54,112" fill="#dc2626"></polygon>
+                    <polygon points="82,50 96,50 85,112 76,112" fill="#dc2626"></polygon>
+                    <rect x="21" y="47" width="78" height="7" rx="3" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"></rect>
                 </svg>
 
                 <!-- Clapperboard SVG -->
                 <svg class="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_10px_14px_rgba(0,0,0,0.85)]" viewBox="0 0 130 120">
                     <!-- Top Clapper Arm (Angled) -->
                     <g transform="rotate(-16 20 55)">
-                        <rect x="18" y="38" width="96" height="14" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-                        <polygon points="26,38 38,38 32,52 20,52" fill="#f8fafc"/>
-                        <polygon points="50,38 62,38 56,52 44,52" fill="#f8fafc"/>
-                        <polygon points="74,38 86,38 80,52 68,52" fill="#f8fafc"/>
-                        <polygon points="98,38 110,38 104,52 92,52" fill="#f8fafc"/>
+                        <rect x="18" y="38" width="96" height="14" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.5"></rect>
+                        <polygon points="26,38 38,38 32,52 20,52" fill="#f8fafc"></polygon>
+                        <polygon points="50,38 62,38 56,52 44,52" fill="#f8fafc"></polygon>
+                        <polygon points="74,38 86,38 80,52 68,52" fill="#f8fafc"></polygon>
+                        <polygon points="98,38 110,38 104,52 92,52" fill="#f8fafc"></polygon>
                     </g>
                     <!-- Base Board -->
-                    <rect x="18" y="54" width="96" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="2"/>
-                    <rect x="18" y="54" width="96" height="12" fill="#1e293b"/>
-                    <polygon points="24,54 36,54 42,66 30,66" fill="#f8fafc"/>
-                    <polygon points="48,54 60,54 66,66 54,66" fill="#f8fafc"/>
-                    <polygon points="72,54 84,54 90,66 78,66" fill="#f8fafc"/>
-                    <polygon points="96,54 108,54 114,66 102,66" fill="#f8fafc"/>
-                    <line x1="25" y1="78" x2="105" y2="78" stroke="#64748b" stroke-width="2"/>
-                    <line x1="25" y1="90" x2="105" y2="90" stroke="#64748b" stroke-width="2"/>
+                    <rect x="18" y="54" width="96" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="2"></rect>
+                    <rect x="18" y="54" width="96" height="12" fill="#1e293b"></rect>
+                    <polygon points="24,54 36,54 42,66 30,66" fill="#f8fafc"></polygon>
+                    <polygon points="48,54 60,54 66,66 54,66" fill="#f8fafc"></polygon>
+                    <polygon points="72,54 84,54 90,66 78,66" fill="#f8fafc"></polygon>
+                    <polygon points="96,54 108,54 114,66 102,66" fill="#f8fafc"></polygon>
+                    <line x1="25" y1="78" x2="105" y2="78" stroke="#64748b" stroke-width="2"></line>
+                    <line x1="25" y1="90" x2="105" y2="90" stroke="#64748b" stroke-width="2"></line>
                     <text x="26" y="75" fill="#94a3b8" font-size="7" font-family="sans-serif" font-weight="bold">SCENE   TAKE   ROLL</text>
                 </svg>
             </div>
 
             <!-- Giant Gold Filmstrip PLAY Button -->
-            <button id="btn-start-game" onclick="startGame()"
-                class="gold-ticket-btn w-full max-w-[330px] py-4 px-8 flex items-center justify-center gap-3 cursor-pointer z-20">
+            <button id="btn-start-game" onclick="startGame()" class="gold-ticket-btn w-full max-w-[330px] py-4 px-8 flex items-center justify-center gap-3 cursor-pointer z-20">
                 <svg class="w-8 h-8 fill-[#1e3a8a] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]" viewBox="0 0 24 24">
-                    <path d="M6 4l15 8-15 8z"/>
+                    <path d="M6 4l15 8-15 8z"></path>
                 </svg>
                 <span class="text-3xl sm:text-4xl font-black tracking-wider text-[#0f2966] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
                     PLAY
@@ -521,9 +1235,9 @@
 
                 <!-- Retro 3D Glasses SVG -->
                 <svg class="w-28 h-14 rotate-3 drop-shadow-[0_8px_10px_rgba(0,0,0,0.8)]" viewBox="0 0 140 60">
-                    <path d="M10,18 L130,18 L124,48 L78,48 L70,34 L62,48 L16,48 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
-                    <polygon points="20,23 62,23 58,43 23,43" fill="#2563eb" opacity="0.88"/>
-                    <polygon points="78,23 120,23 117,43 82,43" fill="#dc2626" opacity="0.88"/>
+                    <path d="M10,18 L130,18 L124,48 L78,48 L70,34 L62,48 L16,48 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"></path>
+                    <polygon points="20,23 62,23 58,43 23,43" fill="#2563eb" opacity="0.88"></polygon>
+                    <polygon points="78,23 120,23 117,43 82,43" fill="#dc2626" opacity="0.88"></polygon>
                 </svg>
             </div>
         </div>
@@ -541,19 +1255,19 @@
     <!-- =========================================================
          SCREEN 2: TRIVIA GAMEPLAY SCREEN
     ========================================================= -->
-    <section id="screen-trivia" class="screen-view justify-between px-4 pb-6 pt-1">
+    <section id="screen-trivia" class="screen-view justify-between px-4 pb-6 pt-1 active">
         <!-- Compact Header Logo -->
         <div class="flex flex-col items-center text-center">
             <div id="mini-line-1" class="marquee-line-1 text-3xl uppercase">2000s</div>
             <div class="filmstrip-banner px-4 py-0.5 rounded-lg flex items-center gap-1 -mt-0.5">
                 <span id="mini-line-2-left" class="marquee-line-2 text-xl uppercase">M</span>
                 <svg class="w-5 h-5 spin-slow" viewBox="0 0 64 64">
-                    <circle cx="32" cy="32" r="28" fill="#e2e8f0" stroke="#1e293b" stroke-width="4"/>
-                    <circle cx="32" cy="32" r="6" fill="#0f172a"/>
-                    <circle cx="32" cy="15" r="5" fill="#0f172a"/>
-                    <circle cx="32" cy="49" r="5" fill="#0f172a"/>
-                    <circle cx="15" cy="32" r="5" fill="#0f172a"/>
-                    <circle cx="49" cy="32" r="5" fill="#0f172a"/>
+                    <circle cx="32" cy="32" r="28" fill="#e2e8f0" stroke="#1e293b" stroke-width="4"></circle>
+                    <circle cx="32" cy="32" r="6" fill="#0f172a"></circle>
+                    <circle cx="32" cy="15" r="5" fill="#0f172a"></circle>
+                    <circle cx="32" cy="49" r="5" fill="#0f172a"></circle>
+                    <circle cx="15" cy="32" r="5" fill="#0f172a"></circle>
+                    <circle cx="49" cy="32" r="5" fill="#0f172a"></circle>
                 </svg>
                 <span id="mini-line-2-right" class="marquee-line-2 text-xl uppercase">VIE</span>
             </div>
@@ -562,22 +1276,16 @@
 
         <!-- Question Counter Marquee Pill -->
         <div id="pill-marquee-box" class="marquee-frame rounded-full py-2 px-6 mx-auto my-2 w-full max-w-[330px] text-center">
-            <span id="question-counter-text" class="text-amber-300 font-extrabold text-base sm:text-lg tracking-wide drop-shadow">
-                Question 1 of 20
-            </span>
-        </div>
+            <span id="question-counter-text" class="text-amber-300 font-extrabold text-base sm:text-lg tracking-wide drop-shadow">Question 1 of 20</span>
+        <span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(0% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(8.33333% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(8.33333% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(16.6667% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(16.6667% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(25% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(25% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(33.3333% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(33.3333% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(41.6667% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(41.6667% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(50% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(50% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(58.3333% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(58.3333% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(66.6667% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(66.6667% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(75% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(75% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(83.3333% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(83.3333% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(91.6667% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(91.6667% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(100% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(50% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(50% - 3.5px);"></span></div>
 
         <!-- Main Question Marquee Card -->
         <div id="question-marquee-box" class="marquee-frame rounded-2xl p-5 sm:p-6 my-1 w-full min-h-[155px] sm:min-h-[175px] flex items-center justify-center text-center shadow-2xl">
-            <h2 id="question-text" class="text-white text-xl sm:text-2xl font-bold leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                In Mean Girls (2004), what is the name of the popular girls' clique?
-            </h2>
-        </div>
+            <h2 id="question-text" class="text-white text-xl sm:text-2xl font-bold leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">In Mean Girls (2004), what is the name of the popular girls' clique?</h2>
+        <span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(0% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(7.14286% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(7.14286% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(14.2857% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(14.2857% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(21.4286% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(21.4286% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(28.5714% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(28.5714% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(35.7143% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(35.7143% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(42.8571% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(42.8571% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(50% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(50% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(57.1429% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(57.1429% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(64.2857% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(64.2857% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(71.4286% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(71.4286% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(78.5714% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(78.5714% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(85.7143% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(85.7143% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(92.8571% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(92.8571% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(100% - 3.5px); top: calc(0% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(100% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(16.6667% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(16.6667% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(33.3333% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(33.3333% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(50% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(50% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(66.6667% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(66.6667% - 3.5px);"></span><span class="marquee-bulb " style="left: calc(0% - 3.5px); top: calc(83.3333% - 3.5px);"></span><span class="marquee-bulb alt" style="left: calc(100% - 3.5px); top: calc(83.3333% - 3.5px);"></span></div>
 
         <!-- 4 Gold Filmstrip Answer Options -->
-        <div id="options-container" class="flex flex-col gap-3 my-auto py-2 w-full">
-            <!-- Dynamically populated buttons -->
-        </div>
+        <div id="options-container" class="flex flex-col gap-3 my-auto py-2 w-full"><button class="gold-ticket-btn w-full py-3.5 px-6 text-center cursor-pointer"><span class="btn-outline-text text-lg sm:text-xl">The Royals</span></button><button class="gold-ticket-btn w-full py-3.5 px-6 text-center cursor-pointer"><span class="btn-outline-text text-lg sm:text-xl">The Glamazons</span></button><button class="gold-ticket-btn w-full py-3.5 px-6 text-center cursor-pointer"><span class="btn-outline-text text-lg sm:text-xl">The Plastics</span></button><button class="gold-ticket-btn w-full py-3.5 px-6 text-center cursor-pointer"><span class="btn-outline-text text-lg sm:text-xl">The Divas</span></button></div>
 
         <!-- Subtle Red Carpet Base -->
         <div class="red-carpet-stage absolute bottom-0 left-0 right-0 h-14 z-0 pointer-events-none opacity-85"></div>
@@ -635,12 +1343,10 @@
 
             <!-- Action Buttons after Reveal -->
             <div class="flex gap-3 w-full mt-5">
-                <button onclick="retriggerConfetti()"
-                    class="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-lg active:scale-95 transition">
+                <button onclick="retriggerConfetti()" class="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-lg active:scale-95 transition">
                     🎉 Celebrate Again
                 </button>
-                <button onclick="resetToSplash()"
-                    class="flex-1 py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-400/40 text-amber-200 font-extrabold text-sm shadow-lg active:scale-95 transition">
+                <button onclick="resetToSplash()" class="flex-1 py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-400/40 text-amber-200 font-extrabold text-sm shadow-lg active:scale-95 transition">
                     ↺ Play Again
                 </button>
             </div>
@@ -651,13 +1357,13 @@
 <!-- =========================================================
      CUSTOMIZATION & SHAREABLE LINK MODAL
 ========================================================= -->
-<div id="customize-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
+<div id="customize-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
     <div class="bg-slate-900 border-2 border-amber-500/60 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         <!-- Modal Header -->
         <div class="flex items-center justify-between px-5 py-3.5 bg-slate-950 border-b border-slate-800">
             <div class="flex items-center gap-2">
                 <span class="text-xl">🎬</span>
-                <h3 class="text-lg font-extrabold text-amber-300">Customize Trivia & Reveal</h3>
+                <h3 class="text-lg font-extrabold text-amber-300">Customize Trivia &amp; Reveal</h3>
             </div>
             <button onclick="closeCustomizeModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold">
                 ✕
@@ -666,14 +1372,14 @@
 
         <!-- Modal Navigation Tabs -->
         <div class="flex border-b border-slate-800 bg-slate-900/90 text-xs sm:text-sm font-bold">
-            <button onclick="switchTab('tab-branding')" id="btn-tab-branding" class="flex-1 py-2.5 text-amber-400 border-b-2 border-amber-400">
-                1. Title & Reveal
+            <button onclick="switchTab('tab-branding')" id="btn-tab-branding" class="flex-1 py-2.5 text-slate-400">
+                1. Title &amp; Reveal
             </button>
-            <button onclick="switchTab('tab-questions')" id="btn-tab-questions" class="flex-1 py-2.5 text-slate-400 hover:text-slate-200">
-                2. Questions (<span id="tab-q-count">20</span>)
+            <button onclick="switchTab('tab-questions')" id="btn-tab-questions" class="flex-1 py-2.5 hover:text-slate-200 text-slate-400">
+                2. Questions (<span id="tab-q-count">3</span>)
             </button>
-            <button onclick="switchTab('tab-share')" id="btn-tab-share" class="flex-1 py-2.5 text-slate-400 hover:text-slate-200">
-                3. Audio & Share
+            <button onclick="switchTab('tab-share')" id="btn-tab-share" class="flex-1 py-2.5 hover:text-slate-200 text-amber-400 border-b-2 border-amber-400">
+                3. Audio &amp; Share
             </button>
         </div>
 
@@ -681,7 +1387,7 @@
         <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-5 text-sm">
 
             <!-- TAB 1: MARQUEE TITLE & REVEAL SETTINGS -->
-            <div id="tab-branding" class="space-y-4">
+            <div id="tab-branding" class="space-y-4 hidden">
                 <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
                     <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Marquee Header Title</h4>
                     <div class="grid grid-cols-3 gap-2">
@@ -749,7 +1455,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Optional Ultrasound / Reveal Photo (Local Preview & Standalone Export)</label>
+                        <label class="block text-[11px] text-slate-400 mb-1">Optional Ultrasound / Reveal Photo (Local Preview &amp; Standalone Export)</label>
                         <div class="flex items-center gap-2">
                             <input id="cfg-photo-input" type="file" accept="image/*" onchange="handlePhotoUpload(event)" class="text-xs text-slate-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-500 file:text-slate-950 file:font-bold cursor-pointer">
                             <button type="button" onclick="clearUploadedPhoto()" class="text-xs text-rose-400 underline">Remove</button>
@@ -759,7 +1465,7 @@
             </div>
 
             <!-- TAB 2: TRIVIA QUESTIONS EDITOR -->
-            <div id="tab-questions" class="hidden space-y-4">
+            <div id="tab-questions" class="space-y-4 hidden">
                 <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/70 p-3 rounded-xl border border-slate-800">
                     <div>
                         <label class="block text-[11px] text-slate-400">Questions to Play</label>
@@ -768,7 +1474,7 @@
                             <option value="5">5 Questions</option>
                             <option value="10">10 Questions</option>
                             <option value="15">15 Questions</option>
-                            <option value="20" selected>20 Questions (Full Show)</option>
+                            <option value="20" selected="">20 Questions (Full Show)</option>
                         </select>
                     </div>
                     <div class="flex gap-2">
@@ -781,18 +1487,636 @@
                     </div>
                 </div>
 
-                <div id="questions-editor-list" class="space-y-3">
-                    <!-- Editable question cards rendered here -->
+                <div id="questions-editor-list" class="space-y-3"><div class="p-3.5 rounded-xl border bg-slate-950/80 border-slate-700 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-amber-300">
+                    Question #1 
+                </span>
+                <button type="button" onclick="removeDraftQuestion(0)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Mean Girls (2004), what is the name of the popular girls' clique?" onchange="updateDraftQuestionText(0, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-0" onchange="updateDraftAnswer(0, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Royals" onchange="updateDraftOption(0, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
                 </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-0" onchange="updateDraftAnswer(0, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Glamazons" onchange="updateDraftOption(0, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-0" checked="" onchange="updateDraftAnswer(0, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Plastics" onchange="updateDraftOption(0, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-0" onchange="updateDraftAnswer(0, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Divas" onchange="updateDraftOption(0, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/80 border-slate-700 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-amber-300">
+                    Question #2 
+                </span>
+                <button type="button" onclick="removeDraftQuestion(1)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Shrek (2001), what song plays during the iconic opening credits scene?" onchange="updateDraftQuestionText(1, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-1" onchange="updateDraftAnswer(1, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="I'm a Believer" onchange="updateDraftOption(1, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-1" checked="" onchange="updateDraftAnswer(1, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="All Star" onchange="updateDraftOption(1, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-1" onchange="updateDraftAnswer(1, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Accidentally in Love" onchange="updateDraftOption(1, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-1" onchange="updateDraftAnswer(1, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Funkytown" onchange="updateDraftOption(1, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/80 border-slate-700 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-amber-300">
+                    Question #3 
+                </span>
+                <button type="button" onclick="removeDraftQuestion(2)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="What is the name of Captain Jack Sparrow's beloved ship in Pirates of the Caribbean (2003)?" onchange="updateDraftQuestionText(2, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-2" onchange="updateDraftAnswer(2, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Flying Dutchman" onchange="updateDraftOption(2, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-2" checked="" onchange="updateDraftAnswer(2, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Black Pearl" onchange="updateDraftOption(2, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-2" onchange="updateDraftAnswer(2, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Interceptor" onchange="updateDraftOption(2, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-2" onchange="updateDraftAnswer(2, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Queen Anne's Revenge" onchange="updateDraftOption(2, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #4 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(3)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Legally Blonde (2001), what is the name of Elle Woods' pet Chihuahua?" onchange="updateDraftQuestionText(3, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-3" checked="" onchange="updateDraftAnswer(3, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Bruiser" onchange="updateDraftOption(3, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-3" onchange="updateDraftAnswer(3, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Hercules" onchange="updateDraftOption(3, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-3" onchange="updateDraftAnswer(3, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Tinkerbell" onchange="updateDraftOption(3, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-3" onchange="updateDraftAnswer(3, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Paco" onchange="updateDraftOption(3, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #5 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(4)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In The Dark Knight (2008), who portrayed the Joker?" onchange="updateDraftQuestionText(4, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-4" onchange="updateDraftAnswer(4, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Joaquin Phoenix" onchange="updateDraftOption(4, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-4" onchange="updateDraftAnswer(4, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Jared Leto" onchange="updateDraftOption(4, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-4" checked="" onchange="updateDraftAnswer(4, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Heath Ledger" onchange="updateDraftOption(4, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-4" onchange="updateDraftAnswer(4, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Jack Nicholson" onchange="updateDraftOption(4, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #6 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(5)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Finding Nemo (2003), what address is written on the diver's mask?" onchange="updateDraftQuestionText(5, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-5" checked="" onchange="updateDraftAnswer(5, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="42 Wallaby Way, Sydney" onchange="updateDraftOption(5, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-5" onchange="updateDraftAnswer(5, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="12 Ocean Blvd, Perth" onchange="updateDraftOption(5, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-5" onchange="updateDraftAnswer(5, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="88 Reef Road, Brisbane" onchange="updateDraftOption(5, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-5" onchange="updateDraftAnswer(5, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="10 Harbour St, Melbourne" onchange="updateDraftOption(5, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #7 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(6)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Elf (2003), what are the four main food groups according to Buddy?" onchange="updateDraftQuestionText(6, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-6" checked="" onchange="updateDraftAnswer(6, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Candy, candy canes, candy corns, and syrup" onchange="updateDraftOption(6, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-6" onchange="updateDraftAnswer(6, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Cookies, chocolate, fudge, and maple syrup" onchange="updateDraftOption(6, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-6" onchange="updateDraftAnswer(6, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Sugar, spice, marshmallows, and cocoa" onchange="updateDraftOption(6, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-6" onchange="updateDraftAnswer(6, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Pancakes, gumdrops, frosting, and honey" onchange="updateDraftOption(6, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #8 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(7)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Harry Potter and the Sorcerer's Stone (2001), what position does Harry play in Quidditch?" onchange="updateDraftQuestionText(7, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-7" onchange="updateDraftAnswer(7, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Keeper" onchange="updateDraftOption(7, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-7" onchange="updateDraftAnswer(7, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Beater" onchange="updateDraftOption(7, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-7" onchange="updateDraftAnswer(7, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Chaser" onchange="updateDraftOption(7, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-7" checked="" onchange="updateDraftAnswer(7, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Seeker" onchange="updateDraftOption(7, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #9 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(8)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In The Devil Wears Prada (2006), what is the name of Meryl Streep's intimidating editor character?" onchange="updateDraftQuestionText(8, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-8" checked="" onchange="updateDraftAnswer(8, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Miranda Priestly" onchange="updateDraftOption(8, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-8" onchange="updateDraftAnswer(8, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Victoria Grayson" onchange="updateDraftOption(8, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-8" onchange="updateDraftAnswer(8, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Evelyn Harper" onchange="updateDraftOption(8, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-8" onchange="updateDraftAnswer(8, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Diana Trout" onchange="updateDraftOption(8, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #10 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(9)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Napoleon Dynamite (2004), what mythical creature does Napoleon draw for Trisha?" onchange="updateDraftQuestionText(9, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-9" onchange="updateDraftAnswer(9, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A Griffon" onchange="updateDraftOption(9, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-9" checked="" onchange="updateDraftAnswer(9, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A Liger" onchange="updateDraftOption(9, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-9" onchange="updateDraftAnswer(9, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A Jackalope" onchange="updateDraftOption(9, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-9" onchange="updateDraftAnswer(9, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A Pegasus" onchange="updateDraftOption(9, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #11 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(10)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In The Lord of the Rings: The Fellowship of the Ring (2001), how many members are in the Fellowship?" onchange="updateDraftQuestionText(10, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-10" onchange="updateDraftAnswer(10, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Seven" onchange="updateDraftOption(10, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-10" onchange="updateDraftAnswer(10, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Eight" onchange="updateDraftOption(10, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-10" checked="" onchange="updateDraftAnswer(10, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Nine" onchange="updateDraftOption(10, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-10" onchange="updateDraftAnswer(10, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Twelve" onchange="updateDraftOption(10, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #12 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(11)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Superbad (2007), what fake single-name identity is printed on Fogell's ID?" onchange="updateDraftQuestionText(11, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-11" checked="" onchange="updateDraftAnswer(11, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="McLovin" onchange="updateDraftOption(11, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-11" onchange="updateDraftAnswer(11, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="McAwesome" onchange="updateDraftOption(11, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-11" onchange="updateDraftAnswer(11, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The Legend" onchange="updateDraftOption(11, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-11" onchange="updateDraftAnswer(11, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Bond" onchange="updateDraftOption(11, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #13 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(12)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Gladiator (2000), what famous line does Maximus shout to the arena crowd?" onchange="updateDraftQuestionText(12, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-12" onchange="updateDraftAnswer(12, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Freedom!" onchange="updateDraftOption(12, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-12" checked="" onchange="updateDraftAnswer(12, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Are you not entertained?" onchange="updateDraftOption(12, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-12" onchange="updateDraftAnswer(12, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="This is Sparta!" onchange="updateDraftOption(12, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-12" onchange="updateDraftAnswer(12, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Strength and honor!" onchange="updateDraftOption(12, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #14 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(13)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Monsters, Inc. (2001), what is Boo's real first name?" onchange="updateDraftQuestionText(13, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-13" onchange="updateDraftAnswer(13, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Lily" onchange="updateDraftOption(13, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-13" checked="" onchange="updateDraftAnswer(13, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Mary" onchange="updateDraftOption(13, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-13" onchange="updateDraftAnswer(13, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Molly" onchange="updateDraftOption(13, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-13" onchange="updateDraftAnswer(13, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Daisy" onchange="updateDraftOption(13, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #15 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(14)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In The Notebook (2004), how many letters did Noah write to Allie over a year?" onchange="updateDraftQuestionText(14, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-14" onchange="updateDraftAnswer(14, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="100" onchange="updateDraftOption(14, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-14" onchange="updateDraftAnswer(14, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="250" onchange="updateDraftOption(14, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-14" checked="" onchange="updateDraftAnswer(14, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="365" onchange="updateDraftOption(14, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-14" onchange="updateDraftAnswer(14, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="500" onchange="updateDraftOption(14, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #16 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(15)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Anchorman (2004), what is Ron Burgundy's catchphrase at the end of his broadcasts?" onchange="updateDraftQuestionText(15, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-15" checked="" onchange="updateDraftAnswer(15, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Stay classy, San Diego" onchange="updateDraftOption(15, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-15" onchange="updateDraftAnswer(15, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="That's the way it is" onchange="updateDraftOption(15, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-15" onchange="updateDraftAnswer(15, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Keep it real, America" onchange="updateDraftOption(15, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-15" onchange="updateDraftAnswer(15, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Goodnight and good luck" onchange="updateDraftOption(15, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #17 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(16)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Kill Bill: Vol. 1 (2003), what color is The Bride's famous tracksuit?" onchange="updateDraftQuestionText(16, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-16" onchange="updateDraftAnswer(16, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Bright Red" onchange="updateDraftOption(16, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-16" onchange="updateDraftAnswer(16, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Neon Green" onchange="updateDraftOption(16, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-16" checked="" onchange="updateDraftAnswer(16, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Yellow with black stripes" onchange="updateDraftOption(16, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-16" onchange="updateDraftAnswer(16, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Electric Blue" onchange="updateDraftOption(16, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #18 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(17)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In WALL-E (2008), what type of pet insect befriends WALL-E on Earth?" onchange="updateDraftQuestionText(17, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-17" onchange="updateDraftAnswer(17, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A grasshopper" onchange="updateDraftOption(17, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-17" checked="" onchange="updateDraftAnswer(17, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A cockroach" onchange="updateDraftOption(17, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-17" onchange="updateDraftAnswer(17, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A ladybug" onchange="updateDraftOption(17, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-17" onchange="updateDraftAnswer(17, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="A firefly" onchange="updateDraftOption(17, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #19 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(18)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In 13 Going on 30 (2004), what 1980s hit song gets the whole party dancing?" onchange="updateDraftQuestionText(18, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-18" onchange="updateDraftAnswer(18, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Girls Just Want to Have Fun" onchange="updateDraftOption(18, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-18" checked="" onchange="updateDraftAnswer(18, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Thriller" onchange="updateDraftOption(18, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-18" onchange="updateDraftAnswer(18, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Like a Virgin" onchange="updateDraftOption(18, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-18" onchange="updateDraftAnswer(18, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Wake Me Up Before You Go-Go" onchange="updateDraftOption(18, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div><div class="p-3.5 rounded-xl border bg-slate-950/30 border-slate-800/60 opacity-60 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-500">
+                    Question #20 (Beyond question limit)
+                </span>
+                <button type="button" onclick="removeDraftQuestion(19)" class="text-xs text-rose-400 hover:underline">Delete</button>
+            </div>
+            <input type="text" value="In Iron Man (2008), what are Tony Stark's iconic final words at the press conference?" onchange="updateDraftQuestionText(19, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-19" onchange="updateDraftAnswer(19, 0)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Avengers, assemble." onchange="updateDraftOption(19, 0, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-19" checked="" onchange="updateDraftAnswer(19, 1)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="I am Iron Man." onchange="updateDraftOption(19, 1, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-19" onchange="updateDraftAnswer(19, 2)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="Genius, billionaire, playboy." onchange="updateDraftOption(19, 2, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-19" onchange="updateDraftAnswer(19, 3)" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="The truth is out." onchange="updateDraftOption(19, 3, this.value)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            
+            </div>
+        </div></div>
             </div>
 
             <!-- TAB 3: AUDIO & SHAREABLE LINK -->
-            <div id="tab-share" class="hidden space-y-4">
+            <div id="tab-share" class="space-y-4">
                 <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
                     <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Background Soundtrack</h4>
                     <label class="flex items-center gap-2.5 cursor-pointer">
-                        <input id="cfg-music-enabled" type="checkbox" checked class="w-4 h-4 accent-amber-500">
-                        <span class="text-white font-semibold">Enable Built-in Hollywood Synth Music & SFX</span>
+                        <input id="cfg-music-enabled" type="checkbox" checked="" class="w-4 h-4 accent-amber-500">
+                        <span class="text-white font-semibold">Enable Built-in Hollywood Synth Music &amp; SFX</span>
                     </label>
                     <div>
                         <label class="block text-[11px] text-slate-400 mb-1">Or Upload Custom Background Music (MP3 / WAV)</label>
@@ -812,7 +2136,7 @@
                             <span>🔗</span>
                             <span>Copy Shareable Link</span>
                         </button>
-                        <input id="share-link-output" type="text" readonly placeholder="Click 'Copy Shareable Link' to generate URL..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-200 font-mono">
+                        <input id="share-link-output" type="text" readonly="" placeholder="Click 'Copy Shareable Link' to generate URL..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-200 font-mono">
                     </div>
 
                     <button type="button" onclick="downloadStandaloneHTML()" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-400/40 text-amber-200 font-extrabold text-sm shadow active:scale-95 transition flex items-center justify-center gap-2">
@@ -831,7 +2155,7 @@
                     Cancel
                 </button>
                 <button onclick="saveAndApplyCustomization()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
-                    Save & Preview Show
+                    Save &amp; Preview Show
                 </button>
             </div>
         </div>
@@ -1711,5 +3035,5 @@ window.onload = function () {
     updateAudioButtonUI();
 };
 </script>
-</body>
-</html>
+
+</body></html>
