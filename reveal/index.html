@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2000s Movie Trivia - Premiere Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Montserrat:wght@800;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-light: #fff3a1;
+            --gold-mid: #f7b731;
+            --gold-dark: #b37400;
+            --navy-deep: #040b1c;
+            --navy-mid: #0a1938;
+            --carpet-red: #8c0c18;
+            --carpet-dark: #4a040a;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #02040a;
+            font-family: 'Fredoka', sans-serif;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Mobile-first Theater Stage Container */
+        #app-stage {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 25%, #122c63 0%, #07122b 55%, #030712 100%);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.95), 0 0 2px rgba(247, 183, 49, 0.3);
+        }
+
+        @media (min-width: 500px) {
+            #app-stage {
+                min-height: 844px;
+                height: 92vh;
+                max-height: 920px;
+                border-radius: 28px;
+                border: 2px solid rgba(247, 183, 49, 0.25);
+            }
+        }
+
+        /* Animated Sweeping Spotlights */
+        .spotlight {
+            position: absolute;
+            top: -15%;
+            width: 140px;
+            height: 130%;
+            background: linear-gradient(180deg, rgba(165, 216, 255, 0.38) 0%, rgba(100, 170, 255, 0.12) 55%, rgba(100, 170, 255, 0) 100%);
+            clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%);
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(4px);
+        }
+
+        .spotlight-left {
+            left: -20px;
+            transform-origin: top center;
+            animation: sweepLeft 7s ease-in-out infinite alternate;
+        }
+
+        .spotlight-right {
+            right: -20px;
+            transform-origin: top center;
+            animation: sweepRight 8.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes sweepLeft {
+            0% { transform: rotate(-22deg); opacity: 0.65; }
+            100% { transform: rotate(18deg); opacity: 0.95; }
+        }
+
+        @keyframes sweepRight {
+            0% { transform: rotate(24deg); opacity: 0.75; }
+            100% { transform: rotate(-16deg); opacity: 0.9; }
+        }
+
+        /* Twinkling Stars */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: twinkle var(--dur, 3s) ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 8px #fff; }
+        }
+
+        /* Hollywood 3D Marquee Title Typography */
+        .marquee-line-1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            background: linear-gradient(180deg, #fff6b3 0%, #ffd038 45%, #e08e00 90%, #8c5200 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 0 #5c3300) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.8));
+            letter-spacing: -1px;
+            line-height: 0.95;
+        }
+
+        .marquee-line-2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 3px 0 #1e293b, 0 6px 12px rgba(0, 0, 0, 0.85);
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .marquee-line-3 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            color: #fff3b0;
+            text-shadow:
+                0 0 6px #ffae00,
+                0 0 14px #ff7b00,
+                0 3px 0 #663300,
+                0 6px 10px rgba(0, 0, 0, 0.9);
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+
+        /* Filmstrip Curved Ribbon behind Title */
+        .filmstrip-banner {
+            background: linear-gradient(180deg, #0b1938 0%, #16326b 50%, #09132b 100%);
+            border-top: 3px solid #3b66b8;
+            border-bottom: 3px solid #3b66b8;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.75);
+            position: relative;
+        }
+
+        .filmstrip-banner::before,
+        .filmstrip-banner::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 7px;
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent 6px,
+                rgba(255, 255, 255, 0.85) 6px,
+                rgba(255, 255, 255, 0.85) 14px
+            );
+        }
+        .filmstrip-banner::before { top: 4px; }
+        .filmstrip-banner::after { bottom: 4px; }
+
+        /* Glowing Marquee Bulb Frame */
+        .marquee-frame {
+            position: relative;
+            background: linear-gradient(180deg, #091836 0%, #040c1f 100%);
+            border: 4px solid #e69d17;
+            box-shadow:
+                0 0 0 2px #593500,
+                0 0 22px rgba(255, 187, 36, 0.45),
+                inset 0 0 18px rgba(0, 0, 0, 0.85);
+        }
+
+        .marquee-bulb {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #fff9c4;
+            box-shadow: 0 0 6px #ffd54f, 0 0 10px #ff8f00;
+            animation: bulbChase 1.2s infinite alternate;
+            pointer-events: none;
+        }
+
+        .marquee-bulb.alt {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bulbChase {
+            0% { opacity: 0.45; transform: scale(0.85); background: #ffd54f; }
+            100% { opacity: 1; transform: scale(1.15); background: #ffffff; box-shadow: 0 0 8px #fff, 0 0 14px #ffb300; }
+        }
+
+        /* Gold Filmstrip Ticket Button */
+        .gold-ticket-btn {
+            position: relative;
+            background: linear-gradient(180deg, #ffe77a 0%, #f7b731 48%, #e08e0b 52%, #f5b027 100%);
+            border: 2.5px solid #fff3b0;
+            border-radius: 12px;
+            box-shadow:
+                0 5px 0 #8a4b00,
+                0 10px 20px rgba(0, 0, 0, 0.65),
+                inset 0 2px 4px rgba(255, 255, 255, 0.7);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+            overflow: hidden;
+        }
+
+        /* Film sprocket holes on left/right edges of buttons */
+        .gold-ticket-btn::before,
+        .gold-ticket-btn::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            bottom: 6px;
+            width: 6px;
+            background-image: repeating-linear-gradient(
+                180deg,
+                rgba(138, 75, 0, 0.45) 0px,
+                rgba(138, 75, 0, 0.45) 5px,
+                transparent 5px,
+                transparent 10px
+            );
+            pointer-events: none;
+        }
+        .gold-ticket-btn::before { left: 6px; }
+        .gold-ticket-btn::after { right: 6px; }
+
+        .gold-ticket-btn:hover:not(:disabled) {
+            filter: brightness(1.06);
+            transform: translateY(-1px);
+        }
+
+        .gold-ticket-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow:
+                0 2px 0 #8a4b00,
+                0 5px 10px rgba(0, 0, 0, 0.65);
+        }
+
+        /* Outlined Crisp White Text on Gold Buttons */
+        .btn-outline-text {
+            color: #ffffff;
+            font-weight: 700;
+            text-shadow:
+                -1.5px -1.5px 0 #1f1200,
+                 1.5px -1.5px 0 #1f1200,
+                -1.5px  1.5px 0 #1f1200,
+                 1.5px  1.5px 0 #1f1200,
+                 0px    2.5px 0 #1f1200;
+            letter-spacing: 0.3px;
+        }
+
+        /* Answer State Overrides */
+        .gold-ticket-btn.correct {
+            background: linear-gradient(180deg, #6ee7b7 0%, #10b981 50%, #047857 100%) !important;
+            border-color: #d1fae5 !important;
+            box-shadow: 0 5px 0 #064e3b, 0 0 24px rgba(16, 185, 129, 0.85) !important;
+            animation: pulsePop 0.4s ease;
+        }
+
+        .gold-ticket-btn.wrong {
+            background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #b91c1c 100%) !important;
+            border-color: #fee2e2 !important;
+            box-shadow: 0 5px 0 #7f1d1d, 0 0 20px rgba(239, 68, 68, 0.75) !important;
+            animation: shakeHorizontal 0.35s ease;
+        }
+
+        @keyframes pulsePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shakeHorizontal {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* Red Carpet Floor Perspective */
+        .red-carpet-stage {
+            background: linear-gradient(180deg, #42040a 0%, #8f0d19 35%, #b51423 100%);
+            border-top: 3px solid #d4941c;
+            box-shadow: inset 0 15px 30px rgba(0, 0, 0, 0.75);
+        }
+
+        /* Slow Reel Spin */
+        .spin-slow {
+            animation: spinReel 14s linear infinite;
+        }
+        @keyframes spinReel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Screen Transitions */
+        .screen-view {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            z-index: 10;
+            animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .screen-view.active {
+            display: flex;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Reveal Card Glow Animations */
+        .reveal-card-boy {
+            background: radial-gradient(circle at 50% 20%, #38bdf8 0%, #0284c7 55%, #0c4a6e 100%);
+            border: 4px solid #bae6fd;
+            box-shadow: 0 0 45px rgba(56, 189, 248, 0.85), inset 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+        .reveal-card-girl {
+            background: radial-gradient(circle at 50% 20%, #f472b6 0%, #db2777 55%, #831843 100%);
+            border: 4px solid #fbcfe8;
+            box-shadow: 0 0 45px rgba(244, 114, 182, 0.85), inset 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+        .reveal-card-gold {
+            background: radial-gradient(circle at 50% 20%, #fde047 0%, #d97706 55%, #78350f 100%);
+            border: 4px solid #fef08a;
+            box-shadow: 0 0 45px rgba(250, 204, 21, 0.85), inset 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Custom Scrollbar for Customize Modal */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #d97706;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-stage">
+    <!-- Ambient Night Sky Spotlights & Stars -->
+    <div class="spotlight spotlight-left"></div>
+    <div class="spotlight spotlight-right"></div>
+    <div id="stars-layer" class="absolute inset-0 pointer-events-none z-0"></div>
+
+    <!-- Hollywood Skyline & Palm Silhouettes SVG Backdrop -->
+    <svg class="absolute bottom-24 left-0 w-full h-64 pointer-events-none z-1 opacity-55" viewBox="0 0 480 260" preserveAspectRatio="none">
+        <!-- Distant Hills & City Skyline -->
+        <path d="M0,190 Q90,145 190,180 T380,165 L480,180 L480,260 L0,260 Z" fill="#07132e"/>
+        <g fill="#09193b">
+            <rect x="35" y="135" width="26" height="90" rx="2"/>
+            <rect x="68" y="110" width="32" height="115" rx="2"/>
+            <rect x="110" y="145" width="24" height="80" rx="2"/>
+            <rect x="175" y="95" width="36" height="130" rx="2"/>
+            <polygon points="193,72 180,95 206,95"/>
+            <rect x="220" y="125" width="28" height="100" rx="2"/>
+            <rect x="295" y="105" width="34" height="120" rx="2"/>
+            <rect x="340" y="130" width="25" height="95" rx="2"/>
+            <rect x="385" y="88" width="30" height="137" rx="2"/>
+            <rect x="422" y="120" width="28" height="105" rx="2"/>
+        </g>
+        <!-- Left Palm Tree Silhouette -->
+        <g fill="#040a1a">
+            <path d="M22,250 Q35,160 18,75 L25,75 Q43,160 32,250 Z"/>
+            <path d="M21,78 Q-15,65 -28,92 Q-5,78 21,82 Z"/>
+            <path d="M21,76 Q-10,42 -32,55 Q-6,55 21,79 Z"/>
+            <path d="M22,75 Q18,35 -5,32 Q12,50 22,78 Z"/>
+            <path d="M23,76 Q52,42 74,56 Q48,55 23,79 Z"/>
+            <path d="M23,78 Q58,68 70,96 Q46,79 23,82 Z"/>
+        </g>
+        <!-- Right Palm Tree Silhouette -->
+        <g fill="#040a1a">
+            <path d="M452,250 Q438,150 455,58 L448,58 Q430,150 442,250 Z"/>
+            <path d="M451,60 Q415,45 400,74 Q425,60 451,65 Z"/>
+            <path d="M451,58 Q420,24 396,38 Q424,38 451,62 Z"/>
+            <path d="M452,57 Q456,16 480,14 Q462,33 452,60 Z"/>
+            <path d="M453,58 Q484,26 505,40 Q478,39 453,62 Z"/>
+            <path d="M453,60 Q488,50 498,78 Q475,61 453,65 Z"/>
+        </g>
+    </svg>
+
+    <!-- Top Floating Utility Controls (Audio + Customize) -->
+    <div class="relative z-30 flex justify-between items-center px-4 pt-3 pb-1">
+        <button id="btn-audio-toggle" onclick="toggleAudio()" title="Toggle Music & SFX"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
+            <span id="audio-icon">🔇</span>
+            <span id="audio-label">Sound Off</span>
+        </button>
+
+        <button id="btn-open-customize" onclick="openCustomizeModal()" title="Customize Quiz & Reveal"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-amber-400/50 text-amber-200 text-xs font-bold shadow-lg backdrop-blur-sm active:scale-95 transition">
+            <span>⚙️</span>
+            <span>Customize</span>
+        </button>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 1: SPLASH SCREEN
+    ========================================================= -->
+    <section id="screen-splash" class="screen-view active justify-between px-4 pb-6 pt-2">
+        <!-- Hero Hollywood Marquee Title Badge -->
+        <div class="flex flex-col items-center text-center mt-4 sm:mt-6 relative z-20">
+            <div id="splash-line-1" class="marquee-line-1 text-6xl sm:text-7xl uppercase tracking-tight">
+                2000s
+            </div>
+
+            <!-- Blue Filmstrip Ribbon with Spinning Reel -->
+            <div class="filmstrip-banner w-full max-w-[360px] py-2.5 px-4 my-1 rounded-xl flex items-center justify-center gap-1.5">
+                <span id="splash-line-2-left" class="marquee-line-2 text-4xl sm:text-5xl uppercase">M</span>
+                <!-- Inline SVG Film Reel -->
+                <svg class="w-10 h-10 sm:w-12 sm:h-12 spin-slow drop-shadow-[0_3px_5px_rgba(0,0,0,0.85)] shrink-0" viewBox="0 0 64 64">
+                    <defs>
+                        <radialGradient id="reelGrad" cx="35%" cy="35%" r="65%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="55%" stop-color="#cbd5e1"/>
+                            <stop offset="100%" stop-color="#475569"/>
+                        </radialGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="29" fill="url(#reelGrad)" stroke="#1e293b" stroke-width="3"/>
+                    <circle cx="32" cy="32" r="6" fill="#0f172a"/>
+                    <circle cx="32" cy="15" r="5.5" fill="#0f172a"/>
+                    <circle cx="32" cy="49" r="5.5" fill="#0f172a"/>
+                    <circle cx="15" cy="32" r="5.5" fill="#0f172a"/>
+                    <circle cx="49" cy="32" r="5.5" fill="#0f172a"/>
+                    <circle cx="20" cy="20" r="4.5" fill="#0f172a"/>
+                    <circle cx="44" cy="44" r="4.5" fill="#0f172a"/>
+                </svg>
+                <span id="splash-line-2-right" class="marquee-line-2 text-4xl sm:text-5xl uppercase">VIE</span>
+            </div>
+
+            <div id="splash-line-3" class="marquee-line-3 text-5xl sm:text-6xl uppercase mt-0.5">
+                TRIVIA
+            </div>
+
+            <p id="splash-subtitle" class="mt-3 px-4 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-200 text-xs sm:text-sm font-semibold tracking-wide">
+                ✨ Premiere Night Special Edition ✨
+            </p>
+        </div>
+
+        <!-- Center Stage Props & Primary PLAY Button -->
+        <div class="relative z-20 flex flex-col items-center my-auto pt-4">
+            <!-- Decorative Cinema Props Illustration (Popcorn + Clapperboard + 3D Glasses) -->
+            <div class="w-full max-w-[380px] flex items-end justify-between px-2 -mb-3 pointer-events-none">
+                <!-- Popcorn Bucket SVG -->
+                <svg class="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_10px_14px_rgba(0,0,0,0.85)]" viewBox="0 0 120 120">
+                    <!-- Popcorn Kernels -->
+                    <g fill="#fef08a" stroke="#ca8a04" stroke-width="1.5">
+                        <circle cx="35" cy="44" r="11"/>
+                        <circle cx="52" cy="36" r="13"/>
+                        <circle cx="72" cy="38" r="12"/>
+                        <circle cx="86" cy="46" r="10"/>
+                        <circle cx="44" cy="48" r="11"/>
+                        <circle cx="64" cy="46" r="12"/>
+                        <circle cx="78" cy="50" r="10"/>
+                    </g>
+                    <!-- Bucket -->
+                    <polygon points="24,50 96,50 85,112 35,112" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+                    <polygon points="24,50 38,50 44,112 35,112" fill="#dc2626"/>
+                    <polygon points="52,50 68,50 66,112 54,112" fill="#dc2626"/>
+                    <polygon points="82,50 96,50 85,112 76,112" fill="#dc2626"/>
+                    <rect x="21" y="47" width="78" height="7" rx="3" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+                </svg>
+
+                <!-- Clapperboard SVG -->
+                <svg class="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_10px_14px_rgba(0,0,0,0.85)]" viewBox="0 0 130 120">
+                    <!-- Top Clapper Arm (Angled) -->
+                    <g transform="rotate(-16 20 55)">
+                        <rect x="18" y="38" width="96" height="14" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <polygon points="26,38 38,38 32,52 20,52" fill="#f8fafc"/>
+                        <polygon points="50,38 62,38 56,52 44,52" fill="#f8fafc"/>
+                        <polygon points="74,38 86,38 80,52 68,52" fill="#f8fafc"/>
+                        <polygon points="98,38 110,38 104,52 92,52" fill="#f8fafc"/>
+                    </g>
+                    <!-- Base Board -->
+                    <rect x="18" y="54" width="96" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    <rect x="18" y="54" width="96" height="12" fill="#1e293b"/>
+                    <polygon points="24,54 36,54 42,66 30,66" fill="#f8fafc"/>
+                    <polygon points="48,54 60,54 66,66 54,66" fill="#f8fafc"/>
+                    <polygon points="72,54 84,54 90,66 78,66" fill="#f8fafc"/>
+                    <polygon points="96,54 108,54 114,66 102,66" fill="#f8fafc"/>
+                    <line x1="25" y1="78" x2="105" y2="78" stroke="#64748b" stroke-width="2"/>
+                    <line x1="25" y1="90" x2="105" y2="90" stroke="#64748b" stroke-width="2"/>
+                    <text x="26" y="75" fill="#94a3b8" font-size="7" font-family="sans-serif" font-weight="bold">SCENE   TAKE   ROLL</text>
+                </svg>
+            </div>
+
+            <!-- Giant Gold Filmstrip PLAY Button -->
+            <button id="btn-start-game" onclick="startGame()"
+                class="gold-ticket-btn w-full max-w-[330px] py-4 px-8 flex items-center justify-center gap-3 cursor-pointer z-20">
+                <svg class="w-8 h-8 fill-[#1e3a8a] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]" viewBox="0 0 24 24">
+                    <path d="M6 4l15 8-15 8z"/>
+                </svg>
+                <span class="text-3xl sm:text-4xl font-black tracking-wider text-[#0f2966] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
+                    PLAY
+                </span>
+            </button>
+
+            <!-- Admit One Ticket & Retro 3D Glasses Row -->
+            <div class="w-full max-w-[360px] flex items-center justify-between px-3 mt-3 pointer-events-none">
+                <!-- Admit One Ticket -->
+                <div class="bg-amber-200 border-2 border-dashed border-amber-800 rounded-md px-3 py-1.5 -rotate-6 shadow-lg text-amber-950 font-black text-xs tracking-widest uppercase">
+                    ★ ADMIT ONE ★
+                </div>
+
+                <!-- Retro 3D Glasses SVG -->
+                <svg class="w-28 h-14 rotate-3 drop-shadow-[0_8px_10px_rgba(0,0,0,0.8)]" viewBox="0 0 140 60">
+                    <path d="M10,18 L130,18 L124,48 L78,48 L70,34 L62,48 L16,48 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                    <polygon points="20,23 62,23 58,43 23,43" fill="#2563eb" opacity="0.88"/>
+                    <polygon points="78,23 120,23 117,43 82,43" fill="#dc2626" opacity="0.88"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Bottom Red Carpet & Gold Stanchions -->
+        <div class="red-carpet-stage absolute bottom-0 left-0 right-0 h-24 z-10 flex justify-between items-start px-6 pt-1 pointer-events-none">
+            <div class="w-3 h-16 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-700 rounded-t-full -mt-6 shadow-lg"></div>
+            <div class="text-[11px] text-amber-200/75 font-semibold tracking-widest uppercase mt-2">
+                Tap Play to Start the Show
+            </div>
+            <div class="w-3 h-16 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-700 rounded-t-full -mt-6 shadow-lg"></div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 2: TRIVIA GAMEPLAY SCREEN
+    ========================================================= -->
+    <section id="screen-trivia" class="screen-view justify-between px-4 pb-6 pt-1">
+        <!-- Compact Header Logo -->
+        <div class="flex flex-col items-center text-center">
+            <div id="mini-line-1" class="marquee-line-1 text-3xl uppercase">2000s</div>
+            <div class="filmstrip-banner px-4 py-0.5 rounded-lg flex items-center gap-1 -mt-0.5">
+                <span id="mini-line-2-left" class="marquee-line-2 text-xl uppercase">M</span>
+                <svg class="w-5 h-5 spin-slow" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="28" fill="#e2e8f0" stroke="#1e293b" stroke-width="4"/>
+                    <circle cx="32" cy="32" r="6" fill="#0f172a"/>
+                    <circle cx="32" cy="15" r="5" fill="#0f172a"/>
+                    <circle cx="32" cy="49" r="5" fill="#0f172a"/>
+                    <circle cx="15" cy="32" r="5" fill="#0f172a"/>
+                    <circle cx="49" cy="32" r="5" fill="#0f172a"/>
+                </svg>
+                <span id="mini-line-2-right" class="marquee-line-2 text-xl uppercase">VIE</span>
+            </div>
+            <div id="mini-line-3" class="marquee-line-3 text-2xl uppercase mt-0.5">TRIVIA</div>
+        </div>
+
+        <!-- Question Counter Marquee Pill -->
+        <div id="pill-marquee-box" class="marquee-frame rounded-full py-2 px-6 mx-auto my-2 w-full max-w-[330px] text-center">
+            <span id="question-counter-text" class="text-amber-300 font-extrabold text-base sm:text-lg tracking-wide drop-shadow">
+                Question 1 of 20
+            </span>
+        </div>
+
+        <!-- Main Question Marquee Card -->
+        <div id="question-marquee-box" class="marquee-frame rounded-2xl p-5 sm:p-6 my-1 w-full min-h-[155px] sm:min-h-[175px] flex items-center justify-center text-center shadow-2xl">
+            <h2 id="question-text" class="text-white text-xl sm:text-2xl font-bold leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                In Mean Girls (2004), what is the name of the popular girls' clique?
+            </h2>
+        </div>
+
+        <!-- 4 Gold Filmstrip Answer Options -->
+        <div id="options-container" class="flex flex-col gap-3 my-auto py-2 w-full">
+            <!-- Dynamically populated buttons -->
+        </div>
+
+        <!-- Subtle Red Carpet Base -->
+        <div class="red-carpet-stage absolute bottom-0 left-0 right-0 h-14 z-0 pointer-events-none opacity-85"></div>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 3: DRAMATIC PLOT TWIST & GENDER / SURPRISE REVEAL
+    ========================================================= -->
+    <section id="screen-reveal" class="screen-view justify-center items-center px-5 pb-8 pt-2 text-center relative">
+        <!-- Confetti Canvas Overlay -->
+        <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-30"></canvas>
+
+        <!-- Phase A: Drumroll Suspense Teaser -->
+        <div id="reveal-suspense" class="flex flex-col items-center justify-center my-auto z-20">
+            <div class="marquee-frame rounded-2xl p-6 max-w-[360px] w-full animate-bounce">
+                <p class="text-amber-300 text-sm font-extrabold uppercase tracking-widest mb-2">
+                    🎬 FINAL SCENE 🎬
+                </p>
+                <h2 class="text-3xl sm:text-4xl font-black text-white leading-tight">
+                    AND THE ULTIMATE PLOT TWIST IS...
+                </h2>
+                <div id="suspense-countdown" class="mt-4 text-5xl font-black text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)]">
+                    3
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase B: Explosive Reveal Card -->
+        <div id="reveal-finale" class="hidden flex-col items-center justify-center my-auto w-full max-w-[390px] z-20">
+            <div id="reveal-card-container" class="reveal-card-pink rounded-3xl p-6 sm:p-7 w-full text-center relative overflow-hidden">
+                <div class="inline-block px-3.5 py-1 rounded-full bg-black/30 text-white text-xs font-extrabold uppercase tracking-widest mb-3">
+                    ★ PREMIERE ANNOUNCEMENT ★
+                </div>
+
+                <!-- Optional Uploaded Photo / Ultrasound Preview -->
+                <div id="reveal-photo-wrapper" class="hidden mb-4 mx-auto w-40 h-40 rounded-2xl overflow-hidden border-4 border-white/80 shadow-xl bg-black/30">
+                    <img id="reveal-photo-img" src="" alt="Reveal Photo" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Big Reveal Emoji / Icon -->
+                <div id="reveal-emoji" class="text-6xl sm:text-7xl mb-2 drop-shadow-lg animate-bounce">
+                    💖
+                </div>
+
+                <!-- Main Reveal Headline -->
+                <h1 id="reveal-headline" class="text-4xl sm:text-5xl font-black text-white uppercase tracking-tight leading-none drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
+                    IT'S A GIRL!
+                </h1>
+
+                <!-- Subtitle / Due Date / Message -->
+                <p id="reveal-submessage" class="mt-3 text-base sm:text-lg font-bold text-white/95 bg-black/25 rounded-xl py-2.5 px-4">
+                    Arriving May 2027! We can't wait to meet our little star!
+                </p>
+            </div>
+
+            <!-- Action Buttons after Reveal -->
+            <div class="flex gap-3 w-full mt-5">
+                <button onclick="retriggerConfetti()"
+                    class="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-lg active:scale-95 transition">
+                    🎉 Celebrate Again
+                </button>
+                <button onclick="resetToSplash()"
+                    class="flex-1 py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-400/40 text-amber-200 font-extrabold text-sm shadow-lg active:scale-95 transition">
+                    ↺ Play Again
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- =========================================================
+     CUSTOMIZATION & SHAREABLE LINK MODAL
+========================================================= -->
+<div id="customize-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-900 border-2 border-amber-500/60 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-5 py-3.5 bg-slate-950 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🎬</span>
+                <h3 class="text-lg font-extrabold text-amber-300">Customize Trivia & Reveal</h3>
+            </div>
+            <button onclick="closeCustomizeModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold">
+                ✕
+            </button>
+        </div>
+
+        <!-- Modal Navigation Tabs -->
+        <div class="flex border-b border-slate-800 bg-slate-900/90 text-xs sm:text-sm font-bold">
+            <button onclick="switchTab('tab-branding')" id="btn-tab-branding" class="flex-1 py-2.5 text-amber-400 border-b-2 border-amber-400">
+                1. Title & Reveal
+            </button>
+            <button onclick="switchTab('tab-questions')" id="btn-tab-questions" class="flex-1 py-2.5 text-slate-400 hover:text-slate-200">
+                2. Questions (<span id="tab-q-count">20</span>)
+            </button>
+            <button onclick="switchTab('tab-share')" id="btn-tab-share" class="flex-1 py-2.5 text-slate-400 hover:text-slate-200">
+                3. Audio & Share
+            </button>
+        </div>
+
+        <!-- Modal Scrollable Content -->
+        <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-5 text-sm">
+
+            <!-- TAB 1: MARQUEE TITLE & REVEAL SETTINGS -->
+            <div id="tab-branding" class="space-y-4">
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Marquee Header Title</h4>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Top Line</label>
+                            <input id="cfg-title-1" type="text" maxlength="12" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-white font-bold uppercase focus:border-amber-400 outline-none" value="2000s">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Middle (Reel)</label>
+                            <input id="cfg-title-2" type="text" maxlength="12" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-white font-bold uppercase focus:border-amber-400 outline-none" value="MOVIE">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Bottom Line</label>
+                            <input id="cfg-title-3" type="text" maxlength="12" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-white font-bold uppercase focus:border-amber-400 outline-none" value="TRIVIA">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Splash Teaser Subtitle</label>
+                        <input id="cfg-subtitle" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 outline-none" value="✨ Premiere Night Special Edition ✨">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Final Surprise / Gender Reveal</h4>
+
+                    <!-- Quick Preset Buttons -->
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1.5">Quick Theme Presets</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="applyRevealPreset('girl')" class="py-2 px-2 rounded-lg bg-pink-600/30 border border-pink-400 text-pink-200 font-bold text-xs hover:bg-pink-600/50">
+                                💖 It's a Girl!
+                            </button>
+                            <button type="button" onclick="applyRevealPreset('boy')" class="py-2 px-2 rounded-lg bg-sky-600/30 border border-sky-400 text-sky-200 font-bold text-xs hover:bg-sky-600/50">
+                                💙 It's a Boy!
+                            </button>
+                            <button type="button" onclick="applyRevealPreset('gold')" class="py-2 px-2 rounded-lg bg-amber-600/30 border border-amber-400 text-amber-200 font-bold text-xs hover:bg-amber-600/50">
+                                💛 Twins / Gold
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="block text-[11px] text-slate-400 mb-1">Reveal Headline</label>
+                            <input id="cfg-reveal-headline" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:border-amber-400 outline-none" value="IT'S A GIRL!">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Big Emoji</label>
+                            <input id="cfg-reveal-emoji" type="text" maxlength="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-center text-xl focus:border-amber-400 outline-none" value="💖">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Reveal Color Theme</label>
+                        <select id="cfg-reveal-theme" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 outline-none">
+                            <option value="girl">Pink Premiere (It's a Girl)</option>
+                            <option value="boy">Sky Blue Premiere (It's a Boy)</option>
+                            <option value="gold">Royal Gold (Twins / Custom Surprise)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Sub-Message / Due Date</label>
+                        <textarea id="cfg-reveal-sub" rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 outline-none">Arriving May 2027! We can't wait to meet our little star!</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Optional Ultrasound / Reveal Photo (Local Preview & Standalone Export)</label>
+                        <div class="flex items-center gap-2">
+                            <input id="cfg-photo-input" type="file" accept="image/*" onchange="handlePhotoUpload(event)" class="text-xs text-slate-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-500 file:text-slate-950 file:font-bold cursor-pointer">
+                            <button type="button" onclick="clearUploadedPhoto()" class="text-xs text-rose-400 underline">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: TRIVIA QUESTIONS EDITOR -->
+            <div id="tab-questions" class="hidden space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+                    <div>
+                        <label class="block text-[11px] text-slate-400">Questions to Play</label>
+                        <select id="cfg-question-limit" onchange="renderQuestionEditorList()" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-bold mt-0.5">
+                            <option value="3">3 Questions (Quick Demo)</option>
+                            <option value="5">5 Questions</option>
+                            <option value="10">10 Questions</option>
+                            <option value="15">15 Questions</option>
+                            <option value="20" selected>20 Questions (Full Show)</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="addNewQuestion()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+                            + Add Question
+                        </button>
+                        <button type="button" onclick="resetDefaultQuestions()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">
+                            Reset 2000s Movies
+                        </button>
+                    </div>
+                </div>
+
+                <div id="questions-editor-list" class="space-y-3">
+                    <!-- Editable question cards rendered here -->
+                </div>
+            </div>
+
+            <!-- TAB 3: AUDIO & SHAREABLE LINK -->
+            <div id="tab-share" class="hidden space-y-4">
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Background Soundtrack</h4>
+                    <label class="flex items-center gap-2.5 cursor-pointer">
+                        <input id="cfg-music-enabled" type="checkbox" checked class="w-4 h-4 accent-amber-500">
+                        <span class="text-white font-semibold">Enable Built-in Hollywood Synth Music & SFX</span>
+                    </label>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Or Upload Custom Background Music (MP3 / WAV)</label>
+                        <input id="cfg-audio-upload" type="file" accept="audio/*" onchange="handleCustomAudioUpload(event)" class="text-xs text-slate-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-500 file:text-slate-950 file:font-bold cursor-pointer">
+                        <p id="custom-audio-status" class="text-[11px] text-emerald-400 mt-1 hidden">Custom audio loaded!</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <h4 class="font-extrabold text-amber-300 uppercase text-xs tracking-wider">Share or Host Your Custom Game</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Generate a custom URL with your title, trivia questions, and reveal built right into the link—or download a single standalone HTML file to host anywhere!
+                    </p>
+
+                    <div class="space-y-2">
+                        <button type="button" onclick="copyShareableLink()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+                            <span>🔗</span>
+                            <span>Copy Shareable Link</span>
+                        </button>
+                        <input id="share-link-output" type="text" readonly placeholder="Click 'Copy Shareable Link' to generate URL..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-200 font-mono">
+                    </div>
+
+                    <button type="button" onclick="downloadStandaloneHTML()" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-400/40 text-amber-200 font-extrabold text-sm shadow active:scale-95 transition flex items-center justify-center gap-2">
+                        <span>⬇️</span>
+                        <span>Download Standalone HTML File</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-5 py-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3">
+            <span id="toast-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Saved!</span>
+            <div class="flex gap-2 ml-auto">
+                <button onclick="closeCustomizeModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">
+                    Cancel
+                </button>
+                <button onclick="saveAndApplyCustomization()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+                    Save & Preview Show
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * ============================================================================
+ * 1. DEFAULT 2000s MOVIE TRIVIA DATASET (20 QUESTIONS)
+ * ============================================================================
+ */
+const DEFAULT_QUESTIONS = [
+    {
+        q: "In Mean Girls (2004), what is the name of the popular girls' clique?",
+        options: ["The Royals", "The Glamazons", "The Plastics", "The Divas"],
+        answer: 2
+    },
+    {
+        q: "In Shrek (2001), what song plays during the iconic opening credits scene?",
+        options: ["I'm a Believer", "All Star", "Accidentally in Love", "Funkytown"],
+        answer: 1
+    },
+    {
+        q: "What is the name of Captain Jack Sparrow's beloved ship in Pirates of the Caribbean (2003)?",
+        options: ["The Flying Dutchman", "The Black Pearl", "The Interceptor", "Queen Anne's Revenge"],
+        answer: 1
+    },
+    {
+        q: "In Legally Blonde (2001), what is the name of Elle Woods' pet Chihuahua?",
+        options: ["Bruiser", "Hercules", "Tinkerbell", "Paco"],
+        answer: 0
+    },
+    {
+        q: "In The Dark Knight (2008), who portrayed the Joker?",
+        options: ["Joaquin Phoenix", "Jared Leto", "Heath Ledger", "Jack Nicholson"],
+        answer: 2
+    },
+    {
+        q: "In Finding Nemo (2003), what address is written on the diver's mask?",
+        options: ["42 Wallaby Way, Sydney", "12 Ocean Blvd, Perth", "88 Reef Road, Brisbane", "10 Harbour St, Melbourne"],
+        answer: 0
+    },
+    {
+        q: "In Elf (2003), what are the four main food groups according to Buddy?",
+        options: [
+            "Candy, candy canes, candy corns, and syrup",
+            "Cookies, chocolate, fudge, and maple syrup",
+            "Sugar, spice, marshmallows, and cocoa",
+            "Pancakes, gumdrops, frosting, and honey"
+        ],
+        answer: 0
+    },
+    {
+        q: "In Harry Potter and the Sorcerer's Stone (2001), what position does Harry play in Quidditch?",
+        options: ["Keeper", "Beater", "Chaser", "Seeker"],
+        answer: 3
+    },
+    {
+        q: "In The Devil Wears Prada (2006), what is the name of Meryl Streep's intimidating editor character?",
+        options: ["Miranda Priestly", "Victoria Grayson", "Evelyn Harper", "Diana Trout"],
+        answer: 0
+    },
+    {
+        q: "In Napoleon Dynamite (2004), what mythical creature does Napoleon draw for Trisha?",
+        options: ["A Griffon", "A Liger", "A Jackalope", "A Pegasus"],
+        answer: 1
+    },
+    {
+        q: "In The Lord of the Rings: The Fellowship of the Ring (2001), how many members are in the Fellowship?",
+        options: ["Seven", "Eight", "Nine", "Twelve"],
+        answer: 2
+    },
+    {
+        q: "In Superbad (2007), what fake single-name identity is printed on Fogell's ID?",
+        options: ["McLovin", "McAwesome", "The Legend", "Bond"],
+        answer: 0
+    },
+    {
+        q: "In Gladiator (2000), what famous line does Maximus shout to the arena crowd?",
+        options: ["Freedom!", "Are you not entertained?", "This is Sparta!", "Strength and honor!"],
+        answer: 1
+    },
+    {
+        q: "In Monsters, Inc. (2001), what is Boo's real first name?",
+        options: ["Lily", "Mary", "Molly", "Daisy"],
+        answer: 1
+    },
+    {
+        q: "In The Notebook (2004), how many letters did Noah write to Allie over a year?",
+        options: ["100", "250", "365", "500"],
+        answer: 2
+    },
+    {
+        q: "In Anchorman (2004), what is Ron Burgundy's catchphrase at the end of his broadcasts?",
+        options: ["Stay classy, San Diego", "That's the way it is", "Keep it real, America", "Goodnight and good luck"],
+        answer: 0
+    },
+    {
+        q: "In Kill Bill: Vol. 1 (2003), what color is The Bride's famous tracksuit?",
+        options: ["Bright Red", "Neon Green", "Yellow with black stripes", "Electric Blue"],
+        answer: 2
+    },
+    {
+        q: "In WALL-E (2008), what type of pet insect befriends WALL-E on Earth?",
+        options: ["A grasshopper", "A cockroach", "A ladybug", "A firefly"],
+        answer: 1
+    },
+    {
+        q: "In 13 Going on 30 (2004), what 1980s hit song gets the whole party dancing?",
+        options: ["Girls Just Want to Have Fun", "Thriller", "Like a Virgin", "Wake Me Up Before You Go-Go"],
+        answer: 1
+    },
+    {
+        q: "In Iron Man (2008), what are Tony Stark's iconic final words at the press conference?",
+        options: ["Avengers, assemble.", "I am Iron Man.", "Genius, billionaire, playboy.", "The truth is out."],
+        answer: 1
+    }
+];
+
+/**
+ * ============================================================================
+ * 2. APPLICATION STATE & CONFIG MANAGEMENT
+ * ============================================================================
+ */
+let appConfig = {
+    title1: "2000s",
+    title2: "MOVIE",
+    title3: "TRIVIA",
+    subtitle: "✨ Premiere Night Special Edition ✨",
+    questionLimit: 20,
+    questions: JSON.parse(JSON.stringify(DEFAULT_QUESTIONS)),
+    revealTheme: "girl", // 'girl', 'boy', 'gold'
+    revealHeadline: "IT'S A GIRL!",
+    revealEmoji: "💖",
+    revealSubmessage: "Arriving May 2027! We can't wait to meet our little star!",
+    revealPhotoDataUrl: "",
+    musicEnabled: true
+};
+
+let currentQuestionIndex = 0;
+let isAnsweringLocked = false;
+let customAudioElement = null;
+
+// Load embedded config (if exported standalone HTML) or URL Hash config
+function initConfigFromStorageOrHash() {
+    try {
+        // Check if injected via standalone download
+        if (window.__EMBEDDED_TRIVIA_CONFIG__) {
+            appConfig = { ...appConfig, ...window.__EMBEDDED_TRIVIA_CONFIG__ };
+            return;
+        }
+        // Check URL hash #config=...
+        const hash = window.location.hash;
+        if (hash && hash.startsWith("#config=")) {
+            const encoded = hash.slice(8);
+            const jsonStr = decodeURIComponent(escape(atob(encoded)));
+            const parsed = JSON.parse(jsonStr);
+            appConfig = { ...appConfig, ...parsed };
+        }
+    } catch (err) {
+        console.warn("Could not parse custom hash config, using defaults.", err);
+    }
+}
+
+/**
+ * ============================================================================
+ * 3. PROCEDURAL MARQUEE BULBS & STARFIELD DECORATIONS
+ * ============================================================================
+ */
+function populateStars() {
+    const layer = document.getElementById("stars-layer");
+    layer.innerHTML = "";
+    for (let i = 0; i < 36; i++) {
+        const star = document.createElement("div");
+        star.className = "star";
+        const size = Math.random() * 2.5 + 1.5;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.top = `${Math.random() * 58}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.setProperty("--dur", `${(Math.random() * 2.5 + 1.5).toFixed(1)}s`);
+        star.style.animationDelay = `${(Math.random() * 2).toFixed(1)}s`;
+        layer.appendChild(star);
+    }
+}
+
+function attachMarqueeBulbs(containerId, countX = 14, countY = 6) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    // Remove old bulbs
+    el.querySelectorAll(".marquee-bulb").forEach(b => b.remove());
+
+    const addBulb = (leftPct, topPct, idx) => {
+        const b = document.createElement("span");
+        b.className = `marquee-bulb ${idx % 2 === 0 ? "" : "alt"}`;
+        b.style.left = `calc(${leftPct}% - 3.5px)`;
+        b.style.top = `calc(${topPct}% - 3.5px)`;
+        el.appendChild(b);
+    };
+
+    let idx = 0;
+    for (let i = 0; i <= countX; i++) {
+        const pct = (i / countX) * 100;
+        addBulb(pct, 0, idx++);
+        addBulb(pct, 100, idx++);
+    }
+    for (let j = 1; j < countY; j++) {
+        const pct = (j / countY) * 100;
+        addBulb(0, pct, idx++);
+        addBulb(100, pct, idx++);
+    }
+}
+
+/**
+ * ============================================================================
+ * 4. WEB AUDIO API HOLLYWOOD SYNTHESIZER & SFX ENGINE
+ * ============================================================================
+ */
+let audioCtx = null;
+let isAudioMuted = true;
+let bgmTimer = null;
+let bgmStep = 0;
+
+function ensureAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+    }
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+}
+
+function updateAudioButtonUI() {
+    const icon = document.getElementById("audio-icon");
+    const label = document.getElementById("audio-label");
+    if (!isAudioMuted && appConfig.musicEnabled) {
+        icon.textContent = "🔊";
+        label.textContent = "Music On";
+    } else {
+        icon.textContent = "🔇";
+        label.textContent = "Sound Off";
+    }
+}
+
+function toggleAudio() {
+    if (!appConfig.musicEnabled) {
+        appConfig.musicEnabled = true;
+    }
+    isAudioMuted = !isAudioMuted;
+    updateAudioButtonUI();
+
+    if (isAudioMuted) {
+        stopBackgroundMusic();
+    } else {
+        ensureAudioContext();
+        startBackgroundMusic();
+    }
+}
+
+function playTone(freq, duration = 0.18, type = "triangle", volume = 0.08, delay = 0) {
+    if (isAudioMuted || !appConfig.musicEnabled) return;
+    ensureAudioContext();
+    const now = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.02);
+}
+
+// Upbeat Hollywood Game-Show Marimba/Synth Loop
+function startBackgroundMusic() {
+    if (isAudioMuted || !appConfig.musicEnabled) return;
+
+    if (customAudioElement) {
+        customAudioElement.loop = true;
+        customAudioElement.volume = 0.45;
+        customAudioElement.play().catch(() => {});
+        return;
+    }
+
+    if (bgmTimer) return;
+    ensureAudioContext();
+
+    // Playful jazzy cinema motif (C major / G7 bounce)
+    const melodyNotes = [
+        523.25, 0, 659.25, 783.99,
+        880.00, 783.99, 659.25, 0,
+        587.33, 0, 698.46, 880.00,
+        783.99, 659.25, 587.33, 493.88
+    ];
+    const bassNotes = [
+        130.81, 0, 196.00, 0,
+        130.81, 0, 196.00, 0,
+        146.83, 0, 196.00, 0,
+        196.00, 0, 246.94, 0
+    ];
+
+    bgmTimer = setInterval(() => {
+        if (isAudioMuted || !appConfig.musicEnabled) return;
+        const idx = bgmStep % melodyNotes.length;
+        if (melodyNotes[idx] > 0) {
+            playTone(melodyNotes[idx], 0.22, "triangle", 0.055);
+        }
+        if (bassNotes[idx] > 0) {
+            playTone(bassNotes[idx], 0.28, "sine", 0.075);
+        }
+        bgmStep++;
+    }, 240);
+}
+
+function stopBackgroundMusic() {
+    if (bgmTimer) {
+        clearInterval(bgmTimer);
+        bgmTimer = null;
+    }
+    if (customAudioElement) {
+        customAudioElement.pause();
+    }
+}
+
+function playClickSfx() {
+    playTone(660, 0.09, "sine", 0.12, 0);
+    playTone(880, 0.12, "triangle", 0.10, 0.05);
+}
+
+function playCorrectSfx() {
+    playTone(523.25, 0.14, "triangle", 0.14, 0);
+    playTone(659.25, 0.14, "triangle", 0.14, 0.09);
+    playTone(783.99, 0.26, "triangle", 0.16, 0.18);
+}
+
+function playWrongSfx() {
+    playTone(260, 0.18, "sawtooth", 0.09, 0);
+    playTone(215, 0.28, "sawtooth", 0.09, 0.14);
+}
+
+function playDrumrollAndFanfare() {
+    if (isAudioMuted || !appConfig.musicEnabled) return;
+    ensureAudioContext();
+    // Rapid snare-like pulses over 2.6 seconds
+    for (let i = 0; i < 24; i++) {
+        const t = i * 0.105;
+        const freq = 140 + (i * 4);
+        playTone(freq, 0.08, "triangle", 0.06 + (i * 0.003), t);
+    }
+    // Grand Finale Brass Chord at 2.7s
+    const fanfareStart = 2.7;
+    const chord = [523.25, 659.25, 783.99, 1046.50];
+    chord.forEach((note, idx) => {
+        playTone(note, 0.95, "triangle", 0.13, fanfareStart + idx * 0.06);
+    });
+}
+
+/**
+ * ============================================================================
+ * 5. RENDERING & GAMEPLAY FLOW
+ * ============================================================================
+ */
+function applyTitleBranding() {
+    const t1 = (appConfig.title1 || "2000s").trim();
+    const t2 = (appConfig.title2 || "MOVIE").trim().toUpperCase();
+    const t3 = (appConfig.title3 || "TRIVIA").trim();
+
+    document.getElementById("splash-line-1").textContent = t1;
+    document.getElementById("splash-line-3").textContent = t3;
+    document.getElementById("splash-subtitle").textContent = appConfig.subtitle || "";
+
+    document.getElementById("mini-line-1").textContent = t1;
+    document.getElementById("mini-line-3").textContent = t3;
+
+    // Split middle word around the spinning film reel if it contains 'O', otherwise place reel after first letter
+    const oIdx = t2.indexOf("O");
+    let leftPart = "";
+    let rightPart = "";
+    if (oIdx !== -1) {
+        leftPart = t2.slice(0, oIdx);
+        rightPart = t2.slice(oIdx + 1);
+    } else if (t2.length > 1) {
+        leftPart = t2.slice(0, 1);
+        rightPart = t2.slice(1);
+    } else {
+        leftPart = t2;
+    }
+
+    document.getElementById("splash-line-2-left").textContent = leftPart;
+    document.getElementById("splash-line-2-right").textContent = rightPart;
+    document.getElementById("mini-line-2-left").textContent = leftPart;
+    document.getElementById("mini-line-2-right").textContent = rightPart;
+
+    document.title = `${t1} ${t2} ${t3}`;
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll(".screen-view").forEach(s => s.classList.remove("active"));
+    document.getElementById(screenId).classList.add("active");
+}
+
+function getActiveQuestions() {
+    const limit = Math.min(appConfig.questionLimit || 20, appConfig.questions.length);
+    return appConfig.questions.slice(0, Math.max(1, limit));
+}
+
+function startGame() {
+    // Auto-start music on first user tap if enabled
+    if (appConfig.musicEnabled && isAudioMuted) {
+        isAudioMuted = false;
+        updateAudioButtonUI();
+    }
+    ensureAudioContext();
+    playClickSfx();
+    startBackgroundMusic();
+
+    currentQuestionIndex = 0;
+    isAnsweringLocked = false;
+    showScreen("screen-trivia");
+    attachMarqueeBulbs("pill-marquee-box", 12, 2);
+    attachMarqueeBulbs("question-marquee-box", 14, 6);
+    renderCurrentQuestion();
+}
+
+function renderCurrentQuestion() {
+    const activeQs = getActiveQuestions();
+    const total = activeQs.length;
+    const item = activeQs[currentQuestionIndex];
+
+    document.getElementById("question-counter-text").textContent = `Question ${currentQuestionIndex + 1} of ${total}`;
+    document.getElementById("question-text").textContent = item.q;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    item.options.forEach((optText, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "gold-ticket-btn w-full py-3.5 px-6 text-center cursor-pointer";
+        btn.innerHTML = `<span class="btn-outline-text text-lg sm:text-xl">${escapeHtml(optText)}</span>`;
+        btn.onclick = () => handleOptionSelect(idx, btn);
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function handleOptionSelect(selectedIdx, btnElement) {
+    if (isAnsweringLocked) return;
+    isAnsweringLocked = true;
+
+    const activeQs = getActiveQuestions();
+    const item = activeQs[currentQuestionIndex];
+    const allButtons = document.querySelectorAll("#options-container button");
+
+    if (selectedIdx === item.answer) {
+        btnElement.classList.add("correct");
+        playCorrectSfx();
+    } else {
+        btnElement.classList.add("wrong");
+        if (allButtons[item.answer]) {
+            allButtons[item.answer].classList.add("correct");
+        }
+        playWrongSfx();
+    }
+
+    setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < activeQs.length) {
+            isAnsweringLocked = false;
+            renderCurrentQuestion();
+        } else {
+            triggerFinaleReveal();
+        }
+    }, 950);
+}
+
+/**
+ * ============================================================================
+ * 6. SURPRISE GENDER / PLOT TWIST FINALE & CONFETTI CANNON
+ * ============================================================================
+ */
+let confettiParticles = [];
+let confettiAnimId = null;
+
+function triggerFinaleReveal() {
+    stopBackgroundMusic();
+    showScreen("screen-reveal");
+
+    const suspenseEl = document.getElementById("reveal-suspense");
+    const finaleEl = document.getElementById("reveal-finale");
+    const countEl = document.getElementById("suspense-countdown");
+
+    suspenseEl.classList.remove("hidden");
+    finaleEl.classList.add("hidden");
+    finaleEl.classList.remove("flex");
+
+    playDrumrollAndFanfare();
+
+    let count = 3;
+    countEl.textContent = count;
+
+    const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countEl.textContent = count;
+        } else {
+            clearInterval(interval);
+            showActualRevealCard();
+        }
+    }, 900);
+}
+
+function showActualRevealCard() {
+    const suspenseEl = document.getElementById("reveal-suspense");
+    const finaleEl = document.getElementById("reveal-finale");
+    const cardContainer = document.getElementById("reveal-card-container");
+
+    // Apply Theme Styling
+    cardContainer.classList.remove("reveal-card-boy", "reveal-card-girl", "reveal-card-gold");
+    if (appConfig.revealTheme === "boy") {
+        cardContainer.classList.add("reveal-card-boy");
+    } else if (appConfig.revealTheme === "gold") {
+        cardContainer.classList.add("reveal-card-gold");
+    } else {
+        cardContainer.classList.add("reveal-card-girl");
+    }
+
+    document.getElementById("reveal-emoji").textContent = appConfig.revealEmoji || "🎉";
+    document.getElementById("reveal-headline").textContent = appConfig.revealHeadline || "SURPRISE!";
+    document.getElementById("reveal-submessage").textContent = appConfig.revealSubmessage || "";
+
+    const photoWrapper = document.getElementById("reveal-photo-wrapper");
+    const photoImg = document.getElementById("reveal-photo-img");
+    if (appConfig.revealPhotoDataUrl) {
+        photoImg.src = appConfig.revealPhotoDataUrl;
+        photoWrapper.classList.remove("hidden");
+    } else {
+        photoWrapper.classList.add("hidden");
+    }
+
+    suspenseEl.classList.add("hidden");
+    finaleEl.classList.remove("hidden");
+    finaleEl.classList.add("flex");
+
+    launchConfetti();
+}
+
+function retriggerConfetti() {
+    playCorrectSfx();
+    launchConfetti();
+}
+
+function resetToSplash() {
+    stopConfetti();
+    stopBackgroundMusic();
+    showScreen("screen-splash");
+}
+
+function launchConfetti() {
+    const canvas = document.getElementById("confetti-canvas");
+    const stage = document.getElementById("app-stage");
+    canvas.width = stage.clientWidth;
+    canvas.height = stage.clientHeight;
+    const ctx = canvas.getContext("2d");
+
+    let palette = ["#f472b6", "#fbcfe8", "#ffffff", "#fde047", "#ec4899"];
+    if (appConfig.revealTheme === "boy") {
+        palette = ["#38bdf8", "#bae6fd", "#ffffff", "#fde047", "#0284c7"];
+    } else if (appConfig.revealTheme === "gold") {
+        palette = ["#fde047", "#f59e0b", "#ffffff", "#fbbf24", "#fef08a"];
+    }
+
+    confettiParticles = [];
+    for (let i = 0; i < 140; i++) {
+        confettiParticles.push({
+            x: canvas.width / 2 + (Math.random() - 0.5) * 90,
+            y: canvas.height * 0.45,
+            vx: (Math.random() - 0.5) * 14,
+            vy: (Math.random() - 0.85) * 16,
+            size: Math.random() * 8 + 5,
+            color: palette[Math.floor(Math.random() * palette.length)],
+            rotation: Math.random() * 360,
+            vRot: (Math.random() - 0.5) * 12
+        });
+    }
+
+    if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+
+    function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeCount = 0;
+
+        confettiParticles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.35; // gravity
+            p.vx *= 0.985;
+            p.rotation += p.vRot;
+
+            if (p.y < canvas.height + 30) {
+                activeCount++;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                ctx.restore();
+            }
+        });
+
+        if (activeCount > 0) {
+            confettiAnimId = requestAnimationFrame(animateConfetti);
+        }
+    }
+    animateConfetti();
+}
+
+function stopConfetti() {
+    if (confettiAnimId) {
+        cancelAnimationFrame(confettiAnimId);
+        confettiAnimId = null;
+    }
+    const canvas = document.getElementById("confetti-canvas");
+    if (canvas) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+/**
+ * ============================================================================
+ * 7. CUSTOMIZATION MODAL, LIVE EDITOR, SHARE LINK & STANDALONE EXPORT
+ * ============================================================================
+ */
+let draftQuestions = [];
+
+function openCustomizeModal() {
+    document.getElementById("cfg-title-1").value = appConfig.title1;
+    document.getElementById("cfg-title-2").value = appConfig.title2;
+    document.getElementById("cfg-title-3").value = appConfig.title3;
+    document.getElementById("cfg-subtitle").value = appConfig.subtitle;
+    document.getElementById("cfg-reveal-headline").value = appConfig.revealHeadline;
+    document.getElementById("cfg-reveal-emoji").value = appConfig.revealEmoji;
+    document.getElementById("cfg-reveal-theme").value = appConfig.revealTheme;
+    document.getElementById("cfg-reveal-sub").value = appConfig.revealSubmessage;
+    document.getElementById("cfg-question-limit").value = String(appConfig.questionLimit);
+    document.getElementById("cfg-music-enabled").checked = appConfig.musicEnabled;
+
+    draftQuestions = JSON.parse(JSON.stringify(appConfig.questions));
+    renderQuestionEditorList();
+
+    document.getElementById("customize-modal").classList.remove("hidden");
+}
+
+function closeCustomizeModal() {
+    document.getElementById("customize-modal").classList.add("hidden");
+}
+
+function switchTab(tabId) {
+    ["tab-branding", "tab-questions", "tab-share"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+    });
+    ["btn-tab-branding", "btn-tab-questions", "btn-tab-share"].forEach(btnId => {
+        const b = document.getElementById(btnId);
+        b.classList.remove("text-amber-400", "border-b-2", "border-amber-400");
+        b.classList.add("text-slate-400");
+    });
+
+    document.getElementById(tabId).classList.remove("hidden");
+    const activeBtn = document.getElementById("btn-" + tabId);
+    activeBtn.classList.add("text-amber-400", "border-b-2", "border-amber-400");
+    activeBtn.classList.remove("text-slate-400");
+}
+
+function applyRevealPreset(preset) {
+    if (preset === "girl") {
+        document.getElementById("cfg-reveal-theme").value = "girl";
+        document.getElementById("cfg-reveal-headline").value = "IT'S A GIRL!";
+        document.getElementById("cfg-reveal-emoji").value = "💖";
+        document.getElementById("cfg-reveal-sub").value = "Arriving May 2027! We can't wait to meet our little princess!";
+    } else if (preset === "boy") {
+        document.getElementById("cfg-reveal-theme").value = "boy";
+        document.getElementById("cfg-reveal-headline").value = "IT'S A BOY!";
+        document.getElementById("cfg-reveal-emoji").value = "💙";
+        document.getElementById("cfg-reveal-sub").value = "Arriving May 2027! Get ready for our newest leading man!";
+    } else {
+        document.getElementById("cfg-reveal-theme").value = "gold";
+        document.getElementById("cfg-reveal-headline").value = "TWINS ON THE WAY!";
+        document.getElementById("cfg-reveal-emoji").value = "💛";
+        document.getElementById("cfg-reveal-sub").value = "Double the love, double the fun! Coming Soon!";
+    }
+}
+
+function renderQuestionEditorList() {
+    const limit = parseInt(document.getElementById("cfg-question-limit").value, 10) || 20;
+    document.getElementById("tab-q-count").textContent = Math.min(limit, draftQuestions.length);
+
+    const container = document.getElementById("questions-editor-list");
+    container.innerHTML = "";
+
+    draftQuestions.forEach((item, qIdx) => {
+        const isActiveInShow = qIdx < limit;
+        const card = document.createElement("div");
+        card.className = `p-3.5 rounded-xl border ${isActiveInShow ? "bg-slate-950/80 border-slate-700" : "bg-slate-950/30 border-slate-800/60 opacity-60"} space-y-2`;
+
+        let optionsHtml = "";
+        item.options.forEach((opt, oIdx) => {
+            optionsHtml += `
+                <div class="flex items-center gap-2">
+                    <input type="radio" name="correct-q-${qIdx}" ${item.answer === oIdx ? "checked" : ""}
+                        onchange="updateDraftAnswer(${qIdx}, ${oIdx})" title="Mark as correct answer" class="accent-emerald-500 w-4 h-4 cursor-pointer">
+                    <input type="text" value="${escapeHtml(opt)}"
+                        onchange="updateDraftOption(${qIdx}, ${oIdx}, this.value)"
+                        class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:border-amber-400 outline-none">
+                </div>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold ${isActiveInShow ? "text-amber-300" : "text-slate-500"}">
+                    Question #${qIdx + 1} ${isActiveInShow ? "" : "(Beyond question limit)"}
+                </span>
+                ${draftQuestions.length > 1 ? `<button type="button" onclick="removeDraftQuestion(${qIdx})" class="text-xs text-rose-400 hover:underline">Delete</button>` : ""}
+            </div>
+            <input type="text" value="${escapeHtml(item.q)}" onchange="updateDraftQuestionText(${qIdx}, this.value)"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-amber-400 outline-none">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                ${optionsHtml}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function updateDraftQuestionText(qIdx, val) {
+    draftQuestions[qIdx].q = val;
+}
+function updateDraftOption(qIdx, oIdx, val) {
+    draftQuestions[qIdx].options[oIdx] = val;
+}
+function updateDraftAnswer(qIdx, oIdx) {
+    draftQuestions[qIdx].answer = oIdx;
+}
+function removeDraftQuestion(qIdx) {
+    draftQuestions.splice(qIdx, 1);
+    renderQuestionEditorList();
+}
+function addNewQuestion() {
+    draftQuestions.unshift({
+        q: "Which movie won Best Picture at the Oscars in 2000?",
+        options: ["Gladiator", "American Beauty", "Crouching Tiger, Hidden Dragon", "Traffic"],
+        answer: 0
+    });
+    renderQuestionEditorList();
+}
+function resetDefaultQuestions() {
+    draftQuestions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+    renderQuestionEditorList();
+}
+
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        appConfig.revealPhotoDataUrl = e.target.result;
+        showToast("Photo attached!");
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearUploadedPhoto() {
+    appConfig.revealPhotoDataUrl = "";
+    document.getElementById("cfg-photo-input").value = "";
+    showToast("Photo removed");
+}
+
+function handleCustomAudioUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    customAudioElement = new Audio(url);
+    document.getElementById("custom-audio-status").classList.remove("hidden");
+    showToast("Custom soundtrack ready!");
+}
+
+function collectFormIntoConfig() {
+    appConfig.title1 = document.getElementById("cfg-title-1").value || "2000s";
+    appConfig.title2 = document.getElementById("cfg-title-2").value || "MOVIE";
+    appConfig.title3 = document.getElementById("cfg-title-3").value || "TRIVIA";
+    appConfig.subtitle = document.getElementById("cfg-subtitle").value || "";
+    appConfig.revealHeadline = document.getElementById("cfg-reveal-headline").value || "IT'S A GIRL!";
+    appConfig.revealEmoji = document.getElementById("cfg-reveal-emoji").value || "💖";
+    appConfig.revealTheme = document.getElementById("cfg-reveal-theme").value || "girl";
+    appConfig.revealSubmessage = document.getElementById("cfg-reveal-sub").value || "";
+    appConfig.questionLimit = parseInt(document.getElementById("cfg-question-limit").value, 10) || 20;
+    appConfig.musicEnabled = document.getElementById("cfg-music-enabled").checked;
+    if (draftQuestions.length > 0) {
+        appConfig.questions = JSON.parse(JSON.stringify(draftQuestions));
+    }
+}
+
+function saveAndApplyCustomization() {
+    collectFormIntoConfig();
+    applyTitleBranding();
+    updateAudioButtonUI();
+    closeCustomizeModal();
+    resetToSplash();
+}
+
+function copyShareableLink() {
+    collectFormIntoConfig();
+    // Exclude large binary photo data from URL hash to keep link compact
+    const shareablePayload = { ...appConfig, revealPhotoDataUrl: "" };
+    const jsonStr = JSON.stringify(shareablePayload);
+    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+    const baseUrl = window.location.href.split("#")[0];
+    const fullUrl = `${baseUrl}#config=${encoded}`;
+
+    const output = document.getElementById("share-link-output");
+    output.value = fullUrl;
+    output.select();
+    document.execCommand("copy");
+    showToast("Shareable link copied to clipboard!");
+}
+
+function downloadStandaloneHTML() {
+    collectFormIntoConfig();
+    const configScript = `<script>window.__EMBEDDED_TRIVIA_CONFIG__ = ${JSON.stringify(appConfig)};<\/script>`;
+    let htmlSource = document.documentElement.outerHTML;
+    htmlSource = htmlSource.replace("</head>", `${configScript}\n</head>`);
+
+    const blob = new Blob(["<!DOCTYPE html>\n" + htmlSource], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "hollywood-trivia-reveal.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Downloaded standalone HTML!");
+}
+
+function showToast(msg) {
+    const el = document.getElementById("toast-status");
+    el.textContent = msg;
+    el.style.opacity = "1";
+    setTimeout(() => {
+        el.style.opacity = "0";
+    }, 2600);
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+/**
+ * ============================================================================
+ * 8. BOOTSTRAP APPLICATION ON LOAD
+ * ============================================================================
+ */
+window.onload = function () {
+    initConfigFromStorageOrHash();
+    populateStars();
+    applyTitleBranding();
+    updateAudioButtonUI();
+};
+</script>
+</body>
+</html>
