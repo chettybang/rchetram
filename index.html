@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="/manifest.json">
 <title>Ryan Chetram, MD — Portal Hub</title>
 <style>
   :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f8fafc;--muted:#94a3b8;--accent:#38bdf8}
@@ -46,6 +47,14 @@
         <span class="tag">View CV →</span>
       </div>
     </a>
+    <a href="/reveal/" class="portal-card">
+      <span class="icon">🎬</span>
+      <div>
+        <div class="title">Movie Trivia &amp; Surprise Reveal</div>
+        <div class="desc">Interactive Hollywood marquee 2000s movie trivia game with a special finale.</div>
+        <span class="tag">Play Now →</span>
+      </div>
+    </a>
     <a href="/analog/" class="portal-card">
       <span class="icon">✒️</span>
       <div>
@@ -65,5 +74,10 @@
   </div>
   <footer>rchetram.com</footer>
 </div>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+</script>
 </body>
 </html>
