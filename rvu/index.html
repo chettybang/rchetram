@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Outpatient wRVU Calculator — ChetMed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #26354d;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  .card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .subcard {
+    background-color: rgba(15, 23, 42, 0.55);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .btn-pill {
+    border-radius: 10px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+
+  .btn-pill:active {
+    transform: scale(0.97);
+  }
+
+  /* Custom Number Input Styling */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.7;
+  }
+
+  /* Smooth Tab Transitions */
+  .tab-panel {
+    display: none;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .tab-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+  }
+</style>
+</head>
+<body class="pb-16">
+
+  <!-- Toast Notification Banner (No alert() or confirm()) -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-800 border border-sky-400/60 text-slate-50 text-sm font-semibold shadow-2xl opacity-0 pointer-events-none transition-opacity duration-200 flex items-center gap-2">
+    <span id="toast-icon">✅</span>
+    <span id="toast-msg">Copied to clipboard</span>
+  </div>
+
+  <!-- Inline Reset Confirmation Modal -->
+  <div id="reset-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card p-5 max-w-sm w-full shadow-2xl border-slate-600">
+      <h3 class="text-lg font-bold text-white mb-1.5">Reset Session Tally?</h3>
+      <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+        This will clear all logged visits and reset your Quick Tally counters to zero. Your custom CPT table and conversion factor will be kept.
+      </p>
+      <div class="flex gap-2.5 justify-end">
+        <button onclick="closeResetModal()" class="btn-pill px-4 py-2 text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600">
+          Cancel
+        </button>
+        <button onclick="confirmResetSession()" class="btn-pill px-4 py-2 text-sm font-bold bg-rose-600 hover:bg-rose-500 text-white">
+          Reset Session
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-3xl mx-auto px-3 sm:px-5 pt-4 sm:pt-6">
+
+    <!-- 1. HEADER -->
+    <header class="card p-4 sm:p-5 mb-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <a href="/chetmed/" class="text-xs font-bold uppercase tracking-wider text-sky-400 hover:underline">← ChetMed</a>
+            <span class="text-slate-600">•</span>
+            <span class="text-xs font-semibold text-slate-400">CMS MPFS Reference</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-50 tracking-tight mt-0.5">
+            Outpatient wRVU Calculator
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
+            E/M Office Visits, Preventive Exams, Add-Ons &amp; Session Tally
+          </p>
+        </div>
+
+        <!-- Conversion Factor + Utility Actions -->
+        <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div class="flex items-center bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-1.5">
+            <label for="cf-input" class="text-xs font-semibold text-slate-400 mr-1.5 whitespace-nowrap">$/wRVU</label>
+            <span class="text-emerald-400 font-bold text-sm mr-0.5">$</span>
+            <input id="cf-input" type="number" step="0.01" min="0" value="45.00"
+              onchange="updateConversionFactor(this.value)"
+              class="w-16 bg-transparent text-slate-50 font-bold text-sm focus:outline-none">
+          </div>
+
+          <button onclick="copySummary()" class="btn-pill px-3 py-2 text-xs font-bold bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-400/40 flex items-center gap-1.5">
+            <span>📋</span>
+            <span>Copy Summary</span>
+          </button>
+
+          <button onclick="openResetModal()" class="btn-pill px-3 py-2 text-xs font-bold bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-400/40">
+            Reset All
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. LIVE STICKY SUMMARY BAR -->
+    <div class="sticky top-2 z-30 card p-3 sm:p-3.5 mb-4 shadow-xl backdrop-blur-md bg-slate-800/95 border-slate-600/80">
+      <div class="grid grid-cols-4 gap-2 text-center">
+        <div class="subcard py-2 px-1.5">
+          <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Visits</div>
+          <div id="stat-visits" class="text-lg sm:text-xl font-extrabold text-slate-50 mt-0.5">0</div>
+        </div>
+        <div class="subcard py-2 px-1.5">
+          <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Total wRVUs</div>
+          <div id="stat-wrvu" class="text-lg sm:text-xl font-extrabold text-sky-400 mt-0.5">0.00</div>
+        </div>
+        <div class="subcard py-2 px-1.5">
+          <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Est. Comp</div>
+          <div id="stat-comp" class="text-lg sm:text-xl font-extrabold text-emerald-400 mt-0.5">$0</div>
+        </div>
+        <div class="subcard py-2 px-1.5">
+          <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Avg / Visit</div>
+          <div id="stat-avg" class="text-lg sm:text-xl font-extrabold text-amber-400 mt-0.5">0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. NAVIGATION TABS -->
+    <nav class="grid grid-cols-3 gap-1.5 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 mb-4">
+      <button id="tab-btn-builder" onclick="switchTab('builder')"
+        class="btn-pill py-2.5 px-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 shadow">
+        1. Visit Builder
+      </button>
+      <button id="tab-btn-tally" onclick="switchTab('tally')"
+        class="btn-pill py-2.5 px-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200">
+        2. Quick Tally
+      </button>
+      <button id="tab-btn-schedule" onclick="switchTab('schedule')"
+        class="btn-pill py-2.5 px-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200">
+        3. Table &amp; Annual
+      </button>
+    </nav>
+
+    <!-- =========================================================================
+         TAB 1: SINGLE VISIT & MDM / TIME CODE HELPER
+    ========================================================================== -->
+    <section id="panel-builder" class="tab-panel active space-y-4">
+      <div class="card p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base sm:text-lg font-bold text-slate-50">E/M Code Selector (MDM or Time)</h2>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-400 border border-sky-400/30">
+            2021+ AMA Guidelines
+          </span>
+        </div>
+
+        <!-- Step A: Patient Type & Scoring Basis -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Patient Status</label>
+            <div class="grid grid-cols-2 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-700">
+              <button id="pt-est" onclick="setPatientType('est')" class="btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950">
+                Established
+              </button>
+              <button id="pt-new" onclick="setPatientType('new')" class="btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white">
+                New Patient
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Leveling Method</label>
+            <div class="grid grid-cols-2 gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-700">
+              <button id="method-mdm" onclick="setLevelMethod('mdm')" class="btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950">
+                MDM Complexity
+              </button>
+              <button id="method-time" onclick="setLevelMethod('time')" class="btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white">
+                Total Time (Min)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step B1: MDM Complexity Grid -->
+        <div id="mdm-selector-box">
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
+            Medical Decision Making (MDM) Complexity
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button onclick="setMdmLevel('straightforward')" id="mdm-straightforward"
+              class="mdm-btn btn-pill p-3 text-left border border-slate-700 bg-slate-900/70 hover:border-sky-400">
+              <div class="text-xs font-bold text-slate-300">Straightforward</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">1 self-limited problem</div>
+            </button>
+            <button onclick="setMdmLevel('low')" id="mdm-low"
+              class="mdm-btn btn-pill p-3 text-left border border-slate-700 bg-slate-900/70 hover:border-sky-400">
+              <div class="text-xs font-bold text-slate-300">Low</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">1 stable chronic / acute</div>
+            </button>
+            <button onclick="setMdmLevel('moderate')" id="mdm-moderate"
+              class="mdm-btn btn-pill p-3 text-left border-2 border-sky-400 bg-sky-500/15">
+              <div class="text-xs font-bold text-sky-300">Moderate</div>
+              <div class="text-[11px] text-slate-300 mt-0.5">≥2 chronic / Rx mgmt</div>
+            </button>
+            <button onclick="setMdmLevel('high')" id="mdm-high"
+              class="mdm-btn btn-pill p-3 text-left border border-slate-700 bg-slate-900/70 hover:border-sky-400">
+              <div class="text-xs font-bold text-slate-300">High</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Severe exacerbation / admit</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step B2: Total Encounter Time Input -->
+        <div id="time-selector-box" class="hidden space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label for="encounter-minutes" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Total Date-of-Encounter Time (Minutes)
+            </label>
+            <span id="time-threshold-hint" class="text-xs text-sky-400 font-semibold">Est: 30–39 min = 99214</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <input id="encounter-minutes" type="number" min="1" max="240" value="32"
+              oninput="updateTimeMinutes(this.value)"
+              class="w-28 bg-slate-900 border border-slate-600 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-lg font-extrabold text-white focus:outline-none">
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="setPresetMinutes(15)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">15m</button>
+              <button onclick="setPresetMinutes(25)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">25m</button>
+              <button onclick="setPresetMinutes(35)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">35m</button>
+              <button onclick="setPresetMinutes(45)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">45m</button>
+              <button onclick="setPresetMinutes(60)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">60m</button>
+              <button onclick="setPresetMinutes(75)" class="btn-pill px-2.5 py-1.5 text-xs font-bold bg-slate-800 border border-slate-700 text-slate-300">75m</button>
+            </div>
+          </div>
+          <p id="prolonged-auto-note" class="text-xs text-amber-400 font-medium hidden">
+            ⚡ Exceeds Level 5 threshold — G2212 prolonged service units automatically calculated below!
+          </p>
+        </div>
+
+        <!-- Step C: Recommended Base Code Highlight Banner -->
+        <div class="subcard p-3.5 border-sky-400/50 bg-sky-950/25 flex items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Recommended Base E/M</span>
+              <button onclick="toggleNurseVisit99211()" id="btn-99211"
+                class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">
+                Use 99211 Nurse Visit
+              </button>
+            </div>
+            <div class="flex items-baseline gap-2.5 mt-1">
+              <span id="rec-cpt-code" class="text-2xl font-extrabold text-white">99214</span>
+              <span id="rec-cpt-desc" class="text-xs sm:text-sm text-slate-300 font-medium">Established Office Visit — Level 4</span>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="text-[11px] uppercase font-semibold text-slate-400">Base wRVU</div>
+            <div id="rec-cpt-wrvu" class="text-xl font-extrabold text-sky-400">1.92</div>
+          </div>
+        </div>
+
+        <!-- Step D: One-Tap Add-On & Procedure Modifiers -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+              Add-On Modifiers &amp; Office Procedures
+            </label>
+            <button onclick="clearBuilderAddons()" class="text-xs text-slate-400 hover:text-slate-200 underline">
+              Clear Add-ons
+            </button>
+          </div>
+
+          <!-- Prolonged Services G2212 Stepper -->
+          <div class="subcard p-2.5 mb-2.5 flex items-center justify-between">
+            <div>
+              <div class="text-xs sm:text-sm font-bold text-amber-300">G2212 — Prolonged Office Services (each +15 min)</div>
+              <div class="text-[11px] text-slate-400">Beyond 99205 (≥74 min) or 99215 (≥54 min) • <span id="g2212-unit-wrvu" class="text-amber-400 font-semibold">0.61</span> wRVU/unit</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="adjustG2212(-1)" class="btn-pill w-8 h-8 bg-slate-800 border border-slate-600 text-white font-bold">−</button>
+              <span id="g2212-units" class="w-6 text-center font-extrabold text-amber-400">0</span>
+              <button onclick="adjustG2212(1)" class="btn-pill w-8 h-8 bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold">+</button>
+            </div>
+          </div>
+
+          <!-- Toggleable Add-on Chips Grid -->
+          <div id="addon-toggles-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Populated dynamically from CPT schedule -->
+          </div>
+        </div>
+
+        <!-- Step E: Current Built Encounter Preview & Add Button -->
+        <div class="pt-2 border-t border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="text-xs text-slate-400 font-semibold">Current Visit Subtotal</div>
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span id="builder-total-wrvu" class="text-2xl font-extrabold text-emerald-400">1.92 wRVU</span>
+              <span id="builder-total-comp" class="text-sm font-bold text-slate-300">($86.40)</span>
+            </div>
+            <div id="builder-codes-summary" class="text-xs text-slate-400 mt-0.5 truncate max-w-md">
+              CPT: 99214
+            </div>
+          </div>
+
+          <button onclick="addBuiltVisitToSession()"
+            class="btn-pill py-3 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 shrink-0">
+            <span>+ Add Visit to Session</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 2: QUICK CLINIC SESSION / DAILY TALLY GRID
+    ========================================================================== -->
+    <section id="panel-tally" class="tab-panel space-y-4">
+      <div class="card p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-50">Quick Clinic Session Tally</h2>
+            <p class="text-xs text-slate-400">Tap + / − to rapidly tally encounters &amp; add-ons across a clinic half-day or full day.</p>
+          </div>
+          <div class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-lg self-start">
+            Tally Subtotal: <span id="tally-tab-wrvu">0.00</span> wRVU
+          </div>
+        </div>
+
+        <!-- Category Groups rendered dynamically -->
+        <div id="quick-tally-groups" class="space-y-4"></div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 3: CUSTOM CPT / EDITABLE wRVU TABLE & ANNUAL PROJECTION
+    ========================================================================== -->
+    <section id="panel-schedule" class="tab-panel space-y-4">
+      <!-- Annual Compensation Projection Card -->
+      <div class="card p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-50">Annual wRVU &amp; Compensation Projection</h2>
+            <p class="text-xs text-slate-400">Projects your current session wRVUs across your annual clinic schedule.</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-1 rounded-full">
+            Live Model
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="subcard p-2.5">
+            <label for="proj-daily-wrvu" class="block text-[11px] font-semibold text-slate-400">Daily wRVUs</label>
+            <input id="proj-daily-wrvu" type="number" step="0.1" min="0" value="22.0"
+              oninput="renderAnnualProjection()"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-extrabold text-sky-400 mt-1 focus:outline-none focus:border-sky-400">
+            <button onclick="syncSessionToProjection()" class="text-[10px] text-sky-400 hover:underline mt-1 font-semibold">
+              Use Session (<span id="sync-session-val">0.00</span>)
+            </button>
+          </div>
+
+          <div class="subcard p-2.5">
+            <label for="proj-days-week" class="block text-[11px] font-semibold text-slate-400">Clinic Days / Wk</label>
+            <input id="proj-days-week" type="number" step="0.5" min="0.5" max="7" value="4.5"
+              oninput="renderAnnualProjection()"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-extrabold text-white mt-1 focus:outline-none focus:border-sky-400">
+          </div>
+
+          <div class="subcard p-2.5">
+            <label for="proj-weeks-year" class="block text-[11px] font-semibold text-slate-400">Weeks / Year</label>
+            <input id="proj-weeks-year" type="number" step="1" min="1" max="52" value="46"
+              oninput="renderAnnualProjection()"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-extrabold text-white mt-1 focus:outline-none focus:border-sky-400">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="subcard p-3.5 border-sky-400/30 bg-sky-950/20">
+            <div class="text-xs font-semibold text-slate-400">Projected Annual wRVUs</div>
+            <div id="proj-annual-wrvu" class="text-2xl font-extrabold text-sky-400 mt-0.5">4,554.0</div>
+            <div id="proj-total-days" class="text-[11px] text-slate-400 mt-0.5">207 clinic days/yr</div>
+          </div>
+          <div class="subcard p-3.5 border-emerald-400/30 bg-emerald-950/20">
+            <div class="text-xs font-semibold text-slate-400">Est. Annual Productivity</div>
+            <div id="proj-annual-comp" class="text-2xl font-extrabold text-emerald-400 mt-0.5">$204,930</div>
+            <div id="proj-cf-note" class="text-[11px] text-slate-400 mt-0.5">@ $45.00 / wRVU</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom CPT Code Adder & Editable wRVU Schedule -->
+      <div class="card p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-50">Editable CPT &amp; wRVU Schedule</h2>
+            <p class="text-xs text-slate-400">Edit any wRVU value below to match your contract schedule, or add custom CPTs.</p>
+          </div>
+          <button onclick="restoreDefaultSchedule()" class="btn-pill px-3 py-1.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600">
+            Restore CMS Defaults
+          </button>
+        </div>
+
+        <!-- Add Custom CPT Form -->
+        <div class="subcard p-3 grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+          <div class="sm:col-span-3">
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">CPT / HCPCS</label>
+            <input id="custom-cpt-code" type="text" placeholder="e.g. 99497" maxlength="10"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white uppercase focus:outline-none focus:border-sky-400">
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Description</label>
+            <input id="custom-cpt-desc" type="text" placeholder="e.g. Advance Care Planning (30m)"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">wRVU</label>
+            <input id="custom-cpt-wrvu" type="number" step="0.01" min="0" placeholder="1.50"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-amber-400 focus:outline-none focus:border-sky-400">
+          </div>
+          <div class="sm:col-span-2">
+            <button onclick="addCustomCptCode()" class="btn-pill w-full py-1.5 px-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs">
+              + Add CPT
+            </button>
+          </div>
+        </div>
+
+        <!-- Editable CPT Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-700">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-900/90 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                <th class="py-2.5 px-3">Code</th>
+                <th class="py-2.5 px-3">Category</th>
+                <th class="py-2.5 px-3">Description</th>
+                <th class="py-2.5 px-3 text-right">wRVU</th>
+                <th class="py-2.5 px-2 text-center"></th>
+              </tr>
+            </thead>
+            <tbody id="editable-cpt-tbody" class="divide-y divide-slate-800">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CURRENT ENCOUNTER LOG LIST -->
+    <section class="card p-4 sm:p-5 mt-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-50">Current Encounter Log</h2>
+          <p class="text-xs text-slate-400">Individual visits added from the Visit Builder (saved offline automatically).</p>
+        </div>
+        <span id="log-count-badge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
+          0 logged
+        </span>
+      </div>
+
+      <div id="encounter-log-list" class="space-y-2">
+        <!-- Empty state or logged encounter rows -->
+      </div>
+    </section>
+
+    <!-- 5. CLINICAL REFERENCE NOTE & FOOTER -->
+    <footer class="mt-5 px-2 text-center space-y-2">
+      <p class="text-xs text-slate-400 leading-relaxed max-w-2xl mx-auto">
+        <strong class="text-slate-300">Clinical Reference Note:</strong> Default wRVU weights reflect standard CMS Medicare Physician Fee Schedule (MPFS) work RVUs and are fully editable in Tab 3 to match your specific institutional or contractual compensation schedule.
+      </p>
+      <div class="text-[11px] text-slate-500">
+        ChetMed Clinical Suite • rchetram.com
+      </div>
+    </footer>
+
+  </div>
+
+<script>
+/**
+ * ============================================================================
+ * 1. DEFAULT CMS MPFS OUTPATIENT CPT & wRVU SCHEDULE
+ * ============================================================================
+ */
+const DEFAULT_CPT_SCHEDULE = [
+  // Established Office E/M
+  { code: '99211', category: 'Est E/M', desc: 'Established Office Visit — Level 1 (Nurse)', wrvu: 0.18, isVisit: true, inTally: false },
+  { code: '99212', category: 'Est E/M', desc: 'Established Office Visit — Level 2 (10–19m)', wrvu: 0.70, isVisit: true, inTally: true },
+  { code: '99213', category: 'Est E/M', desc: 'Established Office Visit — Level 3 (20–29m)', wrvu: 1.30, isVisit: true, inTally: true },
+  { code: '99214', category: 'Est E/M', desc: 'Established Office Visit — Level 4 (30–39m)', wrvu: 1.92, isVisit: true, inTally: true },
+  { code: '99215', category: 'Est E/M', desc: 'Established Office Visit — Level 5 (40–54m)', wrvu: 2.80, isVisit: true, inTally: true },
+
+  // New Patient Office E/M
+  { code: '99202', category: 'New E/M', desc: 'New Patient Office Visit — Level 2 (15–29m)', wrvu: 0.93, isVisit: true, inTally: true },
+  { code: '99203', category: 'New E/M', desc: 'New Patient Office Visit — Level 3 (30–44m)', wrvu: 1.60, isVisit: true, inTally: true },
+  { code: '99204', category: 'New E/M', desc: 'New Patient Office Visit — Level 4 (45–59m)', wrvu: 2.60, isVisit: true, inTally: true },
+  { code: '99205', category: 'New E/M', desc: 'New Patient Office Visit — Level 5 (60–74m)', wrvu: 3.50, isVisit: true, inTally: true },
+
+  // Preventive Medicine — New Patient
+  { code: '99381', category: 'Prev New', desc: 'Preventive Exam New — Infant (<1 yr)', wrvu: 1.50, isVisit: true, inTally: true },
+  { code: '99382', category: 'Prev New', desc: 'Preventive Exam New — Early Child (1–4y)', wrvu: 1.60, isVisit: true, inTally: true },
+  { code: '99383', category: 'Prev New', desc: 'Preventive Exam New — Late Child (5–11y)', wrvu: 1.70, isVisit: true, inTally: true },
+  { code: '99384', category: 'Prev New', desc: 'Preventive Exam New — Adolescent (12–17y)', wrvu: 2.00, isVisit: true, inTally: true },
+  { code: '99385', category: 'Prev New', desc: 'Preventive Exam New — Adult (18–39y)', wrvu: 1.92, isVisit: true, inTally: true },
+  { code: '99386', category: 'Prev New', desc: 'Preventive Exam New — Adult (40–64y)', wrvu: 2.30, isVisit: true, inTally: true },
+  { code: '99387', category: 'Prev New', desc: 'Preventive Exam New — Adult (65+ yrs)', wrvu: 2.50, isVisit: true, inTally: true },
+
+  // Preventive Medicine — Established Patient
+  { code: '99391', category: 'Prev Est', desc: 'Preventive Exam Est — Infant (<1 yr)', wrvu: 1.37, isVisit: true, inTally: true },
+  { code: '99392', category: 'Prev Est', desc: 'Preventive Exam Est — Early Child (1–4y)', wrvu: 1.50, isVisit: true, inTally: true },
+  { code: '99393', category: 'Prev Est', desc: 'Preventive Exam Est — Late Child (5–11y)', wrvu: 1.50, isVisit: true, inTally: true },
+  { code: '99394', category: 'Prev Est', desc: 'Preventive Exam Est — Adolescent (12–17y)', wrvu: 1.70, isVisit: true, inTally: true },
+  { code: '99395', category: 'Prev Est', desc: 'Preventive Exam Est — Adult (18–39y)', wrvu: 1.75, isVisit: true, inTally: true },
+  { code: '99396', category: 'Prev Est', desc: 'Preventive Exam Est — Adult (40–64y)', wrvu: 1.90, isVisit: true, inTally: true },
+  { code: '99397', category: 'Prev Est', desc: 'Preventive Exam Est — Adult (65+ yrs)', wrvu: 2.00, isVisit: true, inTally: true },
+
+  // Medicare AWV & Transitional Care Management (TCM)
+  { code: 'G0438', category: 'AWV / TCM', desc: 'Medicare Annual Wellness Visit — Initial', wrvu: 2.60, isVisit: true, inTally: true },
+  { code: 'G0439', category: 'AWV / TCM', desc: 'Medicare Annual Wellness Visit — Subsequent', wrvu: 1.92, isVisit: true, inTally: true },
+  { code: '99495', category: 'AWV / TCM', desc: 'Transitional Care Mgmt — Moderate (14-day)', wrvu: 2.78, isVisit: true, inTally: true, inBuilderAddon: true },
+  { code: '99496', category: 'AWV / TCM', desc: 'Transitional Care Mgmt — High (7-day)', wrvu: 3.79, isVisit: true, inTally: true, inBuilderAddon: true },
+
+  // Add-On Modifiers & Office Procedures
+  { code: 'G2211', category: 'Add-On', desc: 'Visit Complexity Inherent to Longitudinal Care', wrvu: 0.33, isVisit: false, inTally: true, inBuilderAddon: true },
+  { code: 'G2212', category: 'Add-On', desc: 'Prolonged Office E/M Services (each +15 min)', wrvu: 0.61, isVisit: false, inTally: false, inBuilderAddon: false },
+  { code: '99406', category: 'Add-On', desc: 'Smoking/Tobacco Cessation (3–10 min)', wrvu: 0.24, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '99407', category: 'Add-On', desc: 'Smoking/Tobacco Cessation (>10 min)', wrvu: 0.50, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: 'G0442', category: 'Add-On', desc: 'Annual Alcohol Misuse Screening (15 min)', wrvu: 0.18, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: 'G0444', category: 'Add-On', desc: 'Annual Depression Screening (15 min)', wrvu: 0.18, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '90460', category: 'Add-On', desc: 'Immunization Admin w/ Counseling (1st comp)', wrvu: 0.17, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '90471', category: 'Add-On', desc: 'Immunization Admin (1st vaccine)', wrvu: 0.17, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '93000', category: 'Procedure', desc: 'Electrocardiogram (12-Lead EKG w/ Interp)', wrvu: 0.17, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '20610', category: 'Procedure', desc: 'Major Joint / Bursa Aspiration or Injection', wrvu: 0.79, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '17110', category: 'Procedure', desc: 'Destruction Benign Lesions (up to 14)', wrvu: 0.70, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: '69210', category: 'Procedure', desc: 'Impacted Cerumen Removal (Unilateral)', wrvu: 0.61, isVisit: false, inTally: false, inBuilderAddon: true },
+  { code: 'Q0091', category: 'Procedure', desc: 'Screening Pap Smear / Pelvic Collection', wrvu: 0.37, isVisit: false, inTally: false, inBuilderAddon: true }
+];
+
+const STORAGE_KEY = 'chetmed_outpatient_wrvu_v1';
+
+/**
+ * ============================================================================
+ * 2. APPLICATION STATE
+ * ============================================================================
+ */
+let state = {
+  cf: 45.00,
+  schedule: JSON.parse(JSON.stringify(DEFAULT_CPT_SCHEDULE)),
+  tallyCounts: {},     // { '99214': 5, 'G2211': 3, ... }
+  encounterLog: [],    // [{ id, timestamp, codes: ['99214','G2211'], totalWrvu: 2.25, label: '...' }]
+  projection: {
+    dailyWrvu: 22.0,
+    daysPerWeek: 4.5,
+    weeksPerYear: 46
+  }
+};
+
+// Ephemeral Builder State (Tab 1)
+let builderState = {
+  patientType: 'est',      // 'est' | 'new'
+  levelMethod: 'mdm',      // 'mdm' | 'time'
+  mdmLevel: 'moderate',    // 'straightforward' | 'low' | 'moderate' | 'high'
+  minutes: 32,
+  useNurse99211: false,
+  g2212Units: 0,
+  selectedAddons: new Set()
+};
+
+/**
+ * ============================================================================
+ * 3. PERSISTENCE (LOCALSTORAGE)
+ * ============================================================================
+ */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.cf === 'number') state.cf = parsed.cf;
+      if (Array.isArray(parsed.schedule) && parsed.schedule.length > 0) state.schedule = parsed.schedule;
+      if (parsed.tallyCounts && typeof parsed.tallyCounts === 'object') state.tallyCounts = parsed.tallyCounts;
+      if (Array.isArray(parsed.encounterLog)) state.encounterLog = parsed.encounterLog;
+      if (parsed.projection) state.projection = { ...state.projection, ...parsed.projection };
+    }
+  } catch (err) {
+    console.warn('Could not load saved wRVU state:', err);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    console.warn('Could not save wRVU state:', err);
+  }
+}
+
+function getCptItem(code) {
+  return state.schedule.find(item => item.code === code);
+}
+
+function getWrvu(code) {
+  const item = getCptItem(code);
+  return item ? Number(item.wrvu) || 0 : 0;
+}
+
+/**
+ * ============================================================================
+ * 4. VISIT BUILDER LOGIC (TAB 1)
+ * ============================================================================
+ */
+function setPatientType(type) {
+  builderState.patientType = type;
+  builderState.useNurse99211 = false;
+
+  document.getElementById('pt-est').className = type === 'est'
+    ? 'btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950'
+    : 'btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white';
+  document.getElementById('pt-new').className = type === 'new'
+    ? 'btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950'
+    : 'btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white';
+
+  const btn99211 = document.getElementById('btn-99211');
+  btn99211.style.display = type === 'est' ? 'inline-block' : 'none';
+
+  if (builderState.levelMethod === 'time') {
+    recalcTimeAndProlonged();
+  }
+  renderBuilderPreview();
+}
+
+function setLevelMethod(method) {
+  builderState.levelMethod = method;
+  builderState.useNurse99211 = false;
+
+  document.getElementById('method-mdm').className = method === 'mdm'
+    ? 'btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950'
+    : 'btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white';
+  document.getElementById('method-time').className = method === 'time'
+    ? 'btn-pill py-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950'
+    : 'btn-pill py-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-white';
+
+  document.getElementById('mdm-selector-box').classList.toggle('hidden', method !== 'mdm');
+  document.getElementById('time-selector-box').classList.toggle('hidden', method !== 'time');
+
+  if (method === 'time') {
+    recalcTimeAndProlonged();
+  }
+  renderBuilderPreview();
+}
+
+function setMdmLevel(level) {
+  builderState.mdmLevel = level;
+  builderState.useNurse99211 = false;
+
+  ['straightforward', 'low', 'moderate', 'high'].forEach(lvl => {
+    const el = document.getElementById(`mdm-${lvl}`);
+    if (lvl === level) {
+      el.className = 'mdm-btn btn-pill p-3 text-left border-2 border-sky-400 bg-sky-500/15';
+      el.querySelector('div:first-child').className = 'text-xs font-bold text-sky-300';
+    } else {
+      el.className = 'mdm-btn btn-pill p-3 text-left border border-slate-700 bg-slate-900/70 hover:border-sky-400';
+      el.querySelector('div:first-child').className = 'text-xs font-bold text-slate-300';
+    }
+  });
+
+  renderBuilderPreview();
+}
+
+function setPresetMinutes(mins) {
+  document.getElementById('encounter-minutes').value = mins;
+  updateTimeMinutes(mins);
+}
+
+function updateTimeMinutes(val) {
+  const mins = Math.max(1, parseInt(val, 10) || 1);
+  builderState.minutes = mins;
+  builderState.useNurse99211 = false;
+  recalcTimeAndProlonged();
+  renderBuilderPreview();
+}
+
+function recalcTimeAndProlonged() {
+  const mins = builderState.minutes;
+  const isEst = builderState.patientType === 'est';
+  const prolongedNote = document.getElementById('prolonged-auto-note');
+
+  // CMS 2024/2025/2026 G2212 Prolonged Service Thresholds:
+  // Established 99215 = 40-54 min; 1st G2212 unit starts at 55 min (full 15 min beyond 40? CMS rule: 55-69 min = 1 unit, +15m each)
+  // New 99205 = 60-74 min; 1st G2212 unit starts at 75 min (75-89 min = 1 unit, +15m each)
+  if (isEst) {
+    if (mins >= 55) {
+      builderState.g2212Units = Math.floor((mins - 40) / 15);
+      prolongedNote.classList.remove('hidden');
+    } else {
+      builderState.g2212Units = 0;
+      prolongedNote.classList.add('hidden');
+    }
+  } else {
+    if (mins >= 75) {
+      builderState.g2212Units = Math.floor((mins - 60) / 15);
+      prolongedNote.classList.remove('hidden');
+    } else {
+      builderState.g2212Units = 0;
+      prolongedNote.classList.add('hidden');
+    }
+  }
+}
+
+function toggleNurseVisit99211() {
+  builderState.useNurse99211 = !builderState.useNurse99211;
+  renderBuilderPreview();
+}
+
+function adjustG2212(delta) {
+  builderState.g2212Units = Math.max(0, builderState.g2212Units + delta);
+  renderBuilderPreview();
+}
+
+function toggleBuilderAddon(code) {
+  if (builderState.selectedAddons.has(code)) {
+    builderState.selectedAddons.delete(code);
+  } else {
+    builderState.selectedAddons.add(code);
+  }
+  renderAddonToggles();
+  renderBuilderPreview();
+}
+
+function clearBuilderAddons() {
+  builderState.selectedAddons.clear();
+  builderState.g2212Units = 0;
+  renderAddonToggles();
+  renderBuilderPreview();
+}
+
+function getRecommendedBaseCode() {
+  const isEst = builderState.patientType === 'est';
+  if (isEst && builderState.useNurse99211) return '99211';
+
+  if (builderState.levelMethod === 'mdm') {
+    const mapEst = { straightforward: '99212', low: '99213', moderate: '99214', high: '99215' };
+    const mapNew = { straightforward: '99202', low: '99203', moderate: '99204', high: '99205' };
+    return isEst ? mapEst[builderState.mdmLevel] : mapNew[builderState.mdmLevel];
+  } else {
+    const m = builderState.minutes;
+    if (isEst) {
+      if (m < 10) return '99211';
+      if (m <= 19) return '99212';
+      if (m <= 29) return '99213';
+      if (m <= 39) return '99214';
+      return '99215';
+    } else {
+      if (m <= 29) return '99202';
+      if (m <= 44) return '99203';
+      if (m <= 59) return '99204';
+      return '99205';
+    }
+  }
+}
+
+function renderAddonToggles() {
+  const grid = document.getElementById('addon-toggles-grid');
+  const addons = state.schedule.filter(item => item.inBuilderAddon || (!item.isVisit && item.code !== 'G2212'));
+
+  grid.innerHTML = addons.map(item => {
+    const active = builderState.selectedAddons.has(item.code);
+    return `
+      <button onclick="toggleBuilderAddon('${item.code}')"
+        class="btn-pill p-2.5 text-left flex items-center justify-between gap-2 border ${
+          active
+            ? 'border-amber-400 bg-amber-500/15 text-amber-100'
+            : 'border-slate-700/90 bg-slate-900/65 text-slate-300 hover:border-slate-500'
+        }">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-extrabold ${active ? 'text-amber-400' : 'text-sky-400'}">${item.code}</span>
+            <span class="text-[11px] font-semibold truncate">${item.desc}</span>
+          </div>
+        </div>
+        <span class="text-xs font-extrabold shrink-0 px-2 py-0.5 rounded ${
+          active ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-amber-400'
+        }">+${Number(item.wrvu).toFixed(2)}</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function renderBuilderPreview() {
+  const baseCode = getRecommendedBaseCode();
+  const baseItem = getCptItem(baseCode) || { code: baseCode, desc: 'Office Visit', wrvu: 0 };
+  const baseWrvu = Number(baseItem.wrvu) || 0;
+
+  document.getElementById('rec-cpt-code').textContent = baseCode;
+  document.getElementById('rec-cpt-desc').textContent = baseItem.desc;
+  document.getElementById('rec-cpt-wrvu').textContent = baseWrvu.toFixed(2);
+
+  const btn99211 = document.getElementById('btn-99211');
+  if (builderState.useNurse99211) {
+    btn99211.className = 'text-[11px] font-bold px-2 py-0.5 rounded bg-sky-500 text-slate-950';
+  } else {
+    btn99211.className = 'text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 hover:text-white';
+  }
+
+  // Time threshold hint
+  const isEst = builderState.patientType === 'est';
+  const hintMapEst = { '99211': '<10 min', '99212': '10–19 min', '99213': '20–29 min', '99214': '30–39 min', '99215': '40–54 min' };
+  const hintMapNew = { '99202': '15–29 min', '99203': '30–44 min', '99204': '45–59 min', '99205': '60–74 min' };
+  document.getElementById('time-threshold-hint').textContent =
+    `${isEst ? 'Est' : 'New'}: ${(isEst ? hintMapEst[baseCode] : hintMapNew[baseCode]) || ''} = ${baseCode}`;
+
+  // G2212 units
+  const g2212Rate = getWrvu('G2212');
+  document.getElementById('g2212-unit-wrvu').textContent = g2212Rate.toFixed(2);
+  document.getElementById('g2212-units').textContent = builderState.g2212Units;
+
+  // Sum total wRVU
+  let totalWrvu = baseWrvu;
+  const codeList = [baseCode];
+
+  if (builderState.g2212Units > 0) {
+    totalWrvu += builderState.g2212Units * g2212Rate;
+    codeList.push(`G2212×${builderState.g2212Units}`);
+  }
+
+  builderState.selectedAddons.forEach(code => {
+    totalWrvu += getWrvu(code);
+    codeList.push(code);
+  });
+
+  const estDollars = totalWrvu * state.cf;
+  document.getElementById('builder-total-wrvu').textContent = `${totalWrvu.toFixed(2)} wRVU`;
+  document.getElementById('builder-total-comp').textContent = `($${estDollars.toFixed(2)})`;
+  document.getElementById('builder-codes-summary').textContent = `CPT: ${codeList.join(' + ')}`;
+}
+
+function addBuiltVisitToSession() {
+  const baseCode = getRecommendedBaseCode();
+  const baseItem = getCptItem(baseCode);
+  let totalWrvu = getWrvu(baseCode);
+  const codes = [baseCode];
+
+  if (builderState.g2212Units > 0) {
+    totalWrvu += builderState.g2212Units * getWrvu('G2212');
+    codes.push(`G2212×${builderState.g2212Units}`);
+  }
+
+  builderState.selectedAddons.forEach(code => {
+    totalWrvu += getWrvu(code);
+    codes.push(code);
+  });
+
+  const entry = {
+    id: Date.now() + Math.random(),
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    codes,
+    desc: baseItem ? baseItem.desc : baseCode,
+    wrvu: Number(totalWrvu.toFixed(2))
+  };
+
+  state.encounterLog.unshift(entry);
+  saveState();
+  refreshAllUI();
+  showToast(`Added ${codes.join(' + ')} (${entry.wrvu.toFixed(2)} wRVU)`);
+}
+
+function deleteEncounter(id) {
+  state.encounterLog = state.encounterLog.filter(e => e.id !== id);
+  saveState();
+  refreshAllUI();
+}
+
+/**
+ * ============================================================================
+ * 5. QUICK CLINIC SESSION TALLY (TAB 2)
+ * ============================================================================
+ */
+function adjustTally(code, delta) {
+  const current = state.tallyCounts[code] || 0;
+  const next = Math.max(0, current + delta);
+  if (next === 0) {
+    delete state.tallyCounts[code];
+  } else {
+    state.tallyCounts[code] = next;
+  }
+  saveState();
+  refreshAllUI();
+}
+
+function renderQuickTallyGrid() {
+  const container = document.getElementById('quick-tally-groups');
+  const categories = ['Est E/M', 'New E/M', 'Prev Est', 'Prev New', 'AWV / TCM', 'Add-On'];
+
+  let tallyWrvuSum = 0;
+  Object.entries(state.tallyCounts).forEach(([code, count]) => {
+    tallyWrvuSum += count * getWrvu(code);
+  });
+  document.getElementById('tally-tab-wrvu').textContent = tallyWrvuSum.toFixed(2);
+
+  container.innerHTML = categories.map(cat => {
+    const items = state.schedule.filter(i => i.category === cat && i.inTally !== false);
+    if (items.length === 0) return '';
+
+    const rowsHtml = items.map(item => {
+      const count = state.tallyCounts[item.code] || 0;
+      const subtotal = count * Number(item.wrvu);
+      return `
+        <div class="subcard p-2.5 flex items-center justify-between gap-2 ${count > 0 ? 'border-sky-400/50 bg-sky-950/20' : ''}">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-extrabold ${count > 0 ? 'text-sky-400' : 'text-slate-200'}">${item.code}</span>
+              <span class="text-xs font-bold text-amber-400">${Number(item.wrvu).toFixed(2)} wRVU</span>
+              ${count > 0 ? `<span class="text-[11px] font-bold text-emerald-400">(= ${subtotal.toFixed(2)})</span>` : ''}
+            </div>
+            <div class="text-xs text-slate-400 truncate">${item.desc}</div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="adjustTally('${item.code}', -1)"
+              class="btn-pill w-9 h-9 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-extrabold text-base">
+              −
+            </button>
+            <span class="w-7 text-center font-extrabold text-base ${count > 0 ? 'text-white' : 'text-slate-500'}">${count}</span>
+            <button onclick="adjustTally('${item.code}', 1)"
+              class="btn-pill w-9 h-9 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-300 font-extrabold text-base">
+              +
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div>
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">${cat}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          ${rowsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * ============================================================================
+ * 6. EDITABLE CPT TABLE & ANNUAL PROJECTION (TAB 3)
+ * ============================================================================
+ */
+function updateCptWrvuValue(code, newVal) {
+  const item = getCptItem(code);
+  if (!item) return;
+  const parsed = parseFloat(newVal);
+  if (!isNaN(parsed) && parsed >= 0) {
+    item.wrvu = Number(parsed.toFixed(2));
+    // Recompute logged encounter wRVUs dynamically if needed
+    saveState();
+    refreshAllUI();
+    showToast(`Updated ${code} to ${item.wrvu.toFixed(2)} wRVU`);
+  }
+}
+
+function addCustomCptCode() {
+  const codeInput = document.getElementById('custom-cpt-code');
+  const descInput = document.getElementById('custom-cpt-desc');
+  const wrvuInput = document.getElementById('custom-cpt-wrvu');
+
+  const code = codeInput.value.trim().toUpperCase();
+  const desc = descInput.value.trim();
+  const wrvu = parseFloat(wrvuInput.value);
+
+  if (!code || !desc || isNaN(wrvu) || wrvu < 0) {
+    showToast('Please enter a valid CPT code, description, and wRVU', '⚠️');
+    return;
+  }
+
+  const existing = getCptItem(code);
+  if (existing) {
+    existing.desc = desc;
+    existing.wrvu = Number(wrvu.toFixed(2));
+  } else {
+    state.schedule.unshift({
+      code,
+      category: 'Add-On',
+      desc,
+      wrvu: Number(wrvu.toFixed(2)),
+      isVisit: false,
+      inTally: true,
+      inBuilderAddon: true,
+      isCustom: true
+    });
+  }
+
+  codeInput.value = '';
+  descInput.value = '';
+  wrvuInput.value = '';
+
+  saveState();
+  refreshAllUI();
+  showToast(`Saved ${code} (${wrvu.toFixed(2)} wRVU)`);
+}
+
+function removeCustomCpt(code) {
+  state.schedule = state.schedule.filter(i => i.code !== code);
+  delete state.tallyCounts[code];
+  builderState.selectedAddons.delete(code);
+  saveState();
+  refreshAllUI();
+}
+
+function restoreDefaultSchedule() {
+  state.schedule = JSON.parse(JSON.stringify(DEFAULT_CPT_SCHEDULE));
+  saveState();
+  refreshAllUI();
+  showToast('Restored default CMS MPFS wRVUs');
+}
+
+function renderEditableCptTable() {
+  const tbody = document.getElementById('editable-cpt-tbody');
+  tbody.innerHTML = state.schedule.map(item => `
+    <tr class="hover:bg-slate-800/50">
+      <td class="py-2 px-3 font-extrabold text-sky-400 whitespace-nowrap">${item.code}</td>
+      <td class="py-2 px-3 text-slate-400 whitespace-nowrap">${item.category}</td>
+      <td class="py-2 px-3 text-slate-200">${item.desc}</td>
+      <td class="py-2 px-3 text-right">
+        <input type="number" step="0.01" min="0" value="${Number(item.wrvu).toFixed(2)}"
+          onchange="updateCptWrvuValue('${item.code}', this.value)"
+          class="w-20 text-right bg-slate-900 border border-slate-700 focus:border-sky-400 rounded-lg px-2 py-1 font-bold text-amber-400 focus:outline-none">
+      </td>
+      <td class="py-2 px-2 text-center">
+        ${item.isCustom ? `<button onclick="removeCustomCpt('${item.code}')" class="text-rose-400 hover:text-rose-300 font-bold px-1.5">✕</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderAnnualProjection() {
+  const dailyInput = document.getElementById('proj-daily-wrvu');
+  const daysInput = document.getElementById('proj-days-week');
+  const weeksInput = document.getElementById('proj-weeks-year');
+
+  const daily = Math.max(0, parseFloat(dailyInput.value) || 0);
+  const days = Math.max(0, parseFloat(daysInput.value) || 0);
+  const weeks = Math.max(0, parseFloat(weeksInput.value) || 0);
+
+  state.projection = { dailyWrvu: daily, daysPerWeek: days, weeksPerYear: weeks };
+  saveState();
+
+  const totalClinicDays = days * weeks;
+  const annualWrvu = daily * totalClinicDays;
+  const annualComp = annualWrvu * state.cf;
+
+  document.getElementById('proj-annual-wrvu').textContent = annualWrvu.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  document.getElementById('proj-total-days').textContent = `${totalClinicDays.toFixed(0)} clinic days/yr`;
+  document.getElementById('proj-annual-comp').textContent = '$' + Math.round(annualComp).toLocaleString();
+  document.getElementById('proj-cf-note').textContent = `@ $${state.cf.toFixed(2)} / wRVU`;
+}
+
+function syncSessionToProjection() {
+  const totals = computeCombinedTotals();
+  document.getElementById('proj-daily-wrvu').value = totals.totalWrvu.toFixed(2);
+  renderAnnualProjection();
+  showToast('Synced current session wRVUs to projection');
+}
+
+/**
+ * ============================================================================
+ * 7. GLOBAL SUMMARY BAR, ENCOUNTER LOG & UTILITIES
+ * ============================================================================
+ */
+function computeCombinedTotals() {
+  // 1. Visits & wRVUs from Encounter Log (Tab 1)
+  let logVisits = state.encounterLog.length;
+  let logWrvu = state.encounterLog.reduce((sum, entry) => sum + (Number(entry.wrvu) || 0), 0);
+
+  // 2. Visits & wRVUs from Quick Tally (Tab 2)
+  // Note: Add-on codes (like G2211) increase wRVUs without inflating patient encounter count!
+  let tallyVisits = 0;
+  let tallyWrvu = 0;
+
+  Object.entries(state.tallyCounts).forEach(([code, count]) => {
+    const item = getCptItem(code);
+    if (!item) return;
+    tallyWrvu += count * (Number(item.wrvu) || 0);
+    if (item.isVisit !== false) {
+      tallyVisits += count;
+    }
+  });
+
+  const totalVisits = logVisits + tallyVisits;
+  const totalWrvu = logWrvu + tallyWrvu;
+  const estComp = totalWrvu * state.cf;
+  const avgWrvu = totalVisits > 0 ? totalWrvu / totalVisits : 0;
+
+  return { totalVisits, totalWrvu, estComp, avgWrvu };
+}
+
+function renderSummaryBar() {
+  const { totalVisits, totalWrvu, estComp, avgWrvu } = computeCombinedTotals();
+
+  document.getElementById('stat-visits').textContent = totalVisits;
+  document.getElementById('stat-wrvu').textContent = totalWrvu.toFixed(2);
+  document.getElementById('stat-comp').textContent = '$' + estComp.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  document.getElementById('stat-avg').textContent = avgWrvu.toFixed(2);
+  document.getElementById('sync-session-val').textContent = totalWrvu.toFixed(2);
+}
+
+function renderEncounterLog() {
+  const container = document.getElementById('encounter-log-list');
+  const badge = document.getElementById('log-count-badge');
+  badge.textContent = `${state.encounterLog.length} logged`;
+
+  if (state.encounterLog.length === 0) {
+    container.innerHTML = `
+      <div class="subcard p-5 text-center text-xs text-slate-400">
+        No individual encounters logged yet. Use the <strong class="text-slate-300">Visit Builder</strong> above to build and log complex visits with add-on modifiers.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = state.encounterLog.map((entry, idx) => `
+    <div class="subcard p-3 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-bold text-slate-500">#${state.encounterLog.length - idx}</span>
+          ${entry.codes.map((c, i) => `
+            <span class="text-xs font-extrabold px-2 py-0.5 rounded ${
+              i === 0 ? 'bg-sky-500/20 text-sky-300 border border-sky-400/30' : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+            }">${c}</span>
+          `).join('')}
+          <span class="text-[11px] text-slate-500 ml-1">${entry.time || ''}</span>
+        </div>
+        <div class="text-xs text-slate-400 truncate mt-1">${entry.desc}</div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="text-right">
+          <div class="text-sm font-extrabold text-emerald-400">${Number(entry.wrvu).toFixed(2)}</div>
+          <div class="text-[10px] text-slate-400">$${(Number(entry.wrvu) * state.cf).toFixed(2)}</div>
+        </div>
+        <button onclick="deleteEncounter(${entry.id})" title="Delete Encounter"
+          class="btn-pill w-8 h-8 bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 font-bold text-xs">
+          ✕
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateConversionFactor(val) {
+  const parsed = parseFloat(val);
+  if (!isNaN(parsed) && parsed >= 0) {
+    state.cf = Number(parsed.toFixed(2));
+    saveState();
+    refreshAllUI();
+  }
+}
+
+function switchTab(tabName) {
+  ['builder', 'tally', 'schedule'].forEach(t => {
+    document.getElementById(`panel-${t}`).classList.toggle('active', t === tabName);
+    const btn = document.getElementById(`tab-btn-${t}`);
+    if (t === tabName) {
+      btn.className = 'btn-pill py-2.5 px-2 text-xs sm:text-sm font-bold bg-sky-500 text-slate-950 shadow';
+    } else {
+      btn.className = 'btn-pill py-2.5 px-2 text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200';
+    }
+  });
+}
+
+function copySummary() {
+  const { totalVisits, totalWrvu, estComp, avgWrvu } = computeCombinedTotals();
+  const dateStr = new Date().toLocaleDateString();
+
+  const tallyLines = Object.entries(state.tallyCounts)
+    .map(([code, count]) => `  - ${code} × ${count} (${(count * getWrvu(code)).toFixed(2)} wRVU)`)
+    .join('\n');
+
+  const logLines = state.encounterLog
+    .map((e, i) => `  ${i + 1}. ${e.codes.join(' + ')} = ${Number(e.wrvu).toFixed(2)} wRVU`)
+    .join('\n');
+
+  const summaryText = [
+    `ChetMed Outpatient wRVU Summary (${dateStr})`,
+    `----------------------------------------`,
+    `Total Encounters: ${totalVisits}`,
+    `Total wRVUs:      ${totalWrvu.toFixed(2)}`,
+    `Avg wRVU / Visit: ${avgWrvu.toFixed(2)}`,
+    `Conversion Rate:  $${state.cf.toFixed(2)} / wRVU`,
+    `Est. Productivity: $${estComp.toFixed(2)}`,
+    tallyLines ? `\nQuick Tally Breakdown:\n${tallyLines}` : '',
+    logLines ? `\nLogged Visits:\n${logLines}` : ''
+  ].filter(Boolean).join('\n');
+
+  const tempArea = document.createElement('textarea');
+  tempArea.value = summaryText;
+  document.body.appendChild(tempArea);
+  tempArea.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempArea);
+
+  showToast('Session wRVU summary copied to clipboard!');
+}
+
+function openResetModal() {
+  document.getElementById('reset-modal').classList.remove('hidden');
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').classList.add('hidden');
+}
+
+function confirmResetSession() {
+  state.tallyCounts = {};
+  state.encounterLog = [];
+  saveState();
+  closeResetModal();
+  refreshAllUI();
+  showToast('Session tally and encounter log reset', '🗑️');
+}
+
+let toastTimer = null;
+function showToast(msg, icon = '✅') {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  toast.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 2400);
+}
+
+function refreshAllUI() {
+  document.getElementById('cf-input').value = state.cf.toFixed(2);
+  document.getElementById('proj-daily-wrvu').value = state.projection.dailyWrvu;
+  document.getElementById('proj-days-week').value = state.projection.daysPerWeek;
+  document.getElementById('proj-weeks-year').value = state.projection.weeksPerYear;
+
+  renderSummaryBar();
+  renderAddonToggles();
+  renderBuilderPreview();
+  renderQuickTallyGrid();
+  renderEditableCptTable();
+  renderAnnualProjection();
+  renderEncounterLog();
+}
+
+/**
+ * ============================================================================
+ * 8. BOOTSTRAP ON LOAD
+ * ============================================================================
+ */
+window.onload = function () {
+  loadState();
+  refreshAllUI();
+};
+</script>
+</body>
+</html>
