@@ -4,15 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f172a">
-<link rel="manifest" href="/manifest.json">
-<title>Ryan Chetram, MD — Portal Hub</title>
+<title>rchetram.com — Portal Hub</title>
 <style>
-  :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f8fafc;--muted:#94a3b8;--accent:#38bdf8}
+  :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f8fafc;--muted:#94a3b8;--accent:#38bdf8;--emerald:#34d399;--danger:#f87171}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center}
-  .wrap{width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center}
-  header{text-align:center;margin-bottom:36px}
-  h1{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .wrap{width:100%;max-width:780px;display:flex;flex-direction:column;align-items:center}
+  
+  /* Lock Screen */
+  .lock-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:420px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35)}
+  .lock-icon{font-size:2.4rem;margin-bottom:10px}
+  .lock-card h1{font-size:1.5rem;font-weight:800;margin-bottom:6px}
+  .lock-card p{color:var(--muted);font-size:.9rem;margin-bottom:20px;line-height:1.4}
+  .pw-input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0f172a;color:#fff;font-size:1rem;outline:none;margin-bottom:12px;text-align:center}
+  .pw-input:focus{border-color:var(--accent)}
+  .btn-unlock{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#0f172a;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+  .btn-unlock:hover{opacity:.9}
+  .error-msg{color:var(--danger);font-size:.82rem;margin-top:10px;display:none}
+  .divider{margin:22px 0;border-top:1px solid var(--border);position:relative}
+  .divider span{position:relative;top:-10px;background:var(--card);padding:0 10px;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .public-links{display:flex;flex-direction:column;gap:10px}
+  .public-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:10px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);color:var(--accent);text-decoration:none;font-weight:700;font-size:.92rem;transition:all .2s}
+  .public-btn:hover{background:rgba(56,189,248,.18)}
+  .public-btn.wrvu{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:var(--emerald)}
+  .public-btn.wrvu:hover{background:rgba(52,211,153,.18)}
+
+  /* Unlocked Portal Hub */
+  #portalContent{display:none;width:100%;flex-direction:column;align-items:center}
+  .top-bar{width:100%;display:flex;justify-content:flex-end;margin-bottom:16px}
+  .btn-lock{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600;cursor:pointer}
+  .btn-lock:hover{color:var(--accent);border-color:var(--accent)}
+  header{text-align:center;margin-bottom:32px}
+  header h1{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
   .sub{color:var(--muted);font-size:1rem}
   .portals{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;width:100%}
   .portal-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-decoration:none;color:inherit;display:flex;align-items:flex-start;gap:16px;transition:transform .2s ease,border-color .2s ease}
@@ -26,65 +49,107 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Ryan A. Chetram, MD</h1>
-    <p class="sub">Family Medicine Physician • Builder • Collector</p>
-  </header>
-  <div class="portals">
-    <a href="/chetmed/" class="portal-card">
-      <span class="icon">🩺</span>
-      <div>
-        <div class="title">ChetMed Clinical Suite</div>
-        <div class="desc">Offline-ready point-of-care calculators, dosing engines, and guideline tools.</div>
-        <span class="tag">Launch App →</span>
-      </div>
-    </a>
-    <a href="/rvu/" class="portal-card">
-      <span class="icon">📊</span>
-      <div>
-        <div class="title">Outpatient wRVU Calculator</div>
-        <div class="desc">E/M level helper, G2211 &amp; procedure add-ons, clinic session tally, and compensation estimator.</div>
-        <span class="tag">Launch Calculator →</span>
-      </div>
-    </a>
-    <a href="/about/" class="portal-card">
-      <span class="icon">👨‍⚕️</span>
-      <div>
-        <div class="title">About &amp; Curriculum Vitae</div>
-        <div class="desc">Clinical background, residency training, community health initiatives, and contact.</div>
-        <span class="tag">View CV →</span>
-      </div>
-    </a>
-    <a href="/reveal/" class="portal-card">
-      <span class="icon">🎬</span>
-      <div>
-        <div class="title">Movie Trivia &amp; Surprise Reveal</div>
-        <div class="desc">Interactive Hollywood marquee 2000s movie trivia game with a special finale.</div>
-        <span class="tag">Play Now →</span>
-      </div>
-    </a>
-    <a href="/analog/" class="portal-card">
-      <span class="icon">✒️</span>
-      <div>
-        <div class="title">Analog &amp; Interests</div>
-        <div class="desc">Fountain pens, daily journaling, home espresso notes, and retro handheld gaming.</div>
-        <span class="tag">Coming Soon</span>
-      </div>
-    </a>
-    <a href="/lab/" class="portal-card">
-      <span class="icon">🛠️</span>
-      <div>
-        <div class="title">Tech &amp; Sandbox</div>
-        <div class="desc">Experimental web apps, automation workflows, and personal utilities.</div>
-        <span class="tag">Coming Soon</span>
-      </div>
-    </a>
+  <!-- Lock Screen -->
+  <div id="lockScreen" class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h1>rchetram.com</h1>
+    <p>Personal &amp; professional portals are restricted. Enter your passcode to continue.</p>
+    <form onsubmit="event.preventDefault(); unlockPortal();">
+      <input type="password" id="pwInput" class="pw-input" placeholder="Enter Passcode" autocomplete="current-password">
+      <button type="submit" class="btn-unlock">Unlock Portal</button>
+    </form>
+    <div id="errorMsg" class="error-msg">Incorrect passcode. Please try again.</div>
+    <div class="divider"><span>Public Clinical Tools</span></div>
+    <div class="public-links">
+      <a href="/chetmed/" class="public-btn">🩺 Launch ChetMed Clinical Suite</a>
+      <a href="/wrvu/" class="public-btn wrvu">📊 Outpatient wRVU Calculator</a>
+    </div>
   </div>
-  <footer>rchetram.com</footer>
+
+  <!-- Unlocked Master Hub -->
+  <div id="portalContent">
+    <div class="top-bar">
+      <button type="button" class="btn-lock" onclick="lockPortal()">🔒 Lock Portal</button>
+    </div>
+    <header>
+      <h1>Ryan A. Chetram, MD</h1>
+      <p class="sub">Family Medicine Physician • Builder • Collector</p>
+    </header>
+    <div class="portals">
+      <a href="/chetmed/" class="portal-card">
+        <span class="icon">🩺</span>
+        <div>
+          <div class="title">ChetMed Clinical Suite</div>
+          <div class="desc">Offline-ready point-of-care calculators, dosing engines, and guideline tools (Public).</div>
+          <span class="tag">Launch App →</span>
+        </div>
+      </a>
+      <a href="/wrvu/" class="portal-card">
+        <span class="icon">📊</span>
+        <div>
+          <div class="title">Outpatient wRVU Calculator</div>
+          <div class="desc">CMS MPFS E/M code builder, G2211/G2212 add-ons, clinic session tally, and annual projections.</div>
+          <span class="tag">Open Calculator →</span>
+        </div>
+      </a>
+      <a href="/about/" class="portal-card">
+        <span class="icon">👨‍⚕️</span>
+        <div>
+          <div class="title">About &amp; Curriculum Vitae</div>
+          <div class="desc">Clinical background, residency training, procedures, and contact details.</div>
+          <span class="tag">View CV →</span>
+        </div>
+      </a>
+      <a href="/analog/" class="portal-card">
+        <span class="icon">✒️</span>
+        <div>
+          <div class="title">Analog &amp; Interests</div>
+          <div class="desc">Fountain pens, daily journaling, home espresso notes, and retro handheld gaming.</div>
+          <span class="tag">Coming Soon</span>
+        </div>
+      </a>
+      <a href="/lab/" class="portal-card">
+        <span class="icon">🛠️</span>
+        <div>
+          <div class="title">Tech &amp; Sandbox</div>
+          <div class="desc">Experimental web apps, automation workflows, and personal utilities.</div>
+          <span class="tag">Coming Soon</span>
+        </div>
+      </a>
+    </div>
+    <footer>rchetram.com</footer>
+  </div>
 </div>
+
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  const PORTAL_PASSCODE = "ChangeMe2027!";
+  const STORAGE_KEY = "rchetram_portal_unlocked";
+
+  function showPortal() {
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("portalContent").style.display = "flex";
+  }
+
+  function unlockPortal() {
+    const entered = document.getElementById("pwInput").value;
+    if (entered === PORTAL_PASSCODE) {
+      localStorage.setItem(STORAGE_KEY, "true");
+      document.getElementById("errorMsg").style.display = "none";
+      showPortal();
+    } else {
+      document.getElementById("errorMsg").style.display = "block";
+    }
+  }
+
+  function lockPortal() {
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById("pwInput").value = "";
+    document.getElementById("portalContent").style.display = "none";
+    document.getElementById("lockScreen").style.display = "block";
+  }
+
+  if (localStorage.getItem(STORAGE_KEY) === "true") {
+    showPortal();
   }
 </script>
 </body>
