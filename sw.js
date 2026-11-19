@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rchetram-clinical-v14';
+const CACHE_NAME = 'rchetram-clinical-v15';
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -10,6 +10,8 @@ const ASSETS_TO_CACHE = [
   '/chetmed/index.html',
   '/reveal/',
   '/reveal/index.html',
+  '/rvu/',
+  '/rvu/index.html',
   '/antibiotics-guide/',
   '/antibiotics-guide/index.html',
   '/antidepressants/',
