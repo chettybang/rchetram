@@ -1,192 +1,557 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0f1419">
-<title>Antidepressant Converter</title>
-<style>
-  :root {
-    --bg: #0f1419;
-    --card: #1a1f26;
-    --text: #e8eef5;
-    --muted: #8b9cb3;
-    --accent: #3b82f6;
-    --success: #10b981;
-    --border: #2d3748;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-      <a href="/" style="display:inline-block; margin-bottom:12px; color:#1e40af; text-decoration:none; font-size:0.9rem;">← Back</a>
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    padding: 16px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  h1 { font-size: 1.5rem; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
-  select, input, button {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #11151a;
-    color: var(--text);
-    font-size: 1rem;
-    margin-bottom: 12px;
-  }
-  .row { display: flex; gap: 12px; }
-  .row > div { flex: 1; }
-  button {
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .result {
-    background: #11151a;
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 8px;
-    font-size: 1.1rem;
-  }
-  .result strong { color: var(--success); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-  th, td {
-    text-align: left;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  th { color: var(--muted); font-weight: 500; }
-  .note { font-size: 0.8rem; color: var(--muted); margin-top: 12px; }
-  @media (max-width: 600px) {
-    .row { flex-direction: column; gap: 0; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Antidepressant &amp; Anxiolytic Guide | ChetMed</title>
+  <meta name="description" content="Primary care psychopharmacology selector covering SSRIs, SNRIs, atypical antidepressants, anxiety/panic agents, symptom targets, and cross-taper equivalents.">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --emerald: #34d399;
+      --emerald-soft: rgba(52, 211, 153, 0.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --purple: #c084fc;
+      --purple-soft: rgba(192, 132, 252, 0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 20px 14px 52px;
+      line-height: 1.5;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    header a {
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    header span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Main Mode Tabs */
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #0f172a;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 16px;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn.active {
+      background: var(--accent);
+      color: #0f172a;
+    }
+
+    /* Filter Controls */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus { border-color: var(--accent); }
+
+    /* Agent Cards */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .agent-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .agent-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .agent-name {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .agent-brand {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .class-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .cls-ssri { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .cls-snri { background: var(--purple-soft); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.35); }
+    .cls-atypical { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .cls-anxiolytic { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.35); }
+
+    .favored-box {
+      background: #0f172a;
+      border-left: 3px solid var(--emerald);
+      border-radius: 8px;
+      padding: 9px 11px;
+      margin: 8px 0 10px;
+      font-size: 0.83rem;
+    }
+    .favored-box strong {
+      color: var(--emerald);
+      display: block;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .detail-list {
+      font-size: 0.81rem;
+      color: #cbd5e1;
+      display: grid;
+      gap: 6px;
+    }
+    .detail-list span.lbl {
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* Equivalence & Cross-Taper View */
+    .equiv-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .equiv-row {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 13px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .equiv-drug {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+    .equiv-dose {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .taper-card {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+    .taper-card h3 {
+      font-size: 0.92rem;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+    .taper-card ul {
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    @media (max-width: 640px) {
+      .filter-grid { grid-template-columns: 1fr; }
+      .agents-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Antidepressant Converter</h1>
-  <p class="subtitle">Approximate dose equivalencies based on clinical references. Individual response varies.</p>
+  <div class="container">
+    <header>
+      <a href="/chetmed/">← Back to ChetMed</a>
+      <span>Primary Care Psychopharmacology</span>
+    </header>
 
-  <div class="card">
-    <h2 style="font-size:1.1rem; margin-bottom:12px;">Convert a Dose</h2>
-    <div class="row">
-      <div>
-        <label for="fromMed">From Medication</label>
-        <select id="fromMed"></select>
+    <div class="panel">
+      <h1>🧠 Antidepressant &amp; Anxiolytic Advisor</h1>
+      <p class="subtitle">Compare SSRIs, SNRIs, atypical antidepressants, and anxiety/panic-specific agents by favored symptom profile, FDA/off-label uses, and dosing.</p>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-btn active" id="btnModeSelector" onclick="switchMode('selector')">1. Clinical Agent Selector</button>
+        <button type="button" class="mode-btn" id="btnModeEquiv" onclick="switchMode('equiv')">2. Dose Equivalence &amp; Cross-Taper</button>
       </div>
-      <div>
-        <label for="fromDose">Dose (mg)</label>
-        <input type="number" id="fromDose" min="0" step="1" value="20">
+
+      <div id="filterControls" class="filter-grid">
+        <div>
+          <label for="classFilter" class="field-label">Medication Class</label>
+          <select id="classFilter" onchange="renderAgents()">
+            <option value="all">All Classes (SSRIs, SNRIs, Atypicals, Anxiolytics)</option>
+            <option value="ssri">SSRIs (Escitalopram, Sertraline, Fluoxetine, Paroxetine)</option>
+            <option value="snri">SNRIs (Duloxetine, Venlafaxine XR, Desvenlafaxine)</option>
+            <option value="atypical">Atypical Antidepressants (Bupropion, Mirtazapine, Trazodone, Vortioxetine)</option>
+            <option value="anxiolytic">Anxiety / Panic Specific (Buspirone, Propranolol, Hydroxyzine)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="targetFilter" class="field-label">Favored Mood / Clinical Aspect</label>
+          <select id="targetFilter" onchange="renderAgents()">
+            <option value="all">All Clinical Profiles</option>
+            <option value="balanced">Balanced MDD + GAD (Equal First-Line Efficacy)</option>
+            <option value="pain">MDD / GAD + Neuropathic or Chronic Pain</option>
+            <option value="energy">Fatigue, Anhedonia, Smoking Cessation, Sex-Sparing</option>
+            <option value="insomnia">Insomnia, Poor Appetite / Weight Loss, Nausea</option>
+            <option value="gad_augment">GAD Augmentation / Non-Sedating Sex-Sparing</option>
+            <option value="panic_somatic">Performance Anxiety / Somatic Panic Symptoms</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div>
-        <label for="toMed">To Medication</label>
-        <select id="toMed"></select>
+
+    <!-- MODE 1: AGENT CARDS -->
+    <div id="selectorView" class="agents-grid"></div>
+
+    <!-- MODE 2: EQUIVALENCE & CROSS-TAPER -->
+    <div id="equivView" class="panel" style="display:none;">
+      <h2 style="font-size:1.1rem; font-weight:800; margin-bottom:6px;">Approximate Daily Maintenance Dose Equivalents</h2>
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px;">Reference baseline anchored to Escitalopram 10 mg / Sertraline 50 mg / Duloxetine 60 mg daily.</p>
+
+      <div class="equiv-grid">
+        <div class="equiv-row"><span class="equiv-drug">Escitalopram (Lexapro) — SSRI</span><span class="equiv-dose">10 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Citalopram (Celexa) — SSRI</span><span class="equiv-dose">20 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Sertraline (Zoloft) — SSRI</span><span class="equiv-dose">50–100 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Fluoxetine (Prozac) — SSRI</span><span class="equiv-dose">20 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Paroxetine (Paxil) — SSRI</span><span class="equiv-dose">20 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Duloxetine (Cymbalta) — SNRI</span><span class="equiv-dose">60 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Venlafaxine XR (Effexor XR) — SNRI</span><span class="equiv-dose">75–150 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Desvenlafaxine (Pristiq) — SNRI</span><span class="equiv-dose">50 mg daily</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Bupropion XL (Wellbutrin XL) — NDRI</span><span class="equiv-dose">300 mg daily (Non-serotonergic)</span></div>
+        <div class="equiv-row"><span class="equiv-drug">Mirtazapine (Remeron) — Atypical</span><span class="equiv-dose">15–30 mg QHS</span></div>
       </div>
-      <div style="display:flex; align-items:flex-end;">
-        <button id="convertBtn">Convert</button>
+
+      <div class="taper-card">
+        <h3>⚠️ Key Cross-Tapering &amp; Safety Rules</h3>
+        <ul>
+          <li><strong>SSRI ↔ SSRI or SNRI:</strong> Direct switch at equivalent dose is generally tolerated for low-to-moderate doses; use a 1–2 week conservative cross-taper when switching off short-half-life agents (<strong>paroxetine, venlafaxine, duloxetine</strong>) to prevent discontinuation dizziness/paresthesias.</li>
+          <li><strong>Switching TO/FROM Fluoxetine:</strong> Fluoxetine/norfluoxetine persists 4–6 weeks; stop fluoxetine and wait 4–7 days before starting low-dose replacement (and allow a full <strong>5-week washout</strong> before any MAOI).</li>
+          <li><strong>Switching TO/FROM Bupropion:</strong> Bupropion lacks serotonergic activity—never abruptly stop a high-dose SSRI/SNRI when starting bupropion; taper the SSRI/SNRI gradually over 2–4 weeks while titrating bupropion.</li>
+        </ul>
       </div>
     </div>
-    <div id="result" class="result" style="display:none;"></div>
-  </div>
-
-  <div class="card">
-    <h2 style="font-size:1.1rem; margin-bottom:12px;">Typical Therapeutic Ranges & Approximate Equivalents</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Medication</th>
-          <th>Typical Starting</th>
-          <th>Usual Range</th>
-          <th>Approx. Fluoxetine Equivalent</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Fluoxetine</td><td>20 mg</td><td>20–60 mg</td><td>20 mg = 20 mg</td></tr>
-        <tr><td>Sertraline</td><td>50 mg</td><td>50–200 mg</td><td>50 mg ≈ 20 mg</td></tr>
-        <tr><td>Escitalopram</td><td>10 mg</td><td>10–20 mg</td><td>10 mg ≈ 20 mg</td></tr>
-        <tr><td>Citalopram</td><td>20 mg</td><td>20–40 mg</td><td>20 mg ≈ 20 mg</td></tr>
-        <tr><td>Paroxetine</td><td>20 mg</td><td>20–50 mg</td><td>20 mg ≈ 20 mg</td></tr>
-        <tr><td>Venlafaxine XR</td><td>75 mg</td><td>75–225 mg</td><td>75 mg ≈ 20 mg</td></tr>
-        <tr><td>Duloxetine</td><td>30–60 mg</td><td>60 mg</td><td>60 mg ≈ 20–30 mg</td></tr>
-        <tr><td>Bupropion XL</td><td>150 mg</td><td>150–300 mg</td><td>150–300 mg ≈ 20–40 mg</td></tr>
-        <tr><td>Mirtazapine</td><td>15 mg</td><td>15–45 mg</td><td>30 mg ≈ 20–30 mg</td></tr>
-      </tbody>
-    </table>
-    <p class="note">
-      Equivalencies are approximate and based on clinical practice and published dose-equivalence studies (e.g., Hayasaka et al.). 
-      Not a substitute for clinical judgment. Consider half-life, CYP interactions, and patient-specific factors when switching.
-    </p>
   </div>
 
 <script>
-const meds = [
-  { name: "Fluoxetine", eq: 20 },
-  { name: "Sertraline", eq: 50 },
-  { name: "Escitalopram", eq: 10 },
-  { name: "Citalopram", eq: 20 },
-  { name: "Paroxetine", eq: 20 },
-  { name: "Venlafaxine XR", eq: 75 },
-  { name: "Duloxetine", eq: 60 },
-  { name: "Bupropion XL", eq: 150 },
-  { name: "Mirtazapine", eq: 30 }
+const AGENTS = [
+  // SSRIs
+  {
+    name: 'Escitalopram',
+    brand: 'Lexapro',
+    cls: 'ssri',
+    clsLabel: 'SSRI',
+    targets: ['balanced'],
+    favors: 'Equally effective & top-tolerated first-line for BOTH MDD and GAD; cleanest CYP450 profile.',
+    indications: 'FDA: MDD, GAD • Off-label: Panic Disorder, OCD, Social Anxiety, PMDD',
+    dosing: 'Start 10 mg PO daily (5 mg in elderly/panic) → Target 10–20 mg daily',
+    pearls: 'Lowest drug-drug interaction burden among SSRIs; max 20 mg/day due to dose-dependent QTc prolongation.'
+  },
+  {
+    name: 'Sertraline',
+    brand: 'Zoloft',
+    cls: 'ssri',
+    clsLabel: 'SSRI',
+    targets: ['balanced'],
+    favors: 'Broadest anxiety/trauma spectrum (MDD, Panic, PTSD, OCD, SAD); preferred in pregnancy/lactation & post-MI.',
+    indications: 'FDA: MDD, Panic, PTSD, OCD, Social Anxiety, PMDD • Off-label: GAD',
+    dosing: 'Start 25–50 mg PO daily → Target 50–200 mg daily (take with food to reduce GI upset)',
+    pearls: 'Most GI side effects (loose stools/nausea) during week 1; start at 25 mg for 1 week in panic-prone patients.'
+  },
+  {
+    name: 'Fluoxetine',
+    brand: 'Prozac',
+    cls: 'ssri',
+    clsLabel: 'SSRI',
+    targets: ['energy'],
+    favors: 'Mildly activating SSRI favoring atypical depression (fatigue, hypersomnia), PMDD, bulimia, and adolescent MDD/OCD.',
+    indications: 'FDA: MDD (≥8y), OCD (≥7y), Panic, Bulimia, PMDD • Off-label: GAD, PTSD',
+    dosing: 'Start 20 mg PO every morning (10 mg in panic) → Target 20–60 mg daily (80 mg max)',
+    pearls: 'Very long half-life (self-tapering, forgiving of missed doses); strong CYP2D6/2C19 inhibitor; can initially worsen insomnia/agitation.'
+  },
+  {
+    name: 'Paroxetine',
+    brand: 'Paxil',
+    cls: 'ssri',
+    clsLabel: 'SSRI',
+    targets: ['balanced'],
+    favors: 'Sedating/calming SSRI for severe GAD, panic, and vasomotor hot flashes (Brisdelle 7.5 mg), but higher side-effect burden.',
+    indications: 'FDA: MDD, GAD, Panic, Social Anxiety, OCD, PTSD, PMDD',
+    dosing: 'Start 10–20 mg PO daily → Target 20–50 mg daily (60 mg max)',
+    pearls: 'Most anticholinergic, weight-gaining, and sexually impairing SSRI; short half-life causes severe withdrawal if missed; avoid in pregnancy & elderly (Beers List).'
+  },
+
+  // SNRIs
+  {
+    name: 'Duloxetine',
+    brand: 'Cymbalta',
+    cls: 'snri',
+    clsLabel: 'SNRI',
+    targets: ['balanced', 'pain'],
+    favors: 'First-line for GAD or MDD paired with neuropathic pain, fibromyalgia, or chronic musculoskeletal pain.',
+    indications: 'FDA: GAD (≥7y), MDD, Diabetic Peripheral Neuropathy, Fibromyalgia, Chronic MSK Pain • Off-label: Stress Urinary Incontinence, CIPN',
+    dosing: 'Start 30 mg PO daily × 1 week (reduces nausea) → Target 60 mg daily (max 120 mg/day for MDD/GAD)',
+    pearls: 'Dual 5-HT/NE reuptake at starting doses; avoid in eGFR <30 mL/min, chronic liver disease, or heavy alcohol use; taper over ≥2 weeks.'
+  },
+  {
+    name: 'Venlafaxine XR',
+    brand: 'Effexor XR',
+    cls: 'snri',
+    clsLabel: 'SNRI',
+    targets: ['balanced', 'pain'],
+    favors: 'Severe/refractory MDD, GAD, Panic, and Social Anxiety; recruits norepinephrine progressively at ≥150 mg/day.',
+    indications: 'FDA: MDD, GAD, Panic Disorder, Social Anxiety • Off-label: Neuropathic Pain, Migraine Prophylaxis, Hot Flashes',
+    dosing: 'Start 37.5–75 mg PO daily with food → Target 75–225 mg daily',
+    pearls: 'Monitor BP (dose-dependent diastolic hypertension ≥150 mg/day); very short half-life causes rapid discontinuation "brain zaps" if a dose is missed.'
+  },
+  {
+    name: 'Desvenlafaxine',
+    brand: 'Pristiq',
+    cls: 'snri',
+    clsLabel: 'SNRI',
+    targets: ['energy', 'pain'],
+    favors: 'Active metabolite of venlafaxine with balanced 5-HT/NE activity from day 1 and minimal CYP450 interactions.',
+    indications: 'FDA: MDD • Off-label: GAD, Vasomotor Symptoms, Neuropathic Pain',
+    dosing: 'Start & Target 50 mg PO daily (do not split/crush ER tablet; max 100 mg/day)',
+    pearls: 'No CYP2D6 metabolism (ideal for patients on multiple interacting medications); reduce to 50 mg every other day if eGFR <30.'
+  },
+
+  // Atypical Antidepressants
+  {
+    name: 'Bupropion XL / SR',
+    brand: 'Wellbutrin XL / SR',
+    cls: 'atypical',
+    clsLabel: 'Atypical (NDRI)',
+    targets: ['energy'],
+    favors: 'Favors fatigue, anhedonia, low motivation, smoking cessation, and ADHD overlap; weight-neutral/loss & ZERO sexual dysfunction.',
+    indications: 'FDA: MDD, Seasonal Affective Disorder, Smoking Cessation (Zyban) • Off-label: SSRI-induced sexual dysfunction, Adult ADHD',
+    dosing: 'XL: Start 150 mg PO every morning → Target 300 mg daily (max 450 mg)',
+    pearls: 'Does NOT treat GAD or panic and may initially increase jitteriness/insomnia; strictly contraindicated in seizure disorders, bulimia/anorexia, or abrupt alcohol/benzo withdrawal.'
+  },
+  {
+    name: 'Mirtazapine',
+    brand: 'Remeron',
+    cls: 'atypical',
+    clsLabel: 'Atypical (NaSSA)',
+    targets: ['insomnia', 'balanced'],
+    favors: 'Favors MDD/anxiety with severe insomnia, early morning awakening, poor appetite/weight loss, or nausea; minimal sexual side effects.',
+    indications: 'FDA: MDD • Off-label: GAD, Insomnia, Appetite Stimulation, Chemo/GI Nausea',
+    dosing: 'Start 15 mg PO QHS → Target 15–45 mg QHS',
+    pearls: 'Paradoxical sedation: 7.5–15 mg is MORE sedating (pure H1 blockade) than 30–45 mg (where α2 noradrenergic activation offsets sedation); causes weight gain.'
+  },
+  {
+    name: 'Vortioxetine',
+    brand: 'Trintellix',
+    cls: 'atypical',
+    clsLabel: 'Atypical (Multimodal)',
+    targets: ['energy', 'balanced'],
+    favors: 'Favors MDD with prominent cognitive dysfunction ("brain fog", poor concentration) and low rates of sexual dysfunction.',
+    indications: 'FDA: MDD • Off-label: GAD',
+    dosing: 'Start 10 mg PO daily (5 mg if nausea-sensitive) → Target 10–20 mg daily',
+    pearls: 'Transient nausea is the most common side effect; long half-life (~66 hours) minimizes withdrawal symptoms.'
+  },
+  {
+    name: 'Trazodone',
+    brand: 'Desyrel',
+    cls: 'atypical',
+    clsLabel: 'Atypical (SARI)',
+    targets: ['insomnia'],
+    favors: 'Primarily used at low doses (25–100 mg QHS) as a non-habit-forming sleep aid alongside an SSRI/SNRI.',
+    indications: 'FDA: MDD (requires 150–400 mg/day, rarely used due to sedation) • Off-label: Primary & SSRI-induced Insomnia',
+    dosing: 'Insomnia: 25–100 mg PO QHS (Antidepressant: 150–300 mg/day divided)',
+    pearls: 'Counsel on orthostatic hypotension, morning grogginess, and rare priapism.'
+  },
+
+  // Anxiety & Panic Specific Agents
+  {
+    name: 'Buspirone',
+    brand: 'BuSpar',
+    cls: 'anxiolytic',
+    clsLabel: 'Anxiolytic (5-HT1A)',
+    targets: ['gad_augment'],
+    favors: 'Pure generalized anxiety (GAD) monotherapy or SSRI augmentation; zero sedation, zero dependence, zero weight/sexual side effects.',
+    indications: 'FDA: Generalized Anxiety Disorder (GAD) • Off-label: Augmentation of SSRI in MDD / SSRI-induced sexual dysfunction',
+    dosing: 'Start 7.5 mg PO BID (or 5 mg TID) → Target 15–30 mg/day divided BID–TID (max 60 mg/day)',
+    pearls: 'Takes 2–4 weeks for full effect (not PRN); ineffective for acute panic attacks or MDD monotherapy; take consistently with or without food.'
+  },
+  {
+    name: 'Propranolol',
+    brand: 'Inderal',
+    cls: 'anxiolytic',
+    clsLabel: 'Beta-Blocker (Panic/Somatic)',
+    targets: ['panic_somatic'],
+    favors: 'Situational/performance anxiety and somatic panic symptoms (palpitations, tremor, sweating, flushing).',
+    indications: 'Off-label: Performance / Situational Anxiety, Somatic Panic Symptoms, Essential Tremor, Akathisia',
+    dosing: 'PRN Performance: 10–40 mg PO 30–60 minutes prior to event (test a trial dose at home first)',
+    pearls: 'Blocks peripheral β1/β2 adrenergic symptoms without sedation, but does NOT treat cognitive worry or depression; avoid in asthma/COPD, sinus bradycardia, or decompensated HF.'
+  },
+  {
+    name: 'Hydroxyzine',
+    brand: 'Vistaril / Atarax',
+    cls: 'anxiolytic',
+    clsLabel: 'Anxiolytic (H1 Antagonist)',
+    targets: ['panic_somatic', 'insomnia'],
+    favors: 'Rapid PRN relief of acute anxiety, agitation, or panic surges while bridging the 2–4 week onset of an SSRI/SNRI.',
+    indications: 'FDA: Anxiety & Tension, Pruritus, Pre-op Sedation',
+    dosing: '25–50 mg PO q6–8h PRN anxiety or QHS for sleep (max 100 mg/dose)',
+    pearls: 'Non-habit-forming alternative to benzodiazepines; causes drowsiness, dry mouth, and mild QTc prolongation at high doses; avoid in elderly (anticholinergic).'
+  }
 ];
 
-function populateSelects() {
-  const from = document.getElementById("fromMed");
-  const to = document.getElementById("toMed");
-  meds.forEach((m, i) => {
-    from.add(new Option(m.name, i));
-    to.add(new Option(m.name, i));
+function switchMode(mode) {
+  const isSelector = mode === 'selector';
+  document.getElementById('btnModeSelector').classList.toggle('active', isSelector);
+  document.getElementById('btnModeEquiv').classList.toggle('active', !isSelector);
+  document.getElementById('filterControls').style.display = isSelector ? 'grid' : 'none';
+  document.getElementById('selectorView').style.display = isSelector ? 'grid' : 'none';
+  document.getElementById('equivView').style.display = isSelector ? 'none' : 'block';
+}
+
+function renderAgents() {
+  const clsFilter = document.getElementById('classFilter').value;
+  const targetFilter = document.getElementById('targetFilter').value;
+
+  const filtered = AGENTS.filter(a => {
+    const matchClass = clsFilter === 'all' || a.cls === clsFilter;
+    const matchTarget = targetFilter === 'all' || a.targets.includes(targetFilter);
+    return matchClass && matchTarget;
   });
-  to.selectedIndex = 1;
+
+  const container = document.getElementById('selectorView');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="panel" style="grid-column:1/-1; text-align:center; color:var(--text-muted);">No agents match that exact combination—try broadening the Medication Class filter to "All Classes".</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(a => `
+    <div class="agent-card">
+      <div>
+        <div class="agent-header">
+          <div>
+            <div class="agent-name">${a.name}</div>
+            <div class="agent-brand">${a.brand}</div>
+          </div>
+          <span class="class-badge cls-${a.cls}">${a.clsLabel}</span>
+        </div>
+
+        <div class="favored-box">
+          <strong>🎯 Favored Mood / Symptom Aspect</strong>
+          ${a.favors}
+        </div>
+      </div>
+
+      <div class="detail-list">
+        <div><span class="lbl">Indications:</span> ${a.indications}</div>
+        <div><span class="lbl">Dosing:</span> ${a.dosing}</div>
+        <div><span class="lbl">Pearls:</span> ${a.pearls}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-document.getElementById("convertBtn").addEventListener("click", convert);
-document.getElementById("fromDose").addEventListener("keydown", e => {
-  if (e.key === "Enter") convert();
-});
-
-function convert() {
-  const fromIdx = document.getElementById("fromMed").value;
-  const toIdx = document.getElementById("toMed").value;
-  const dose = parseFloat(document.getElementById("fromDose").value);
-  if (!dose || dose <= 0) return;
-
-  const from = meds[fromIdx];
-  const to = meds[toIdx];
-
-  // Convert via fluoxetine-equivalent units
-  const fluoxEq = (dose / from.eq) * 20;
-  const resultDose = (fluoxEq / 20) * to.eq;
-
-  const result = document.getElementById("result");
-  result.style.display = "block";
-  result.innerHTML = `
-    <strong>${dose} mg</strong> ${from.name}<br>
-    ≈ <strong>${resultDose.toFixed(0)} mg</strong> ${to.name}<br>
-    <span class="note">Approximate. Round to available strength and titrate carefully.</span>
-  `;
-}
-
-populateSelects();
+renderAgents();
 </script>
 </body>
 </html>
