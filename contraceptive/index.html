@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f172a">
-  <title>Contraceptive Advisor (U.S. MEC) | ChetMed</title>
-  <meta name="description" content="CDC U.S. Medical Eligibility Criteria (U.S. MEC) contraceptive selector and method comparison guide.">
+  <title>Oral Contraceptive &amp; U.S. MEC Advisor | ChetMed</title>
+  <meta name="description" content="Oral contraceptive pill selector by estrogen dose, progestin generation, phasic regimen, clinical goals, CDC U.S. MEC eligibility, and missed-pill rules.">
   <style>
     :root {
       --bg: #0f172a;
@@ -14,21 +14,19 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --accent: #38bdf8;
-      --cat1-bg: rgba(52, 211, 153, 0.14);
-      --cat1-text: #34d399;
-      --cat1-border: rgba(52, 211, 153, 0.4);
-      --cat2-bg: rgba(56, 189, 248, 0.14);
-      --cat2-text: #38bdf8;
-      --cat2-border: rgba(56, 189, 248, 0.4);
-      --cat3-bg: rgba(251, 191, 36, 0.14);
-      --cat3-text: #fbbf24;
-      --cat3-border: rgba(251, 191, 36, 0.45);
-      --cat4-bg: rgba(248, 113, 113, 0.14);
-      --cat4-text: #f87171;
-      --cat4-border: rgba(248, 113, 113, 0.45);
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --emerald: #34d399;
+      --emerald-soft: rgba(52, 211, 153, 0.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --rose: #f87171;
+      --rose-soft: rgba(248, 113, 113, 0.12);
+      --purple: #c084fc;
+      --purple-soft: rgba(192, 132, 252, 0.14);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
+      width: 100%;
       max-width: 100%;
       overflow-x: hidden;
     }
@@ -37,199 +35,252 @@
       background: var(--bg);
       color: var(--text-main);
       min-height: 100vh;
-      padding: 20px 14px 48px;
+      padding: 18px 12px 52px;
       line-height: 1.5;
     }
     .container {
       width: 100%;
-      max-width: 880px;
+      max-width: 900px;
       margin: 0 auto;
     }
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
     header a {
       text-decoration: none;
       color: var(--accent);
       font-weight: 600;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
     header span {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
+      text-align: right;
     }
 
     .panel {
       background: var(--card);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 20px;
+      padding: 18px;
       margin-bottom: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
     h1 {
-      font-size: 1.45rem;
+      font-size: 1.38rem;
       font-weight: 800;
       color: #ffffff;
       margin-bottom: 4px;
     }
     .subtitle {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
       margin-bottom: 16px;
     }
 
-    /* Legend Strip */
-    .mec-legend {
+    /* Responsive 3-Tab Switcher */
+    .nav-tabs {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      background: #0f172a;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
     }
-    .legend-box {
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 0.74rem;
-      line-height: 1.3;
-      min-width: 0;
+    .tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 10px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+      line-height: 1.25;
     }
-    .legend-box strong {
-      display: block;
-      font-size: 0.78rem;
-      margin-bottom: 2px;
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0f172a;
     }
-    .l-1 { background: var(--cat1-bg); border: 1px solid var(--cat1-border); color: var(--cat1-text); }
-    .l-2 { background: var(--cat2-bg); border: 1px solid var(--cat2-border); color: var(--cat2-text); }
-    .l-3 { background: var(--cat3-bg); border: 1px solid var(--cat3-border); color: var(--cat3-text); }
-    .l-4 { background: var(--cat4-bg); border: 1px solid var(--cat4-border); color: var(--cat4-text); }
 
-    /* Condition Selector */
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+
     .field-label {
       display: block;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     select {
       width: 100%;
-      padding: 12px 14px;
+      max-width: 100%;
+      padding: 11px 12px;
       border-radius: 10px;
       border: 1px solid var(--card-border);
       background: #0f172a;
       color: #ffffff;
-      font-size: 0.94rem;
+      font-size: 0.9rem;
       font-weight: 600;
       outline: none;
       cursor: pointer;
     }
-    select:focus {
-      border-color: var(--accent);
+    select:focus { border-color: var(--accent); }
+
+    .filters-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+      gap: 12px;
     }
 
-    .condition-note {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
+    /* Recommendation Highlight Card (Tab 1) */
+    .goal-summary {
       background: #0f172a;
       border: 1px solid var(--card-border);
-      font-size: 0.85rem;
-      color: #cbd5e1;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      font-size: 0.86rem;
+      color: #e2e8f0;
     }
+    .goal-summary strong { color: var(--accent); }
 
-    /* Responsive Method Cards Grid */
-    .methods-grid {
+    /* Responsive Cards Grid */
+    .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
       gap: 14px;
     }
-    .method-card {
+    .ocp-card {
       background: var(--card);
       border: 1px solid var(--card-border);
       border-radius: 14px;
-      padding: 18px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       min-width: 0;
       word-wrap: break-word;
     }
-    .method-card.cat-4 {
-      border-color: var(--cat4-border);
-      opacity: 0.88;
+    .ocp-card.featured {
+      border-color: rgba(52, 211, 153, 0.45);
     }
-    .method-card.cat-3 {
-      border-color: var(--cat3-border);
-    }
-    .method-card.cat-1 {
-      border-color: var(--cat1-border);
-    }
-    .card-top {
+    .card-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 8px;
+      gap: 8px;
+      margin-bottom: 6px;
     }
-    .method-name {
-      font-size: 1.05rem;
-      font-weight: 700;
+    .ocp-title {
+      font-size: 1.02rem;
+      font-weight: 800;
       color: #ffffff;
       line-height: 1.3;
     }
-    .method-sub {
+    .ocp-brands {
       font-size: 0.78rem;
-      color: var(--text-muted);
+      color: var(--accent);
+      font-weight: 600;
       margin-top: 2px;
     }
-    .cat-badge {
+    .pill-badge {
       flex-shrink: 0;
-      font-size: 0.74rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      padding: 4px 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
       border-radius: 999px;
       white-space: nowrap;
     }
-    .badge-1 { background: var(--cat1-bg); color: var(--cat1-text); border: 1px solid var(--cat1-border); }
-    .badge-2 { background: var(--cat2-bg); color: var(--cat2-text); border: 1px solid var(--cat2-border); }
-    .badge-3 { background: var(--cat3-bg); color: var(--cat3-text); border: 1px solid var(--cat3-border); }
-    .badge-4 { background: var(--cat4-bg); color: var(--cat4-text); border: 1px solid var(--cat4-border); }
+    .b-coc { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.35); }
+    .b-pop { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.35); }
+    .b-ext { background: var(--purple-soft); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.35); }
+    .b-tri { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.35); }
 
-    .mec-rationale {
-      font-size: 0.84rem;
-      color: #e2e8f0;
+    .spec-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0 10px;
+    }
+    .spec-tag {
       background: #0f172a;
       border: 1px solid var(--card-border);
-      border-radius: 9px;
-      padding: 10px 12px;
-      margin: 10px 0;
-    }
-    .method-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      display: grid;
-      gap: 4px;
-    }
-    .method-meta strong {
       color: #cbd5e1;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
     }
 
-    @media (max-width: 640px) {
-      .mec-legend {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .methods-grid {
-        grid-template-columns: 1fr;
-      }
-      .panel {
-        padding: 16px;
-      }
+    .card-body-text {
+      font-size: 0.83rem;
+      color: #cbd5e1;
+      display: grid;
+      gap: 6px;
+    }
+    .card-body-text strong {
+      color: #ffffff;
+    }
+
+    /* U.S. MEC Legend & Badges (Tab 3) */
+    .mec-legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    @media (min-width: 640px) {
+      .mec-legend { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .legend-box {
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.74rem;
+      line-height: 1.3;
+    }
+    .legend-box strong { display: block; font-size: 0.78rem; margin-bottom: 2px; }
+    .l-1 { background: var(--emerald-soft); border: 1px solid rgba(52, 211, 153, 0.4); color: var(--emerald); }
+    .l-2 { background: var(--accent-soft); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent); }
+    .l-3 { background: var(--amber-soft); border: 1px solid rgba(251, 191, 36, 0.45); color: var(--amber); }
+    .l-4 { background: var(--rose-soft); border: 1px solid rgba(248, 113, 113, 0.45); color: var(--rose); }
+
+    .cat-1 { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.4); }
+    .cat-2 { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.4); }
+    .cat-3 { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.45); }
+    .cat-4 { background: var(--rose-soft); color: var(--rose); border: 1px solid rgba(248, 113, 113, 0.45); }
+
+    .missed-box {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+      font-size: 0.83rem;
+      color: #cbd5e1;
+    }
+    .missed-box h3 {
+      font-size: 0.9rem;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+    .missed-box ul {
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
     }
   </style>
 </head>
@@ -237,254 +288,247 @@
   <div class="container">
     <header>
       <a href="/chetmed/">← Back to ChetMed</a>
-      <span>CDC U.S. MEC 2024</span>
+      <span>CDC U.S. MEC / SPR 2024</span>
     </header>
 
     <div class="panel">
-      <h1>🩺 Contraceptive Eligibility &amp; Method Advisor</h1>
-      <p class="subtitle">Select a patient clinical condition below to filter safe contraceptive options per CDC U.S. Medical Eligibility Criteria (U.S. MEC).</p>
+      <h1>💊 Oral Contraceptive &amp; Birth Control Advisor</h1>
+      <p class="subtitle">Compare Combined OCPs (by estrogen dose, progestin generation &amp; phasic cycle), Progestin-Only Pills (POPs), clinical side-effect adjustments, and CDC U.S. MEC eligibility.</p>
 
-      <div class="mec-legend">
-        <div class="legend-box l-1"><strong>Cat 1 — Safe</strong>No restriction for use</div>
-        <div class="legend-box l-2"><strong>Cat 2 — Generally Safe</strong>Benefits outweigh risks</div>
-        <div class="legend-box l-3"><strong>Cat 3 — Caution</strong>Risks usually outweigh benefits</div>
-        <div class="legend-box l-4"><strong>Cat 4 — Avoid</strong>Unacceptable health risk</div>
+      <div class="nav-tabs">
+        <button type="button" class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">1. Match Pill by Goal / Side Effect</button>
+        <button type="button" class="tab-btn" id="tabBtn2" onclick="switchTab(2)">2. All Oral Pill Formulations</button>
+        <button type="button" class="tab-btn" id="tabBtn3" onclick="switchTab(3)">3. U.S. MEC &amp; Missed Pills</button>
       </div>
-
-      <label for="conditionSelect" class="field-label">Patient Medical Condition / Clinical Scenario</label>
-      <select id="conditionSelect" onchange="renderMethods()">
-        <option value="healthy">Healthy / No Medical Contraindications</option>
-        <option value="migraine_aura">Migraine WITH Aura (Any Age)</option>
-        <option value="migraine_no_aura_35">Migraine WITHOUT Aura (Age ≥35 Years)</option>
-        <option value="htn_controlled">Hypertension — Controlled or BP 140–159 / 90–99 mmHg</option>
-        <option value="htn_severe">Hypertension — Uncontrolled (≥160/100) or Vascular Disease</option>
-        <option value="smoker_35_heavy">Smoker Age ≥35 Years (≥15 Cigarettes/Day)</option>
-        <option value="vte_history">History of DVT / PE or Known Thrombophilia</option>
-        <option value="postpartum_bf_early">Postpartum &amp; Breastfeeding (&lt;21 Days Postpartum)</option>
-        <option value="postpartum_bf_mid">Postpartum &amp; Breastfeeding (21 to &lt;30 Days Postpartum)</option>
-        <option value="obesity">Obesity (BMI ≥30 kg/m²)</option>
-        <option value="enzyme_inducers">Enzyme-Inducing Meds (Carbamazepine, Phenytoin, Topiramate, Rifampin)</option>
-        <option value="heavy_bleeding">Heavy Menstrual Bleeding / Dysmenorrhea / Iron-Deficiency Anemia</option>
-      </select>
-
-      <div class="condition-note" id="conditionSummary"></div>
     </div>
 
-    <div class="methods-grid" id="methodsGrid"></div>
+    <!-- =========================================================================
+         TAB 1: MATCH ORAL CONTRACEPTIVE BY CLINICAL GOAL / SIDE EFFECT
+    ========================================================================== -->
+    <div id="tabView1" class="tab-view active">
+      <div class="panel">
+        <label for="goalSelect" class="field-label">Select Patient Goal or Current Pill Side Effect</label>
+        <select id="goalSelect" onchange="renderGoalMatch()">
+          <option value="first_line">First-Line Starter (Lowest VTE Risk &amp; Balanced Tolerance)</option>
+          <option value="acne">Acne, Hirsutism, or PCOS Hyperandrogenism</option>
+          <option value="pmdd">PMDD or Severe Premenstrual Mood / Bloating</option>
+          <option value="estrogen_se">Estrogen Side Effects (Nausea, Breast Tenderness, Headaches)</option>
+          <option value="btb_early">Breakthrough Bleeding / Spotting (Early/Mid-Cycle or on 10–20 mcg EE)</option>
+          <option value="heavy_menses">Heavy Menstrual Bleeding, Dysmenorrhea, or Desire for Amenorrhea</option>
+          <option value="no_estrogen">Estrogen Contraindicated (Migraine w/ Aura, HTN, VTE, Breastfeeding, Smoker ≥35)</option>
+        </select>
+
+        <div class="goal-summary" id="goalSummary"></div>
+      </div>
+
+      <div class="cards-grid" id="goalCardsGrid"></div>
+    </div>
+
+    <!-- =========================================================================
+         TAB 2: ALL ORAL CONTRACEPTIVE FORMULATIONS (FILTERABLE MATRIX)
+    ========================================================================== -->
+    <div id="tabView2" class="tab-view">
+      <div class="panel">
+        <div class="filters-row">
+          <div>
+            <label for="filterType" class="field-label">Pill Category / Estrogen Dose</label>
+            <select id="filterType" onchange="renderAllFormulations()">
+              <option value="all">All Oral Contraceptives (COCs &amp; POPs)</option>
+              <option value="coc_10_20">Low / Ultra-Low Estrogen COC (10–20 mcg EE)</option>
+              <option value="coc_30_35">Standard Estrogen COC (30–35 mcg EE)</option>
+              <option value="coc_ext">Extended / Continuous Cycle COC (84/7 or 365d)</option>
+              <option value="pop">Progestin-Only Pills (POPs — Estrogen-Free)</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterGen" class="field-label">Progestin Generation / Profile</label>
+            <select id="filterGen" onchange="renderAllFormulations()">
+              <option value="all">All Progestin Generations</option>
+              <option value="gen1">1st Gen (Norethindrone / Norethindrone Acetate)</option>
+              <option value="gen2">2nd Gen (Levonorgestrel / Norgestrel — Lowest VTE Risk)</option>
+              <option value="gen3">3rd Gen (Norgestimate / Desogestrel — Low Androgen)</option>
+              <option value="gen4">4th Gen (Drospirenone — Anti-Androgenic / Anti-Mineralocorticoid)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="allFormulationsGrid"></div>
+    </div>
+
+    <!-- =========================================================================
+         TAB 3: CDC U.S. MEC ELIGIBILITY & MISSED-PILL RULES
+    ========================================================================== -->
+    <div id="tabView3" class="tab-view">
+      <div class="panel">
+        <div class="mec-legend">
+          <div class="legend-box l-1"><strong>Cat 1 — Safe</strong>No restriction</div>
+          <div class="legend-box l-2"><strong>Cat 2 — OK</strong>Benefits &gt; risks</div>
+          <div class="legend-box l-3"><strong>Cat 3 — Caution</strong>Risks &gt; benefits</div>
+          <div class="legend-box l-4"><strong>Cat 4 — Avoid</strong>Contraindicated</div>
+        </div>
+
+        <label for="mecSelect" class="field-label">Patient Medical Condition (CDC U.S. MEC 2024)</label>
+        <select id="mecSelect" onchange="renderMec()">
+          <option value="healthy">Healthy / No Contraindications</option>
+          <option value="migraine_aura">Migraine WITH Aura (Any Age)</option>
+          <option value="migraine_no_aura_35">Migraine WITHOUT Aura (Age ≥35 Years)</option>
+          <option value="htn_mod">Hypertension — Controlled or BP 140–159/90–99 mmHg</option>
+          <option value="htn_sev">Hypertension — Uncontrolled (≥160/100) or Vascular Disease</option>
+          <option value="smoker_35">Smoker Age ≥35 Years (≥15 Cigarettes/Day)</option>
+          <option value="vte">History of DVT / PE or Known Thrombophilia</option>
+          <option value="bf_early">Postpartum &amp; Breastfeeding (&lt;21 Days Postpartum)</option>
+          <option value="ckd_hyperk">Chronic Kidney Disease / Hyperkalemia Risk</option>
+          <option value="cyp3a4">Enzyme-Inducing Meds (Carbamazepine, Phenytoin, Topiramate, Rifampin)</option>
+        </select>
+
+        <div class="goal-summary" id="mecSummary"></div>
+      </div>
+
+      <div class="cards-grid" id="mecMethodsGrid"></div>
+
+      <div class="panel" style="margin-top:16px;">
+        <h2 style="font-size:1.05rem; font-weight:800; margin-bottom:6px;">⏱️ CDC 2024 U.S. SPR Missed-Pill Rules</h2>
+        <div class="missed-box">
+          <h3>Combined Oral Contraceptives (COCs)</h3>
+          <ul>
+            <li><strong>1 Active Pill Missed (&lt;48h since last pill / &lt;24h late):</strong> Take missed pill ASAP, continue 1 pill daily; no backup contraception needed.</li>
+            <li><strong>≥2 Consecutive Active Pills Missed (≥48h since a pill was due):</strong> Take most recent missed pill ASAP, discard earlier missed pills, continue 1 pill daily, and use <strong>backup protection for 7 days</strong>. If missed in <strong>Week 1</strong> with unprotected sex in past 5 days, consider EC (if ulipristal/Ella is used, wait 5 days before restarting COC). If missed in <strong>Week 3</strong>, finish active pills and <strong>skip the placebo week</strong>.</li>
+          </ul>
+        </div>
+        <div class="missed-box">
+          <h3>Progestin-Only Pills (POPs) — Window Differs by Progestin!</h3>
+          <ul>
+            <li><strong>Norethindrone 0.35 mg &amp; Norgestrel 0.075 mg (Opill):</strong> Strict <strong>3-hour window</strong>. If taken &gt;3 hours late, take 1 pill ASAP, continue daily, and use <strong>backup protection for 2 days (48h)</strong>.</li>
+            <li><strong>Drospirenone 4 mg (Slynd — 24/4 Pack):</strong> Forgiving <strong>24-hour window</strong>. If 1 active pill is &lt;24 hours late (&lt;48h since prior pill), take ASAP—<strong>no backup needed</strong>. If ≥2 consecutive active pills missed (≥48h since scheduled), take most recent pill ASAP and use <strong>backup protection for 7 days</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
 <script>
-const METHODS = [
+const ORAL_PILLS = [
   {
-    id: 'lng_iud',
-    name: 'Levonorgestrel IUD (LNG-IUD)',
-    sub: 'Mirena / Liletta (8 yr) • Kyleena (5 yr) • Skyla (3 yr)',
-    efficacy: '>99.2% (Top-Tier LARC)',
-    perks: 'Markedly reduces menstrual bleeding & cramping; estrogen-free.'
+    id: 'levonorgestrel_30',
+    name: 'Levonorgestrel / EE 30 mcg (Monophasic)',
+    brands: 'Levora, Portia, Nordette, Marlissa, Kurvelo',
+    category: 'coc_30_35',
+    gen: 'gen2',
+    badgeClass: 'b-coc',
+    badgeText: '2nd-Gen COC',
+    specs: ['30 mcg EE', '2nd-Gen Levonorgestrel', 'Monophasic 21/7', 'Lowest VTE Risk'],
+    androgen: 'Mild-to-moderate androgenic activity (good libido preservation, less ideal for severe acne).',
+    clinical: 'Classic ACOG/CDC benchmark first-line COC with the lowest relative VTE risk among combined pills and solid cycle control.'
   },
   {
-    id: 'cu_iud',
-    name: 'Copper IUD (Paragard)',
-    sub: 'Hormone-Free Intrauterine Device (10–12 yr)',
-    efficacy: '>99.2% (Top-Tier LARC + Emergency Contraception)',
-    perks: '100% hormone-free; zero drug interactions; may increase menstrual flow.'
+    id: 'levonorgestrel_20',
+    name: 'Levonorgestrel / EE 20 mcg (Monophasic)',
+    brands: 'Aviane, Aubra, Lessina, Lutera, Sronyx, Vienva',
+    category: 'coc_10_20',
+    gen: 'gen2',
+    badgeClass: 'b-coc',
+    badgeText: 'Low-EE 2nd-Gen',
+    specs: ['20 mcg EE', '2nd-Gen Levonorgestrel', 'Monophasic 21/7', 'Low Estrogen'],
+    androgen: 'Low estrogen dose minimizes nausea, breast tenderness, and fluid retention while maintaining 2nd-gen safety.',
+    clinical: 'Ideal starting pill for estrogen-sensitive patients, adolescents, or perimenopausal women without contraindications.'
   },
   {
-    id: 'implant',
-    name: 'Etonogestrel Implant (Nexplanon)',
-    sub: 'Subdermal Progestin Implant (3–5 yr)',
-    efficacy: '>99.9% (Highest Reversible Efficacy)',
-    perks: 'Estrogen-free; improves dysmenorrhea; irregular spotting possible.'
+    id: 'norgestimate_35',
+    name: 'Norgestimate / EE 35 mcg (Monophasic & Triphasic)',
+    brands: 'Sprintec, Estarylla, Mono-Linyah (Mono) • Tri-Sprintec, Tri-Lo-Sprintec (25 mcg Tri)',
+    category: 'coc_30_35',
+    gen: 'gen3',
+    badgeClass: 'b-coc',
+    badgeText: '3rd-Gen COC',
+    specs: ['25–35 mcg EE', '3rd-Gen Norgestimate', 'Mono or Triphasic', 'FDA Acne Approved'],
+    androgen: 'Low androgenicity; increases SHBG and lowers free testosterone without the higher VTE signal seen with desogestrel.',
+    clinical: 'Top first-line choice for hormonal acne, hirsutism, and PCOS; Tri-Lo-Sprintec (25 mcg) reduces estrogen side effects.'
   },
   {
-    id: 'dmpa',
-    name: 'DMPA Injection (Depo-Provera)',
-    sub: '150 mg IM or 104 mg SubQ every 12–13 weeks',
-    efficacy: '~96% typical use (>99% perfect use)',
-    perks: 'Estrogen-free; often induces amenorrhea; note 2024 MEC VTE precaution.'
+    id: 'norethindrone_20_24',
+    name: 'Norethindrone Acetate / EE 20 mcg (24/4 & 21/7)',
+    brands: 'Junel Fe 1/20, Microgestin Fe 1/20 (21/7) • Loestrin 24 Fe, Blisovi 24 Fe (24/4)',
+    category: 'coc_10_20',
+    gen: 'gen1',
+    badgeClass: 'b-coc',
+    badgeText: '1st-Gen COC',
+    specs: ['20 mcg EE', '1st-Gen Norethindrone', '21/7 or 24/4 + Iron', 'Light Withdrawal Bleed'],
+    androgen: 'Low progestin dose; 24/4 shortened hormone-free interval gives lighter bleeds and fewer hormone-withdrawal headaches.',
+    clinical: 'Widely stocked generic; Fe (ferrous fumarate) placebo tablets help prevent iron deficiency.'
   },
   {
-    id: 'pop',
-    name: 'Progestin-Only Pills (POPs)',
-    sub: 'Norethindrone 0.35 mg (3-hr window) • Drospirenone/Slynd (24-hr window)',
-    efficacy: '~93% typical use',
-    perks: 'Estrogen-free oral option; Slynd offers 24-hr missed-pill flexibility (avoid in hyperkalemia).'
+    id: 'loloestrin_10',
+    name: 'Norethindrone Acetate / EE 10 mcg (Ultra-Low Dose)',
+    brands: 'Lo Loestrin Fe (24 days 10 mcg EE + 2 days 10 mcg EE alone + 2 Fe)',
+    category: 'coc_10_20',
+    gen: 'gen1',
+    badgeClass: 'b-coc',
+    badgeText: 'Ultra-Low 10 mcg',
+    specs: ['10 mcg EE', '1st-Gen Norethindrone', '24/2/2 Biphasic', 'Minimal Estrogen SE'],
+    androgen: 'Lowest available ethinyl estradiol dose in the U.S.',
+    clinical: 'Best for severe estrogen-induced nausea, mastalgia, or bloating, and perimenopause; unscheduled spotting is common in cycles 1–3.'
   },
   {
-    id: 'chc',
-    name: 'Combined Hormonal Contraceptives (CHCs)',
-    sub: 'Combined Pill (COC), Patch (Xulane/Twirla), Vaginal Ring (NuvaRing/Annovera)',
-    efficacy: '~93% typical use',
-    perks: 'Predictable withdrawal bleeds; improves acne, hirsutism & PMDD; contains estrogen.'
+    id: 'drospirenone_20_24',
+    name: 'Drospirenone 3 mg / EE 20 mcg (24/4)',
+    brands: 'Yaz, Gianvi, Loryna, Nikki',
+    category: 'coc_10_20',
+    gen: 'gen4',
+    badgeClass: 'b-coc',
+    badgeText: '4th-Gen COC',
+    specs: ['20 mcg EE', '4th-Gen Drospirenone', 'Monophasic 24/4', 'FDA PMDD & Acne'],
+    androgen: 'Anti-androgenic AND anti-mineralocorticoid (spironolactone analog — reduces water retention/bloating).',
+    clinical: 'FDA-approved for PMDD, moderate acne, and contraception; avoid in hyperkalemia, renal insufficiency, or adrenal insufficiency.'
+  },
+  {
+    id: 'drospirenone_30_21',
+    name: 'Drospirenone 3 mg / EE 30 mcg (21/7)',
+    brands: 'Yasmin, Ocella, Syeda, Zumandimine',
+    category: 'coc_30_35',
+    gen: 'gen4',
+    badgeClass: 'b-coc',
+    badgeText: '4th-Gen COC',
+    specs: ['30 mcg EE', '4th-Gen Drospirenone', 'Monophasic 21/7', 'Strong Cycle Control'],
+    androgen: 'Anti-androgenic & anti-mineralocorticoid with higher 30 mcg EE for better breakthrough-bleeding control than Yaz.',
+    clinical: 'Preferred over 20 mcg Yaz if patient experiences spotting on lower-dose drospirenone; check K+ if on ACEi/ARB/spironolactone.'
+  },
+  {
+    id: 'extended_84_7',
+    name: 'Extended-Cycle Levonorgestrel / EE (84/7 or 365-Day)',
+    brands: 'Seasonale / Jolessa (84 active / 7 placebo) • Seasonique (84 / 7 of 10 mcg EE) • Amethyst (Continuous)',
+    category: 'coc_ext',
+    gen: 'gen2',
+    badgeClass: 'b-ext',
+    badgeText: 'Extended / Continuous',
+    specs: ['20–30 mcg EE', '2nd-Gen Levonorgestrel', '84/7 or Continuous', '4 or 0 Periods/Yr'],
+    androgen: 'Uses low-VTE-risk 2nd-generation levonorgestrel in continuous or quarterly dosing.',
+    clinical: 'Ideal for menorrhagia, dysmenorrhea, endometriosis, menstrual migraines (without aura), or patient preference to suppress menses.'
+  },
+  {
+    id: 'pop_drospirenone',
+    name: 'Drospirenone 4 mg POP (Slynd)',
+    brands: 'Slynd (24 active hormone pills + 4 inert pills)',
+    category: 'pop',
+    gen: 'gen4',
+    badgeClass: 'b-pop',
+    badgeText: 'Estrogen-Free POP',
+    specs: ['0 mcg Estrogen', '4th-Gen Drospirenone', '24-Hr Missed-Pill Window', 'Anti-Androgenic'],
+    androgen: 'Anti-androgenic & anti-mineralocorticoid; inhibits ovulation reliably (~97% cycles) unlike traditional POPs.',
+    clinical: 'Game-changer estrogen-free pill: 24-hour missed-pill flexibility and less irregular spotting than norethindrone; avoid in hyperkalemia/CKD.'
+  },
+  {
+    id: 'pop_norethindrone',
+    name: 'Norethindrone 0.35 mg & Norgestrel 0.075 mg POPs',
+    brands: 'Camila, Errin, Heather, Nora-BE (Norethindrone) • Opill (Norgestrel OTC)',
+    category: 'pop',
+    gen: 'gen1',
+    badgeClass: 'b-pop',
+    badgeText: 'Classic / OTC POP',
+    specs: ['0 mcg Estrogen', '1st/2nd-Gen Progestin', 'Strict 3-Hr Window', 'Breastfeeding Safe'],
+    androgen: 'Low-dose progestin acting primarily via cervical mucus thickening; 28 active pills (no placebo week).',
+    clinical: 'Classic postpartum/breastfeeding oral pill and affordable generic (Opill is OTC); requires taking within the exact same 3-hour window daily.'
   }
 ];
 
-const MEC_DATA = {
-  healthy: {
-    summary: '<strong>Baseline Guidance:</strong> All reversible contraceptive methods are safe (Category 1). Use shared decision-making around bleeding preferences, LARC convenience, and non-contraceptive benefits.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Safe across all reproductive ages, including nulliparous adolescents.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Safe across all reproductive ages; also works as emergency contraception within 5 days.' },
-      implant: { cat: 1, text: 'Cat 1 — Safe across all reproductive ages with >99.9% efficacy.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Safe (Cat 2 if <18y or >45y due to theoretical bone density considerations).' },
-      pop: { cat: 1, text: 'Cat 1 — Safe oral option with minimal contraindications.' },
-      chc: { cat: 1, text: 'Cat 1 — Safe first-line oral, transdermal, or vaginal option.' }
-    }
-  },
-  migraine_aura: {
-    summary: '<strong>Critical Contraindication:</strong> Estrogen-containing methods (CHCs) are strictly <strong>Category 4</strong> at any age in migraine with aura due to elevated ischemic stroke risk. All progestin-only and copper methods are safe.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 (Initiation) — Completely estrogen-free; zero stroke risk elevation.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Hormone-free; zero stroke risk elevation.' },
-      implant: { cat: 1, text: 'Cat 1 (Initiation) — Estrogen-free LARC option.' },
-      dmpa: { cat: 1, text: 'Cat 1 (Initiation) — Estrogen-free injectable option.' },
-      pop: { cat: 1, text: 'Cat 1 (Initiation) — Safe estrogen-free oral pill.' },
-      chc: { cat: 4, text: 'Cat 4 (Contraindicated) — Unacceptable ischemic stroke risk regardless of age.' }
-    }
-  },
-  migraine_no_aura_35: {
-    summary: '<strong>Age ≥35 + Migraine Without Aura:</strong> Initiating CHCs is <strong>Category 3</strong> (risks usually outweigh benefits). Prefer progestin-only or non-hormonal options.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Preferred safe LARC option.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Hormone-free option.' },
-      implant: { cat: 1, text: 'Cat 1 — Estrogen-free LARC option.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Estrogen-free injectable option.' },
-      pop: { cat: 1, text: 'Cat 1 — Safe estrogen-free oral pill.' },
-      chc: { cat: 3, text: 'Cat 3 (Initiation) / Cat 4 (Continuation) — Avoid initiating estrogen at age ≥35 with migraine.' }
-    }
-  },
-  htn_controlled: {
-    summary: '<strong>Controlled HTN or BP 140–159/90–99 mmHg:</strong> CHCs are <strong>Category 3</strong> due to increased MI and stroke risk. Progestin-only and copper methods remain Category 1–2.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Safe; does not elevate blood pressure.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Safe; hormone-free.' },
-      implant: { cat: 1, text: 'Cat 1 — Safe; does not elevate blood pressure.' },
-      dmpa: { cat: 2, text: 'Cat 2 — Generally safe (Cat 3 if severe HTN ≥160/100 or vascular disease).' },
-      pop: { cat: 1, text: 'Cat 1 — Safe oral option (monitor K+ if using drospirenone with ACEi/ARB).' },
-      chc: { cat: 3, text: 'Cat 3 — Avoid CHCs; estrogen raises angiotensinogen and cardiovascular risk.' }
-    }
-  },
-  htn_severe: {
-    summary: '<strong>Severe HTN (≥160/100 mmHg) or Vascular Disease:</strong> CHCs are <strong>Category 4</strong> and DMPA is <strong>Category 3</strong>. Choose IUDs, Nexplanon, or POPs.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Preferred safe LARC option.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Preferred hormone-free option.' },
-      implant: { cat: 1, text: 'Cat 1 — Preferred estrogen-free LARC.' },
-      dmpa: { cat: 3, text: 'Cat 3 — Avoid due to hypoestrogenic lipid/vascular effects.' },
-      pop: { cat: 1, text: 'Cat 1 — Safe oral option.' },
-      chc: { cat: 4, text: 'Cat 4 (Contraindicated) — High arterial thrombosis risk.' }
-    }
-  },
-  smoker_35_heavy: {
-    summary: '<strong>Smoker Age ≥35 (≥15 Cigarettes/Day):</strong> CHCs are <strong>Category 4</strong> due to steep synergistic MI and VTE risk. All progestin-only and copper methods are Category 1.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Safe LARC option.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Safe hormone-free option.' },
-      implant: { cat: 1, text: 'Cat 1 — Safe LARC option.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Safe injectable option.' },
-      pop: { cat: 1, text: 'Cat 1 — Safe oral option.' },
-      chc: { cat: 4, text: 'Cat 4 (Contraindicated) — Cat 3 if <15 cig/day; Cat 4 if ≥15 cig/day.' }
-    }
-  },
-  vte_history: {
-    summary: '<strong>History of DVT/PE or Thrombophilia:</strong> CHCs are <strong>Category 4</strong>. Per the 2024 CDC U.S. MEC update, DMPA is <strong>Category 2/3</strong> (caution in higher VTE risk), while IUDs, Nexplanon, and POPs remain safe.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 (or Cat 2 if acute VTE on anticoagulation) — Does not increase VTE risk; reduces heavy bleeding on anticoagulants.' },
-      cu_iud: { cat: 1, text: 'Cat 1 (or Cat 2 if acute VTE on anticoagulation) — Hormone-free.' },
-      implant: { cat: 1, text: 'Cat 1 (or Cat 2 if acute VTE) — Safe estrogen-free LARC.' },
-      dmpa: { cat: 3, text: 'Cat 3 (2024 U.S. MEC Update) — Observational data suggest elevated VTE risk with DMPA; prefer IUD/implant/POP.' },
-      pop: { cat: 1, text: 'Cat 1 (or Cat 2 if acute VTE) — Safe oral option.' },
-      chc: { cat: 4, text: 'Cat 4 (Contraindicated) — Estrogen increases hepatic clotting factors and recurrent VTE.' }
-    }
-  },
-  postpartum_bf_early: {
-    summary: '<strong>Postpartum &amp; Breastfeeding (&lt;21 Days):</strong> CHCs are <strong>Category 4</strong> due to peak postpartum VTE risk and potential impact on milk supply. Immediate postpartum IUD or implant is safe.',
-    ratings: {
-      lng_iud: { cat: 2, text: 'Cat 2 (<4 weeks postpartum) — Safe for breastfeeding; slightly higher expulsion rate if placed immediately post-placenta.' },
-      cu_iud: { cat: 1, text: 'Cat 1 (<48h) / Cat 2 (48h to <4w) — Safe hormone-free option.' },
-      implant: { cat: 2, text: 'Cat 2 (<21 days breastfeeding) — Safe; does not impair lactation.' },
-      dmpa: { cat: 2, text: 'Cat 2 (<21 days breastfeeding) — Safe; monitor milk supply.' },
-      pop: { cat: 2, text: 'Cat 2 (<21 days breastfeeding) — Classic postpartum oral pill.' },
-      chc: { cat: 4, text: 'Cat 4 (Contraindicated) — Peak postpartum VTE window + milk suppression.' }
-    }
-  },
-  postpartum_bf_mid: {
-    summary: '<strong>Postpartum &amp; Breastfeeding (21 to &lt;30 Days):</strong> CHCs are <strong>Category 3</strong> (and Cat 3 at 30–42 days if additional VTE risk factors exist). Progestin-only and copper methods are Category 1.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 (≥4 weeks) / Cat 2 (<4 weeks) — Safe for lactation.' },
-      cu_iud: { cat: 1, text: 'Cat 1 (≥4 weeks) / Cat 2 (<4 weeks) — Safe hormone-free option.' },
-      implant: { cat: 1, text: 'Cat 1 — Safe; zero impact on breast milk volume.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Safe injectable option.' },
-      pop: { cat: 1, text: 'Cat 1 — Safe oral option.' },
-      chc: { cat: 3, text: 'Cat 3 — Delay CHCs until at least 30–42 days postpartum.' }
-    }
-  },
-  obesity: {
-    summary: '<strong>Obesity (BMI ≥30 kg/m²):</strong> All methods remain Category 1–2, though CHCs carry slightly higher baseline VTE risk and transdermal patches have reduced efficacy above 90 kg (198 lbs).',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Full efficacy regardless of BMI; also provides endometrial protection.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Full efficacy regardless of BMI.' },
-      implant: { cat: 1, text: 'Cat 1 — High efficacy maintained across BMI classes.' },
-      dmpa: { cat: 1, text: 'Cat 1 (Cat 2 if <18y) — Note potential weight gain counseling.' },
-      pop: { cat: 1, text: 'Cat 1 — Safe estrogen-free oral option.' },
-      chc: { cat: 2, text: 'Cat 2 — Safe if no other VTE/HTN risks; avoid patch if weight ≥90 kg (198 lbs) due to reduced efficacy.' }
-    }
-  },
-  enzyme_inducers: {
-    summary: '<strong>CYP3A4 Enzyme-Inducing Drugs (Carbamazepine, Phenytoin, Phenobarbital, Primidone, Topiramate &gt;200 mg, Oxcarbazepine, Rifampin):</strong> Accelerated hormone clearance reduces efficacy of CHCs, POPs, and implants. <strong>IUDs and DMPA are unaffected (Cat 1)!</strong>',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 — Local endometrial action is unaffected by hepatic CYP3A4 induction.' },
-      cu_iud: { cat: 1, text: 'Cat 1 — Non-hormonal; zero drug interactions.' },
-      implant: { cat: 2, text: 'Cat 2 (Reduced Efficacy) — Lower etonogestrel levels may cause contraceptive failure; use backup or choose IUD/DMPA.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Hepatic clearance is already blood-flow limited; efficacy is preserved.' },
-      pop: { cat: 3, text: 'Cat 3 — Likely reduced contraceptive efficacy; avoid as primary method.' },
-      chc: { cat: 3, text: 'Cat 3 — Reduced contraceptive efficacy and breakthrough bleeding; avoid.' }
-    }
-  },
-  heavy_bleeding: {
-    summary: '<strong>Heavy Menstrual Bleeding / Dysmenorrhea / Anemia:</strong> <strong>LNG-IUD (Mirena/Liletta)</strong> is first-line medical therapy (reduces menstrual blood loss by ~80–90%), followed by CHCs or DMPA. Avoid Copper IUD if menorrhagia is already problematic.',
-    ratings: {
-      lng_iud: { cat: 1, text: 'Cat 1 (Top Choice) — FDA-approved for heavy menstrual bleeding; strongly improves hemoglobin.' },
-      cu_iud: { cat: 2, text: 'Cat 2 (Relative Caution) — Often increases menstrual flow and cramping.' },
-      implant: { cat: 1, text: 'Cat 1 — Improves dysmenorrhea, though unscheduled spotting is common.' },
-      dmpa: { cat: 1, text: 'Cat 1 — Induces amenorrhea in >50% of users by 1 year.' },
-      pop: { cat: 1, text: 'Cat 1 — Helpful if estrogen is contraindicated.' },
-      chc: { cat: 1, text: 'Cat 1 — Continuous or cyclic CHCs reliably reduce menstrual blood loss and cramps.' }
-    }
-  }
-};
-
-function renderMethods() {
-  const condKey = document.getElementById('conditionSelect').value;
-  const scenario = MEC_DATA[condKey];
-  document.getElementById('conditionSummary').innerHTML = scenario.summary;
-
-  const grid = document.getElementById('methodsGrid');
-  grid.innerHTML = METHODS.map(m => {
-    const info = scenario.ratings[m.id];
-    const catLabels = { 1: 'Cat 1 • Safe', 2: 'Cat 2 • OK', 3: 'Cat 3 • Caution', 4: 'Cat 4 • Avoid' };
-    return `
-      <div class="method-card cat-${info.cat}">
-        <div>
-          <div class="card-top">
-            <div>
-              <div class="method-name">${m.name}</div>
-              <div class="method-sub">${m.sub}</div>
-            </div>
-            <span class="cat-badge badge-${info.cat}">${catLabels[info.cat]}</span>
-          </div>
-          <div class="mec-rationale">${info.text}</div>
-        </div>
-        <div class="method-meta">
-          <div><strong>Efficacy:</strong> ${m.efficacy}</div>
-          <div><strong>Profile:</strong> ${m.perks}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-renderMethods();
-</script>
-</body>
-</html>
+const GOALS
