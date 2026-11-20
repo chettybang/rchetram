@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f172a">
-  <title>Oral Contraceptive &amp; U.S. MEC Advisor | ChetMed</title>
-  <meta name="description" content="Oral contraceptive pill selector by estrogen dose, progestin generation, phasic regimen, clinical goals, CDC U.S. MEC eligibility, and missed-pill rules.">
+  <title>Oral Contraceptive (OCP) Switch &amp; Missed Dose Advisor | ChetMed</title>
+  <meta name="description" content="Match oral contraceptives by estrogen/progestin generation and apply CDC Selected Practice Recommendations for missed pills.">
   <style>
     :root {
       --bg: #0f172a;
@@ -15,12 +15,11 @@
       --text-muted: #94a3b8;
       --accent: #38bdf8;
       --accent-soft: rgba(56, 189, 248, 0.14);
+      --rose-header: #f43f5e;
       --emerald: #34d399;
       --emerald-soft: rgba(52, 211, 153, 0.12);
       --amber: #fbbf24;
       --amber-soft: rgba(251, 191, 36, 0.12);
-      --rose: #f87171;
-      --rose-soft: rgba(248, 113, 113, 0.12);
       --purple: #c084fc;
       --purple-soft: rgba(192, 132, 252, 0.14);
     }
@@ -35,87 +34,96 @@
       background: var(--bg);
       color: var(--text-main);
       min-height: 100vh;
-      padding: 18px 12px 52px;
+      padding: 18px 14px 52px;
       line-height: 1.5;
     }
     .container {
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
     }
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     header a {
       text-decoration: none;
       color: var(--accent);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
     }
     header span {
       font-size: 0.78rem;
       color: var(--text-muted);
-      text-align: right;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
     }
 
     .panel {
       background: var(--card);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 18px;
+      padding: 16px;
       margin-bottom: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
-    h1 {
-      font-size: 1.38rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 4px;
-    }
-    .subtitle {
-      font-size: 0.86rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
 
-    /* Responsive 3-Tab Switcher */
-    .nav-tabs {
+    /* Responsive Wrapped/Grid Tabs — Never Clips on iPhone */
+    .tab-bar {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
       background: #0f172a;
-      padding: 5px;
+      padding: 6px;
       border-radius: 12px;
       border: 1px solid var(--card-border);
+      margin-bottom: 16px;
     }
     .tab-btn {
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      padding: 10px 6px;
-      border-radius: 8px;
+      padding: 10px 8px;
+      border-radius: 9px;
       cursor: pointer;
-      transition: all 0.15s ease;
       text-align: center;
-      line-height: 1.25;
+      line-height: 1.3;
+      word-break: break-word;
+      transition: all 0.15s ease;
     }
     .tab-btn.active {
-      background: var(--accent);
-      color: #0f172a;
+      background: #1e293b;
+      border-color: var(--rose-header);
+      color: #fda4af;
     }
 
-    .tab-view { display: none; }
-    .tab-view.active { display: block; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
     .field-label {
       display: block;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -137,150 +145,179 @@
     }
     select:focus { border-color: var(--accent); }
 
-    .filters-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
-      gap: 12px;
-    }
-
-    /* Recommendation Highlight Card (Tab 1) */
-    .goal-summary {
+    .goal-callout {
       background: #0f172a;
       border: 1px solid var(--card-border);
-      border-left: 4px solid var(--accent);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-top: 14px;
-      font-size: 0.86rem;
-      color: #e2e8f0;
-    }
-    .goal-summary strong { color: var(--accent); }
-
-    /* Responsive Cards Grid */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-      gap: 14px;
-    }
-    .ocp-card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-width: 0;
-      word-wrap: break-word;
-    }
-    .ocp-card.featured {
-      border-color: rgba(52, 211, 153, 0.45);
-    }
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .ocp-title {
-      font-size: 1.02rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.3;
-    }
-    .ocp-brands {
-      font-size: 0.78rem;
-      color: var(--accent);
-      font-weight: 600;
-      margin-top: 2px;
-    }
-    .pill-badge {
-      flex-shrink: 0;
-      font-size: 0.68rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 3px 8px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .b-coc { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.35); }
-    .b-pop { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.35); }
-    .b-ext { background: var(--purple-soft); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.35); }
-    .b-tri { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.35); }
-
-    .spec-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 8px 0 10px;
-    }
-    .spec-tag {
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      color: #cbd5e1;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-
-    .card-body-text {
-      font-size: 0.83rem;
-      color: #cbd5e1;
-      display: grid;
-      gap: 6px;
-    }
-    .card-body-text strong {
-      color: #ffffff;
-    }
-
-    /* U.S. MEC Legend & Badges (Tab 3) */
-    .mec-legend {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    @media (min-width: 640px) {
-      .mec-legend { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    }
-    .legend-box {
+      border-left: 3px solid var(--accent);
       border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 0.74rem;
-      line-height: 1.3;
+      padding: 11px 14px;
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      margin-bottom: 16px;
     }
-    .legend-box strong { display: block; font-size: 0.78rem; margin-bottom: 2px; }
-    .l-1 { background: var(--emerald-soft); border: 1px solid rgba(52, 211, 153, 0.4); color: var(--emerald); }
-    .l-2 { background: var(--accent-soft); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent); }
-    .l-3 { background: var(--amber-soft); border: 1px solid rgba(251, 191, 36, 0.45); color: var(--amber); }
-    .l-4 { background: var(--rose-soft); border: 1px solid rgba(248, 113, 113, 0.45); color: var(--rose); }
+    .goal-callout strong { color: var(--accent); }
 
-    .cat-1 { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.4); }
-    .cat-2 { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.4); }
-    .cat-3 { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.45); }
-    .cat-4 { background: var(--rose-soft); color: var(--rose); border: 1px solid rgba(248, 113, 113, 0.45); }
+    .matrix-heading {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #fda4af;
+      margin-bottom: 12px;
+    }
 
-    .missed-box {
+    /* Desktop Table Header (Hidden on Mobile so Zero Horizontal Clipping Occurs) */
+    .desktop-table-head {
+      display: none;
+    }
+    @media (min-width: 740px) {
+      .desktop-table-head {
+        display: grid;
+        grid-template-columns: 1.05fr 1.35fr 0.75fr 1.35fr 1.5fr;
+        gap: 12px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--card-border);
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #fda4af;
+      }
+    }
+
+    /* Responsive Matrix Rows -> Mobile Cards on iPhone, Aligned Columns on Desktop */
+    .matrix-list {
+      display: grid;
+      gap: 10px;
+    }
+    .matrix-row {
       background: #0f172a;
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 14px;
-      margin-top: 10px;
-      font-size: 0.83rem;
-      color: #cbd5e1;
-    }
-    .missed-box h3 {
-      font-size: 0.9rem;
-      color: var(--amber);
-      margin-bottom: 6px;
-    }
-    .missed-box ul {
-      padding-left: 18px;
       display: grid;
-      gap: 6px;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      min-width: 0;
+    }
+    @media (min-width: 740px) {
+      .matrix-row {
+        grid-template-columns: 1.05fr 1.35fr 0.75fr 1.35fr 1.5fr;
+        align-items: center;
+        gap: 12px;
+      }
+    }
+
+    .row-top-mobile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    @media (min-width: 740px) {
+      .row-top-mobile { display: contents; }
+    }
+
+    .gen-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 4px 9px;
+      border-radius: 7px;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      background: var(--accent-soft);
+      color: var(--accent);
+      width: fit-content;
+    }
+    .gen-badge.pop {
+      border-color: rgba(52, 211, 153, 0.45);
+      background: var(--emerald-soft);
+      color: var(--emerald);
+    }
+    .gen-badge.ext {
+      border-color: rgba(192, 132, 252, 0.45);
+      background: var(--purple-soft);
+      color: var(--purple);
+    }
+
+    .ee-pill {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #ffffff;
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      padding: 3px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      width: fit-content;
+    }
+
+    .brand-col {
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.35;
+    }
+    .prog-col {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .note-col {
+      font-size: 0.81rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .mobile-lbl {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+    @media (min-width: 740px) {
+      .mobile-lbl { display: none; }
+    }
+
+    /* Tab 2: Interactive CDC Missed-Pill Result Box */
+    .missed-result {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--amber);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .missed-result h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--amber);
+      margin-bottom: 8px;
+    }
+    .missed-result ul {
+      padding-left: 18px;
+      font-size: 0.86rem;
+      color: #e2e8f0;
+      display: grid;
+      gap: 7px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .refresh-btn {
+      margin-top: 8px;
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -288,247 +325,351 @@
   <div class="container">
     <header>
       <a href="/chetmed/">← Back to ChetMed</a>
-      <span>CDC U.S. MEC / SPR 2024</span>
+      <span>CDC U.S. MEC / SPR</span>
     </header>
 
+    <h1>Oral Contraceptive (OCP) Switch &amp; Missed Dose Advisor</h1>
+    <p class="subtitle">Match oral contraceptives by estrogen/progestin generation and apply CDC Selected Practice Recommendations for missed pills.</p>
+
     <div class="panel">
-      <h1>💊 Oral Contraceptive &amp; Birth Control Advisor</h1>
-      <p class="subtitle">Compare Combined OCPs (by estrogen dose, progestin generation &amp; phasic cycle), Progestin-Only Pills (POPs), clinical side-effect adjustments, and CDC U.S. MEC eligibility.</p>
-
-      <div class="nav-tabs">
-        <button type="button" class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">1. Match Pill by Goal / Side Effect</button>
-        <button type="button" class="tab-btn" id="tabBtn2" onclick="switchTab(2)">2. All Oral Pill Formulations</button>
-        <button type="button" class="tab-btn" id="tabBtn3" onclick="switchTab(3)">3. U.S. MEC &amp; Missed Pills</button>
-      </div>
-    </div>
-
-    <!-- =========================================================================
-         TAB 1: MATCH ORAL CONTRACEPTIVE BY CLINICAL GOAL / SIDE EFFECT
-    ========================================================================== -->
-    <div id="tabView1" class="tab-view active">
-      <div class="panel">
-        <label for="goalSelect" class="field-label">Select Patient Goal or Current Pill Side Effect</label>
-        <select id="goalSelect" onchange="renderGoalMatch()">
-          <option value="first_line">First-Line Starter (Lowest VTE Risk &amp; Balanced Tolerance)</option>
-          <option value="acne">Acne, Hirsutism, or PCOS Hyperandrogenism</option>
-          <option value="pmdd">PMDD or Severe Premenstrual Mood / Bloating</option>
-          <option value="estrogen_se">Estrogen Side Effects (Nausea, Breast Tenderness, Headaches)</option>
-          <option value="btb_early">Breakthrough Bleeding / Spotting (Early/Mid-Cycle or on 10–20 mcg EE)</option>
-          <option value="heavy_menses">Heavy Menstrual Bleeding, Dysmenorrhea, or Desire for Amenorrhea</option>
-          <option value="no_estrogen">Estrogen Contraindicated (Migraine w/ Aura, HTN, VTE, Breastfeeding, Smoker ≥35)</option>
-        </select>
-
-        <div class="goal-summary" id="goalSummary"></div>
+      <div class="tab-bar">
+        <button type="button" class="tab-btn active" id="btnTab1" onclick="switchTab(1)">1. OCP Brand &amp; Component Matcher</button>
+        <button type="button" class="tab-btn" id="btnTab2" onclick="switchTab(2)">2. CDC Missed Dose Advisor</button>
       </div>
 
-      <div class="cards-grid" id="goalCardsGrid"></div>
-    </div>
-
-    <!-- =========================================================================
-         TAB 2: ALL ORAL CONTRACEPTIVE FORMULATIONS (FILTERABLE MATRIX)
-    ========================================================================== -->
-    <div id="tabView2" class="tab-view">
-      <div class="panel">
-        <div class="filters-row">
+      <!-- =========================================================================
+           TAB 1: OCP BRAND & COMPONENT MATCHER
+      ========================================================================== -->
+      <div id="panel1" class="tab-panel active">
+        <div class="filters-grid">
           <div>
-            <label for="filterType" class="field-label">Pill Category / Estrogen Dose</label>
-            <select id="filterType" onchange="renderAllFormulations()">
-              <option value="all">All Oral Contraceptives (COCs &amp; POPs)</option>
-              <option value="coc_10_20">Low / Ultra-Low Estrogen COC (10–20 mcg EE)</option>
-              <option value="coc_30_35">Standard Estrogen COC (30–35 mcg EE)</option>
-              <option value="coc_ext">Extended / Continuous Cycle COC (84/7 or 365d)</option>
-              <option value="pop">Progestin-Only Pills (POPs — Estrogen-Free)</option>
+            <label for="goalFilter" class="field-label">Select Primary Clinical Goal / Constraint</label>
+            <select id="goalFilter" onchange="renderMatrix()">
+              <option value="all">Show All Pill Classes</option>
+              <option value="first_line">First-Line Starter (Lowest VTE Risk — 2nd Gen)</option>
+              <option value="acne">Acne, Hirsutism, or PCOS (Low/Anti-Androgenic)</option>
+              <option value="pmdd">PMDD or Premenstrual Mood / Bloating (24/4)</option>
+              <option value="estrogen_se">Estrogen Side Effects (Nausea / Mastalgia — Low EE)</option>
+              <option value="btb">Breakthrough Bleeding / Spotting (Step Up EE)</option>
+              <option value="extended">Heavy Menses / Dysmenorrhea / Suppress Periods</option>
+              <option value="pop_only">Estrogen Contraindicated (Migraine w/ Aura, HTN, VTE, BF)</option>
             </select>
           </div>
+
           <div>
-            <label for="filterGen" class="field-label">Progestin Generation / Profile</label>
-            <select id="filterGen" onchange="renderAllFormulations()">
-              <option value="all">All Progestin Generations</option>
-              <option value="gen1">1st Gen (Norethindrone / Norethindrone Acetate)</option>
-              <option value="gen2">2nd Gen (Levonorgestrel / Norgestrel — Lowest VTE Risk)</option>
-              <option value="gen3">3rd Gen (Norgestimate / Desogestrel — Low Androgen)</option>
-              <option value="gen4">4th Gen (Drospirenone — Anti-Androgenic / Anti-Mineralocorticoid)</option>
+            <label for="eeFilter" class="field-label">Filter by Ethinyl Estradiol (EE) Dose</label>
+            <select id="eeFilter" onchange="renderMatrix()">
+              <option value="all">All EE Strengths</option>
+              <option value="0">0 mcg (Progestin-Only / Estrogen-Free)</option>
+              <option value="10_20">10–20 mcg EE (Low / Ultra-Low Dose)</option>
+              <option value="25_35">25–35 mcg EE (Standard Dose)</option>
             </select>
           </div>
         </div>
+
+        <div class="goal-callout" id="goalCallout"></div>
+
+        <div class="matrix-heading">Oral Contraceptive Brand Matrix</div>
+
+        <div class="desktop-table-head">
+          <div>Class / Type</div>
+          <div>Common Brand Names</div>
+          <div>EE Dose</div>
+          <div>Progestin &amp; Generation</div>
+          <div>Regimen &amp; Clinical Notes</div>
+        </div>
+
+        <div class="matrix-list" id="matrixList"></div>
       </div>
 
-      <div class="cards-grid" id="allFormulationsGrid"></div>
-    </div>
+      <!-- =========================================================================
+           TAB 2: CDC MISSED DOSE ADVISOR
+      ========================================================================== -->
+      <div id="panel2" class="tab-panel">
+        <div class="filters-grid">
+          <div>
+            <label for="missedPillType" class="field-label">Oral Contraceptive Formulation</label>
+            <select id="missedPillType" onchange="renderMissedDose()">
+              <option value="coc">Combined Oral Contraceptive (COC — Estrogen + Progestin)</option>
+              <option value="pop_noreth">Progestin-Only Pill: Norethindrone 0.35 mg / Opill (3-Hr Window)</option>
+              <option value="pop_drsp">Progestin-Only Pill: Drospirenone 4 mg / Slynd (24-Hr Window)</option>
+            </select>
+          </div>
 
-    <!-- =========================================================================
-         TAB 3: CDC U.S. MEC ELIGIBILITY & MISSED-PILL RULES
-    ========================================================================== -->
-    <div id="tabView3" class="tab-view">
-      <div class="panel">
-        <div class="mec-legend">
-          <div class="legend-box l-1"><strong>Cat 1 — Safe</strong>No restriction</div>
-          <div class="legend-box l-2"><strong>Cat 2 — OK</strong>Benefits &gt; risks</div>
-          <div class="legend-box l-3"><strong>Cat 3 — Caution</strong>Risks &gt; benefits</div>
-          <div class="legend-box l-4"><strong>Cat 4 — Avoid</strong>Contraindicated</div>
+          <div id="cocCountWrap">
+            <label for="missedCount" class="field-label">How Many Active Pills Missed?</label>
+            <select id="missedCount" onchange="renderMissedDose()">
+              <option value="1">1 Active Pill Missed (&lt;48 hours since last pill taken)</option>
+              <option value="2">≥2 Consecutive Active Pills Missed (≥48 hours overdue)</option>
+            </select>
+          </div>
+
+          <div id="cocWeekWrap">
+            <label for="packWeek" class="field-label">Current Week of Pill Pack</label>
+            <select id="packWeek" onchange="renderMissedDose()">
+              <option value="w1">Week 1 (Active Days 1–7)</option>
+              <option value="w2">Week 2 (Active Days 8–14)</option>
+              <option value="w3">Week 3 (Active Days 15–21)</option>
+            </select>
+          </div>
         </div>
 
-        <label for="mecSelect" class="field-label">Patient Medical Condition (CDC U.S. MEC 2024)</label>
-        <select id="mecSelect" onchange="renderMec()">
-          <option value="healthy">Healthy / No Contraindications</option>
-          <option value="migraine_aura">Migraine WITH Aura (Any Age)</option>
-          <option value="migraine_no_aura_35">Migraine WITHOUT Aura (Age ≥35 Years)</option>
-          <option value="htn_mod">Hypertension — Controlled or BP 140–159/90–99 mmHg</option>
-          <option value="htn_sev">Hypertension — Uncontrolled (≥160/100) or Vascular Disease</option>
-          <option value="smoker_35">Smoker Age ≥35 Years (≥15 Cigarettes/Day)</option>
-          <option value="vte">History of DVT / PE or Known Thrombophilia</option>
-          <option value="bf_early">Postpartum &amp; Breastfeeding (&lt;21 Days Postpartum)</option>
-          <option value="ckd_hyperk">Chronic Kidney Disease / Hyperkalemia Risk</option>
-          <option value="cyp3a4">Enzyme-Inducing Meds (Carbamazepine, Phenytoin, Topiramate, Rifampin)</option>
-        </select>
-
-        <div class="goal-summary" id="mecSummary"></div>
-      </div>
-
-      <div class="cards-grid" id="mecMethodsGrid"></div>
-
-      <div class="panel" style="margin-top:16px;">
-        <h2 style="font-size:1.05rem; font-weight:800; margin-bottom:6px;">⏱️ CDC 2024 U.S. SPR Missed-Pill Rules</h2>
-        <div class="missed-box">
-          <h3>Combined Oral Contraceptives (COCs)</h3>
-          <ul>
-            <li><strong>1 Active Pill Missed (&lt;48h since last pill / &lt;24h late):</strong> Take missed pill ASAP, continue 1 pill daily; no backup contraception needed.</li>
-            <li><strong>≥2 Consecutive Active Pills Missed (≥48h since a pill was due):</strong> Take most recent missed pill ASAP, discard earlier missed pills, continue 1 pill daily, and use <strong>backup protection for 7 days</strong>. If missed in <strong>Week 1</strong> with unprotected sex in past 5 days, consider EC (if ulipristal/Ella is used, wait 5 days before restarting COC). If missed in <strong>Week 3</strong>, finish active pills and <strong>skip the placebo week</strong>.</li>
-          </ul>
-        </div>
-        <div class="missed-box">
-          <h3>Progestin-Only Pills (POPs) — Window Differs by Progestin!</h3>
-          <ul>
-            <li><strong>Norethindrone 0.35 mg &amp; Norgestrel 0.075 mg (Opill):</strong> Strict <strong>3-hour window</strong>. If taken &gt;3 hours late, take 1 pill ASAP, continue daily, and use <strong>backup protection for 2 days (48h)</strong>.</li>
-            <li><strong>Drospirenone 4 mg (Slynd — 24/4 Pack):</strong> Forgiving <strong>24-hour window</strong>. If 1 active pill is &lt;24 hours late (&lt;48h since prior pill), take ASAP—<strong>no backup needed</strong>. If ≥2 consecutive active pills missed (≥48h since scheduled), take most recent pill ASAP and use <strong>backup protection for 7 days</strong>.</li>
-          </ul>
-        </div>
+        <div class="missed-result" id="missedResult"></div>
       </div>
     </div>
+
+    <footer>
+      <div>ChetMed Clinical Suite • rchetram.com</div>
+      <button type="button" class="refresh-btn" onclick="forceClearCache()">↻ Force Refresh Offline Cache</button>
+    </footer>
   </div>
 
 <script>
-const ORAL_PILLS = [
+const PILL_MATRIX = [
   {
-    id: 'levonorgestrel_30',
-    name: 'Levonorgestrel / EE 30 mcg (Monophasic)',
-    brands: 'Levora, Portia, Nordette, Marlissa, Kurvelo',
-    category: 'coc_30_35',
-    gen: 'gen2',
-    badgeClass: 'b-coc',
-    badgeText: '2nd-Gen COC',
-    specs: ['30 mcg EE', '2nd-Gen Levonorgestrel', 'Monophasic 21/7', 'Lowest VTE Risk'],
-    androgen: 'Mild-to-moderate androgenic activity (good libido preservation, less ideal for severe acne).',
-    clinical: 'Classic ACOG/CDC benchmark first-line COC with the lowest relative VTE risk among combined pills and solid cycle control.'
-  },
-  {
-    id: 'levonorgestrel_20',
-    name: 'Levonorgestrel / EE 20 mcg (Monophasic)',
-    brands: 'Aviane, Aubra, Lessina, Lutera, Sronyx, Vienva',
-    category: 'coc_10_20',
-    gen: 'gen2',
-    badgeClass: 'b-coc',
-    badgeText: 'Low-EE 2nd-Gen',
-    specs: ['20 mcg EE', '2nd-Gen Levonorgestrel', 'Monophasic 21/7', 'Low Estrogen'],
-    androgen: 'Low estrogen dose minimizes nausea, breast tenderness, and fluid retention while maintaining 2nd-gen safety.',
-    clinical: 'Ideal starting pill for estrogen-sensitive patients, adolescents, or perimenopausal women without contraindications.'
-  },
-  {
-    id: 'norgestimate_35',
-    name: 'Norgestimate / EE 35 mcg (Monophasic & Triphasic)',
-    brands: 'Sprintec, Estarylla, Mono-Linyah (Mono) • Tri-Sprintec, Tri-Lo-Sprintec (25 mcg Tri)',
-    category: 'coc_30_35',
-    gen: 'gen3',
-    badgeClass: 'b-coc',
-    badgeText: '3rd-Gen COC',
-    specs: ['25–35 mcg EE', '3rd-Gen Norgestimate', 'Mono or Triphasic', 'FDA Acne Approved'],
-    androgen: 'Low androgenicity; increases SHBG and lowers free testosterone without the higher VTE signal seen with desogestrel.',
-    clinical: 'Top first-line choice for hormonal acne, hirsutism, and PCOS; Tri-Lo-Sprintec (25 mcg) reduces estrogen side effects.'
-  },
-  {
-    id: 'norethindrone_20_24',
-    name: 'Norethindrone Acetate / EE 20 mcg (24/4 & 21/7)',
-    brands: 'Junel Fe 1/20, Microgestin Fe 1/20 (21/7) • Loestrin 24 Fe, Blisovi 24 Fe (24/4)',
-    category: 'coc_10_20',
-    gen: 'gen1',
-    badgeClass: 'b-coc',
-    badgeText: '1st-Gen COC',
-    specs: ['20 mcg EE', '1st-Gen Norethindrone', '21/7 or 24/4 + Iron', 'Light Withdrawal Bleed'],
-    androgen: 'Low progestin dose; 24/4 shortened hormone-free interval gives lighter bleeds and fewer hormone-withdrawal headaches.',
-    clinical: 'Widely stocked generic; Fe (ferrous fumarate) placebo tablets help prevent iron deficiency.'
-  },
-  {
-    id: 'loloestrin_10',
-    name: 'Norethindrone Acetate / EE 10 mcg (Ultra-Low Dose)',
-    brands: 'Lo Loestrin Fe (24 days 10 mcg EE + 2 days 10 mcg EE alone + 2 Fe)',
-    category: 'coc_10_20',
-    gen: 'gen1',
-    badgeClass: 'b-coc',
-    badgeText: 'Ultra-Low 10 mcg',
-    specs: ['10 mcg EE', '1st-Gen Norethindrone', '24/2/2 Biphasic', 'Minimal Estrogen SE'],
-    androgen: 'Lowest available ethinyl estradiol dose in the U.S.',
-    clinical: 'Best for severe estrogen-induced nausea, mastalgia, or bloating, and perimenopause; unscheduled spotting is common in cycles 1–3.'
-  },
-  {
-    id: 'drospirenone_20_24',
-    name: 'Drospirenone 3 mg / EE 20 mcg (24/4)',
+    typeClass: 'COC (4th Gen)',
+    badgeStyle: '',
     brands: 'Yaz, Gianvi, Loryna, Nikki',
-    category: 'coc_10_20',
-    gen: 'gen4',
-    badgeClass: 'b-coc',
-    badgeText: '4th-Gen COC',
-    specs: ['20 mcg EE', '4th-Gen Drospirenone', 'Monophasic 24/4', 'FDA PMDD & Acne'],
-    androgen: 'Anti-androgenic AND anti-mineralocorticoid (spironolactone analog — reduces water retention/bloating).',
-    clinical: 'FDA-approved for PMDD, moderate acne, and contraception; avoid in hyperkalemia, renal insufficiency, or adrenal insufficiency.'
+    eeText: '20 mcg',
+    eeGroup: '10_20',
+    progestin: 'Drospirenone 3 mg (4th Gen)',
+    goals: ['acne', 'pmdd', 'estrogen_se'],
+    notes: 'Monophasic 24/4 • Anti-androgenic & anti-mineralocorticoid (reduces bloating); FDA-approved for PMDD & acne. Avoid in hyperkalemia/CKD.'
   },
   {
-    id: 'drospirenone_30_21',
-    name: 'Drospirenone 3 mg / EE 30 mcg (21/7)',
+    typeClass: 'COC (4th Gen)',
+    badgeStyle: '',
     brands: 'Yasmin, Ocella, Syeda, Zumandimine',
-    category: 'coc_30_35',
-    gen: 'gen4',
-    badgeClass: 'b-coc',
-    badgeText: '4th-Gen COC',
-    specs: ['30 mcg EE', '4th-Gen Drospirenone', 'Monophasic 21/7', 'Strong Cycle Control'],
-    androgen: 'Anti-androgenic & anti-mineralocorticoid with higher 30 mcg EE for better breakthrough-bleeding control than Yaz.',
-    clinical: 'Preferred over 20 mcg Yaz if patient experiences spotting on lower-dose drospirenone; check K+ if on ACEi/ARB/spironolactone.'
+    eeText: '30 mcg',
+    eeGroup: '25_35',
+    progestin: 'Drospirenone 3 mg (4th Gen)',
+    goals: ['acne', 'btb'],
+    notes: 'Monophasic 21/7 • Higher 30 mcg EE improves breakthrough bleeding control while retaining anti-androgenic profile.'
   },
   {
-    id: 'extended_84_7',
-    name: 'Extended-Cycle Levonorgestrel / EE (84/7 or 365-Day)',
-    brands: 'Seasonale / Jolessa (84 active / 7 placebo) • Seasonique (84 / 7 of 10 mcg EE) • Amethyst (Continuous)',
-    category: 'coc_ext',
-    gen: 'gen2',
-    badgeClass: 'b-ext',
-    badgeText: 'Extended / Continuous',
-    specs: ['20–30 mcg EE', '2nd-Gen Levonorgestrel', '84/7 or Continuous', '4 or 0 Periods/Yr'],
-    androgen: 'Uses low-VTE-risk 2nd-generation levonorgestrel in continuous or quarterly dosing.',
-    clinical: 'Ideal for menorrhagia, dysmenorrhea, endometriosis, menstrual migraines (without aura), or patient preference to suppress menses.'
+    typeClass: 'COC (2nd Gen)',
+    badgeStyle: '',
+    brands: 'Aviane, Aubra, Lessina, Lutera, Sronyx, Vienva',
+    eeText: '20 mcg',
+    eeGroup: '10_20',
+    progestin: 'Levonorgestrel 0.1 mg (2nd Gen)',
+    goals: ['first_line', 'estrogen_se'],
+    notes: 'Monophasic 21/7 • Lowest relative VTE risk + low estrogen dose; ideal starter pill for estrogen-sensitive patients.'
   },
   {
-    id: 'pop_drospirenone',
-    name: 'Drospirenone 4 mg POP (Slynd)',
-    brands: 'Slynd (24 active hormone pills + 4 inert pills)',
-    category: 'pop',
-    gen: 'gen4',
-    badgeClass: 'b-pop',
-    badgeText: 'Estrogen-Free POP',
-    specs: ['0 mcg Estrogen', '4th-Gen Drospirenone', '24-Hr Missed-Pill Window', 'Anti-Androgenic'],
-    androgen: 'Anti-androgenic & anti-mineralocorticoid; inhibits ovulation reliably (~97% cycles) unlike traditional POPs.',
-    clinical: 'Game-changer estrogen-free pill: 24-hour missed-pill flexibility and less irregular spotting than norethindrone; avoid in hyperkalemia/CKD.'
+    typeClass: 'COC (2nd Gen)',
+    badgeStyle: '',
+    brands: 'Levora, Portia, Nordette, Marlissa, Kurvelo',
+    eeText: '30 mcg',
+    eeGroup: '25_35',
+    progestin: 'Levonorgestrel 0.15 mg (2nd Gen)',
+    goals: ['first_line', 'btb'],
+    notes: 'Monophasic 21/7 • Benchmark first-line COC with lowest VTE risk and strong cycle stability.'
   },
   {
-    id: 'pop_norethindrone',
-    name: 'Norethindrone 0.35 mg & Norgestrel 0.075 mg POPs',
+    typeClass: 'COC (3rd Gen)',
+    badgeStyle: '',
+    brands: 'Sprintec, Estarylla, Mono-Linyah',
+    eeText: '35 mcg',
+    eeGroup: '25_35',
+    progestin: 'Norgestimate 0.25 mg (3rd Gen)',
+    goals: ['first_line', 'acne', 'btb'],
+    notes: 'Monophasic 21/7 • Low androgenicity; top choice for hormonal acne/PCOS and persistent spotting on 20 mcg pills.'
+  },
+  {
+    typeClass: 'COC (3rd Gen Tri)',
+    badgeStyle: '',
+    brands: 'Tri-Sprintec (35 mcg) • Tri-Lo-Sprintec (25 mcg)',
+    eeText: '25–35 mcg',
+    eeGroup: '25_35',
+    progestin: 'Norgestimate 0.18/0.215/0.25 mg (3rd Gen)',
+    goals: ['acne'],
+    notes: 'Triphasic 21/7 • FDA-approved for acne; step-up progestin dosing (note: monophasic preferred if skipping periods).'
+  },
+  {
+    typeClass: 'COC (1st Gen)',
+    badgeStyle: '',
+    brands: 'Junel Fe 1/20, Microgestin Fe (21/7) • Loestrin 24 Fe, Blisovi 24 Fe (24/4)',
+    eeText: '20 mcg',
+    eeGroup: '10_20',
+    progestin: 'Norethindrone Acetate 1 mg (1st Gen)',
+    goals: ['first_line', 'pmdd', 'estrogen_se'],
+    notes: '21/7 or 24/4 + Iron • Short 4-day hormone-free interval (24/4) gives lighter bleeds and fewer withdrawal headaches.'
+  },
+  {
+    typeClass: 'COC (1st Gen Ultra-Low)',
+    badgeStyle: '',
+    brands: 'Lo Loestrin Fe',
+    eeText: '10 mcg',
+    eeGroup: '10_20',
+    progestin: 'Norethindrone Acetate 1 mg (1st Gen)',
+    goals: ['estrogen_se'],
+    notes: '24/2/2 Biphasic • Lowest available estrogen dose in U.S.; ideal for severe nausea/mastalgia or perimenopause (spotting common early).'
+  },
+  {
+    typeClass: 'COC (Extended 84/7)',
+    badgeStyle: 'ext',
+    brands: 'Seasonale, Jolessa (30 mcg) • Seasonique (84/7 w/ 10 mcg EE) • Amethyst (Continuous)',
+    eeText: '20–30 mcg',
+    eeGroup: '25_35',
+    progestin: 'Levonorgestrel 0.1–0.15 mg (2nd Gen)',
+    goals: ['extended', 'pmdd'],
+    notes: '84/7 or 365-Day • Suppresses menses for menorrhagia, dysmenorrhea, endometriosis, or menstrual migraine without aura.'
+  },
+  {
+    typeClass: 'POP (4th Gen)',
+    badgeStyle: 'pop',
+    brands: 'Slynd',
+    eeText: '0 mcg (Estrogen-Free)',
+    eeGroup: '0',
+    progestin: 'Drospirenone 4 mg (4th Gen POP)',
+    goals: ['pop_only', 'acne', 'extended'],
+    notes: '24/4 Active/Placebo • Estrogen-free with a forgiving 24-hour missed-pill window and anti-androgenic benefit; avoid in hyperkalemia/CKD.'
+  },
+  {
+    typeClass: 'POP (1st/2nd Gen)',
+    badgeStyle: 'pop',
     brands: 'Camila, Errin, Heather, Nora-BE (Norethindrone) • Opill (Norgestrel OTC)',
-    category: 'pop',
-    gen: 'gen1',
-    badgeClass: 'b-pop',
-    badgeText: 'Classic / OTC POP',
-    specs: ['0 mcg Estrogen', '1st/2nd-Gen Progestin', 'Strict 3-Hr Window', 'Breastfeeding Safe'],
-    androgen: 'Low-dose progestin acting primarily via cervical mucus thickening; 28 active pills (no placebo week).',
-    clinical: 'Classic postpartum/breastfeeding oral pill and affordable generic (Opill is OTC); requires taking within the exact same 3-hour window daily.'
+    eeText: '0 mcg (Estrogen-Free)',
+    eeGroup: '0',
+    progestin: 'Norethindrone 0.35 mg / Norgestrel 0.075 mg',
+    goals: ['pop_only'],
+    notes: '28 Active Pills (No Placebo) • Safe in migraine w/ aura, HTN, VTE, and immediate postpartum breastfeeding; strict 3-hour daily window.'
   }
 ];
 
-const GOALS
+const GOAL_NOTES = {
+  all: '<strong>All Formulations:</strong> Filter by clinical goal or Ethinyl Estradiol (EE) strength above to narrow choices.',
+  first_line: '<strong>First-Line Starter:</strong> Monophasic 20–30 mcg EE with 2nd-gen levonorgestrel offers the lowest relative VTE risk; norgestimate is preferred if mild acne is present.',
+  acne: '<strong>Acne / Hirsutism / PCOS:</strong> Ethinyl estradiol raises SHBG (lowering free testosterone), paired with low-androgen (norgestimate) or anti-androgenic (drospirenone) progestins.',
+  pmdd: '<strong>PMDD / Premenstrual Mood:</strong> 24/4 regimens (Yaz, Loestrin 24 Fe) or continuous pills minimize estrogen-withdrawal mood swings and bloating.',
+  estrogen_se: '<strong>Estrogen Side Effects:</strong> Step down to 10–20 mcg EE (take at bedtime with food for nausea) or switch to an estrogen-free POP.',
+  btb: '<strong>Breakthrough Bleeding (&gt;3 Cycles):</strong> Increase estrogen to 30–35 mcg EE and choose a monophasic pill over triphasic.',
+  extended: '<strong>Heavy Menses / Suppress Periods:</strong> Extended-cycle (84/7) or continuous monophasic levonorgestrel pills reduce menstrual blood loss and cramping.',
+  pop_only: '<strong>Estrogen Contraindicated (U.S. MEC Cat 1–2):</strong> Safe in migraine with aura, hypertension, VTE history, smoker ≥35, and breastfeeding.'
+};
+
+function renderMatrix() {
+  const goal = document.getElementById('goalFilter').value;
+  const ee = document.getElementById('eeFilter').value;
+
+  document.getElementById('goalCallout').innerHTML = GOAL_NOTES[goal];
+
+  const rows = PILL_MATRIX.filter(p => {
+    const matchGoal = goal === 'all' || p.goals.includes(goal);
+    const matchEe = ee === 'all' || p.eeGroup === ee;
+    return matchGoal && matchEe;
+  });
+
+  const list = document.getElementById('matrixList');
+  if (rows.length === 0) {
+    list.innerHTML = `<div class="goal-callout" style="margin:0;">No oral contraceptives match both filters—set <strong>EE Dose</strong> back to <strong>All EE Strengths</strong>.</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map(p => `
+    <div class="matrix-row">
+      <div class="row-top-mobile">
+        <span class="gen-badge ${p.badgeStyle}">${p.typeClass}</span>
+        <span class="ee-pill">${p.eeText}</span>
+      </div>
+      <div class="brand-col"><span class="mobile-lbl">Brands:</span>${p.brands}</div>
+      <div class="prog-col"><span class="mobile-lbl">Progestin:</span>${p.progestin}</div>
+      <div class="note-col">${p.notes}</div>
+    </div>
+  `).join('');
+}
+
+function renderMissedDose() {
+  const type = document.getElementById('missedPillType').value;
+  const isCoc = type === 'coc';
+  document.getElementById('cocCountWrap').style.display = isCoc ? 'block' : 'none';
+  document.getElementById('cocWeekWrap').style.display = isCoc ? 'block' : 'none';
+
+  const box = document.getElementById('missedResult');
+
+  if (type === 'pop_noreth') {
+    box.innerHTML = `
+      <h3>Norethindrone 0.35 mg / Opill (Strict 3-Hour Window)</h3>
+      <ul>
+        <li><strong>Taken &lt;3 hours late:</strong> Take the pill as soon as remembered and continue 1 pill daily at the usual time. <strong>No backup needed.</strong></li>
+        <li><strong>Taken ≥3 hours late (or missed completely):</strong> Take 1 pill ASAP (even if taking 2 pills on the same day), continue 1 pill daily at the usual time, and use <strong>backup contraception (condoms/abstinence) for the next 2 days (48 hours)</strong>.</li>
+        <li><strong>Emergency Contraception (EC):</strong> Consider EC if unprotected intercourse occurred within the past 5 days.</li>
+      </ul>
+    `;
+    return;
+  }
+
+  if (type === 'pop_drsp') {
+    box.innerHTML = `
+      <h3>Drospirenone 4 mg POP (Slynd — Forgiving 24-Hour Window)</h3>
+      <ul>
+        <li><strong>1 active pill missed (&lt;24 hours late / &lt;48h since last pill):</strong> Take the missed pill ASAP and continue 1 pill daily at the usual time. <strong>No backup needed.</strong></li>
+        <li><strong>≥2 consecutive active pills missed (≥48 hours since a pill was due):</strong> Take the most recent missed pill ASAP (discard earlier missed pills), continue 1 pill daily, and use <strong>backup contraception for 7 consecutive days</strong>.</li>
+        <li><strong>Missed during Days 15–24:</strong> Finish the remaining active pills in the pack, <strong>skip the 4 green inert pills</strong>, and start a new pack immediately.</li>
+      </ul>
+    `;
+    return;
+  }
+
+  const count = document.getElementById('missedCount').value;
+  const week = document.getElementById('packWeek').value;
+
+  if (count === '1') {
+    box.innerHTML = `
+      <h3>COC: 1 Active Pill Missed (&lt;48 Hours Since Last Pill Taken)</h3>
+      <ul>
+        <li><strong>Action Now:</strong> Take the missed active pill as soon as remembered (even if taking 2 pills in one day).</li>
+        <li><strong>Ongoing Pack:</strong> Continue taking 1 pill daily at the usual time through the rest of the pack.</li>
+        <li><strong>Backup Contraception:</strong> <strong>NOT required</strong> (unless pills were also missed earlier in the pack or the previous pack was extended).</li>
+      </ul>
+    `;
+  } else {
+    let weekSpecific = '';
+    if (week === 'w1') {
+      weekSpecific = '<li><strong>Week 1 Emergency Contraception Alert:</strong> If unprotected intercourse occurred in the <strong>past 5 days</strong>, consider EC (if ulipristal/Ella is given, wait <strong>5 full days</strong> before restarting the COC and use barrier protection).</li>';
+    } else if (week === 'w2') {
+      weekSpecific = '<li><strong>Week 2 Guidance:</strong> Provided the pills in Week 1 were taken consistently, emergency contraception is generally not required, but <strong>7 days of backup contraception</strong> is mandatory.</li>';
+    } else {
+      weekSpecific = '<li><strong>Week 3 Critical Step (Skip Placebo Week):</strong> Finish all remaining active hormone pills in the current pack, <strong>discard/skip the 7 placebo pills</strong>, and start a brand-new pack the very next day.</li>';
+    }
+
+    box.innerHTML = `
+      <h3>COC: ≥2 Consecutive Active Pills Missed (≥48 Hours Overdue)</h3>
+      <ul>
+        <li><strong>Action Now:</strong> Take the <strong>most recent</strong> missed active pill ASAP and discard any earlier missed pills (do not take &gt;2 pills in one day).</li>
+        <li><strong>Backup Protection:</strong> Use condoms or abstain until active hormone pills have been taken for <strong>7 consecutive days</strong>.</li>
+        ${weekSpecific}
+      </ul>
+    `;
+  }
+}
+
+function switchTab(num) {
+  [1, 2].forEach(i => {
+    document.getElementById(`btnTab${i}`).classList.toggle('active', i === num);
+    document.getElementById(`panel${i}`).classList.toggle('active', i === num);
+  });
+}
+
+async function forceClearCache() {
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const reg of regs) {
+      await reg.unregister();
+    }
+  }
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    for (const key of keys) {
+      await caches.delete(key);
+    }
+  }
+  window.location.reload(true);
+}
+
+renderMatrix();
+renderMissedDose();
+</script>
+</body>
+</html>
